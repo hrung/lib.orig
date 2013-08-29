@@ -54,8 +54,7 @@ ToType to(const FromType& source, int base=0)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename ToType= std::string, typename FromType= std::string,
-         typename std::enable_if< !std::is_same<ToType, bool>::value &&
-                                  !std::is_integral<ToType>::value, int >::type=0 >
+         typename std::enable_if< !std::is_integral<ToType>::value, int >::type=0 >
 ToType to(const FromType& source)
 {
     std::stringstream stream;
