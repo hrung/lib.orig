@@ -88,13 +88,13 @@ void parse(int argc, char* argv[], options& opts, int& index)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-option_map map(const options& opts)
+option_map map(const opt::options& options)
 {
-    option_map tmp;
+    option_map _M_map;
 
-    for(const option& opt: opts)
-        tmp[ opt.name.size()? opt.name: (std::string()+ opt.short_name) ]= &opt;
-    return tmp;
+    for(const option& opt: options)
+        _M_map[ opt.name.size()? opt.name: (std::string()+ opt.short_name) ]= &opt;
+    return _M_map;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -48,10 +48,10 @@ struct option
     std::vector<std::string> value;
 
     template<typename T>
-    T to(size_t index=0) { return convert::to<T>(value.at(index)); }
+    T to(size_t index=0) const { return convert::to<T>(value.at(index)); }
 
     template<typename T>
-    bool as(T& value, size_t index=0)
+    bool get(T& value, size_t index=0) const
     {
         try
         {
@@ -71,21 +71,28 @@ typedef std::map<const std::string, const option*> option_map;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void parse(int argc, char* argv[], options&, int& index);
 
-option_map map(const options&);
-inline bool found(const option_map& map, const std::string& name)
+option_map map(const opt::options& options);
+
+inline const option* find(const option_map& map, const std::string& name)
 {
-    return map.count(name) && map.at(name)->value.size();
+    auto ri= map.find(name);
+    return (ri!=map.end() && ri->second->value.size())? ri->second: nullptr;
 }
 
-inline bool get_if_found(const option_map& map, const std::string& name, size_t index, std::string& value)
+template<typename T= std::string>
+T to(const option_map& map, const std::string& name, size_t index=0)
 {
-    option_map::const_iterator ri= map.find(name);
-    if(ri!=map.end() && index < ri->second->value.size())
-    {
-        value= ri->second->value.at(index);
-        return true;
-    }
-    else return false;
+    const opt::option* option= find(map, name);
+    if(option)
+        return option->to<T>(index);
+    else throw std::out_of_range("opt::to");
+}
+
+template<typename T>
+bool get(const option_map& map, const std::string& name, T& value, size_t index=0)
+{
+    const opt::option* option= find(map, name);
+    return option? option->get(value, index): false;
 }
 
 std::string usage(const options&);
