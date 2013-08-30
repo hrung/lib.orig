@@ -3,6 +3,8 @@
 #define OPTION_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+#include "convert.h"
+
 #include <vector>
 #include <map>
 #include <string>
@@ -42,7 +44,25 @@ struct option
         const std::string& _m_desc= std::string()):
     short_name(_m_short), arg(_m_arg), desc(_m_desc) { }
 
+    ////////////////////
     std::vector<std::string> value;
+
+    template<typename T>
+    T to(size_t index=0) { return convert::to<T>(value.at(index)); }
+
+    template<typename T>
+    bool as(T& value, size_t index=0)
+    {
+        try
+        {
+            value= convert::to<T>(value.at(index));
+            return true;
+        }
+        catch(...)
+        {
+            return false;
+        }
+    }
 };
 
 typedef std::vector<option> options;
