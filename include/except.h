@@ -14,9 +14,13 @@ namespace except
 class exception: public std::system_error
 {
 public:
-    exception(const std::string& message): _M_message(message) { }
+    exception(const std::string& message, std::error_code code= std::error_code()):
+        std::system_error(code),
+        _M_message(message)
+    { }
 
-    exception(const std::string& file, const std::string& func, int line, const std::string& message):
+    exception(const std::string& file, const std::string& func, int line, const std::string& message, std::error_code code= std::error_code()):
+        std::system_error(code),
         _M_message(message),
         _M_file(file), _M_func(func), _M_line(line)
     { }
@@ -31,17 +35,6 @@ protected:
     std::string _M_file;
     std::string _M_func;
     int _M_line=0;
-
-    exception(const std::string& message, std::error_code code):
-        std::system_error(code),
-        _M_message(message)
-    { }
-
-    exception(const std::string& file, const std::string& func, int line, const std::string& message, std::error_code code):
-        std::system_error(code),
-        _M_message(message),
-        _M_file(file), _M_func(func), _M_line(line)
-    { }
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -91,6 +84,7 @@ protected:
     std::string _M_user_message;
 };
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #define except(...)          except::exception(__FILE__, __FUNCTION__, __LINE__, __VA_ARGS__)
 
 #define critical_except(...) except::critical_exception(__FILE__, __FUNCTION__, __LINE__, __VA_ARGS__)
