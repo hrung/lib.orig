@@ -31,12 +31,14 @@ int Application::run()
     catch(except::user_exception& e)
     {
         show_message(e);
-        return message(e.message(), e.user_message());
+        return message(e.user_message());
     }
     catch(except::exception& e)
     {
         show_message(e);
-        return message(e.message());
+        if(e.message().size())
+            return message(e.message());
+        else return message(e.what());
     }
     catch(std::exception& e)
     {
@@ -46,9 +48,9 @@ int Application::run()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-int Application::message(const std::string& message, const std::string& user_message)
+int Application::message(const std::string& message)
 {
-    QMessageBox::critical(0, "Error", QString::fromStdString(user_message.empty()? message: user_message));
+    QMessageBox::critical(0, "Error", QString::fromStdString(message));
     return 1;
 }
 
