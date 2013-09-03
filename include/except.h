@@ -92,13 +92,13 @@ protected:
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#define except(...)          except::exception(__FILE__, __FUNCTION__, __LINE__, __VA_ARGS__)
+#define except(args...)             except::exception         (__FILE__, __FUNCTION__, __LINE__, args)
 
-#define critical_except(...) except::critical_exception(__FILE__, __FUNCTION__, __LINE__, __VA_ARGS__)
-#define not_except(...)      except::not_exception(__FILE__, __FUNCTION__, __LINE__, __VA_ARGS__)
+#define critical_except(args...)    except::critical_exception(__FILE__, __FUNCTION__, __LINE__, args)
+#define not_except(args...)         except::not_exception     (__FILE__, __FUNCTION__, __LINE__, args)
 
-#define system_except()      except::system_exception(__FILE__, __FUNCTION__, __LINE__)
-#define user_except(...)     except::user_exception(__FILE__, __FUNCTION__, __LINE__, __VA_ARGS__)
+#define system_except(args...)      except::system_exception  (__FILE__, __FUNCTION__, __LINE__, ##args)
+#define user_except(args...)        except::user_exception    (__FILE__, __FUNCTION__, __LINE__, args)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
