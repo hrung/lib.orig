@@ -32,8 +32,12 @@ void show_message(const except::exception& e, bool force)
 {
     stream m("Error: ");
 
-    if(e.message().size()) m << e.message() << " ";
-    if(e.code().value()) m << "(" << e.code().message() << ", " << e.code().value() << ") ";
+    if(e.message().size())
+    {
+        m << e.message() << " ";
+        if(e.code().value()) m << "(" << e.code().message() << ", " << e.code().value() << ") ";
+    }
+    else if(e.code().value()) m << e.code().message() << " (" << e.code().value() << ") ";
 
     if(e.func().size()) m << "in function " << e.func() << "() at " << e.file() << ", " << e.line();
     show_message(m, level::error, force);
