@@ -11,6 +11,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "slap_error.h"
+#include "optional.h"
+#include "convert.h"
 
 #include <functional>
 #include <initializer_list>
@@ -95,6 +97,22 @@ public:
     const std::string& value(size_t index=0) const { return _M_values.at(index); }
           std::string& value(size_t index=0)       { return _M_values.at(index); }
 
+    ////////////////////
+    template<typename T>
+    T to(size_t index=0) const { return convert::to<T>(value(index)); }
+
+    template<typename T>
+    bool get(T& value, size_t index=0) const
+    {
+        try
+        {
+            value= convert::to<T>(value(index));
+            return true;
+        }
+        catch(...) { return false; }
+    }
+
+    ////////////////////
     void insert(const std::string& value) { _M_values.push_back(value); }
     void insert(std::string&& value) { _M_values.push_back(value); }
 
@@ -173,6 +191,42 @@ public:
         else throw std::out_of_range("entry::attribute");
     }
 
+    const std::string& value(const std::string& name, size_t index=0) const
+    {
+        return attribute(name).value(index);
+    }
+
+    ////////////////////
+    template<typename T>
+    T to(const std::string name, size_t index=0) const { return _M_to<T>::func(this, name, index); }
+
+    ////////////////////
+    template<typename T>
+    bool get(T& value, const std::string& name, size_t index=0) const
+    {
+        try
+        {
+            value= attribute(name).to<T>(index);
+            return true;
+        }
+        catch(...) { return false; }
+    }
+
+    template<typename T>
+    bool get(optional<T>& value, const std::string& name, size_t index=0) const
+    {
+        try
+        {
+            if(count(name))
+                value= attribute(name).to<T>(index);
+            else value= optional<T>();
+
+            return true;
+        }
+        catch(...) { return false; }
+    }
+
+    ////////////////////
     bool insert(const slap::attribute& x) { return _M_attributes.insert(x).second; }
     bool insert(slap::attribute&& x) { return _M_attributes.insert(x).second; }
 
@@ -186,6 +240,27 @@ private:
     void delete_mod() const;
 
     friend class connection;
+
+    ////////////////////
+    template<typename T>
+    struct _M_to
+    {
+        static T func(slap::entry* e, const std::string name, size_t index=0)
+        {
+            return e->attribute(name).to<T>(index);
+        }
+    };
+
+    template<typename T>
+    struct _M_to<optional<T>>
+    {
+        static T func(slap::entry* e, const std::string name, size_t index=0)
+        {
+            if(e->count(name))
+                return e->attribute(name).to<typename T::value_type>(index);
+            else return T();
+        }
+    };
 };
 
 typedef std::vector<entry> entries;
