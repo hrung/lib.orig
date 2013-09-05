@@ -65,10 +65,7 @@ struct option
             value= convert::to<T>(value.at(index));
             return true;
         }
-        catch(...)
-        {
-            return false;
-        }
+        catch(...) { return false; }
     }
 };
 
@@ -86,7 +83,7 @@ inline const option* find(const option_map& map, const std::string& name)
     return (ri!=map.end() && ri->second->value.size())? ri->second: nullptr;
 }
 
-template<typename T= std::string>
+template<typename T>
 T to(const option_map& map, const std::string& name, size_t index=0)
 {
     const opt::option* option= find(map, name);
