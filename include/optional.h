@@ -19,6 +19,8 @@ enum none_t { none };
 template<typename T>
 struct optional
 {
+    typedef T value_type;
+
     optional(): _M_none(true) { }
 
     ////////////////////
@@ -35,16 +37,16 @@ struct optional
     }
 
     ////////////////////
-    optional(const T& x): _M_value(x), _M_none(false) { }
-    optional& operator=(const T& x)
+    optional(const value_type& x): _M_value(x), _M_none(false) { }
+    optional& operator=(const value_type& x)
     {
         _M_value= x; _M_none= false;
         return *this;
     }
 
     ////////////////////
-    optional(T&& x): _M_value(std::move(x)), _M_none(false) { }
-    optional& operator=(T&& x)
+    optional(value_type&& x): _M_value(std::move(x)), _M_none(false) { }
+    optional& operator=(value_type&& x)
     {
         _M_value= std::move(x); _M_none= false;
         return *this;
@@ -54,7 +56,7 @@ struct optional
     optional(none_t): _M_none(true) { }
     optional& operator=(none_t)
     {
-        _M_value= T(); _M_none= true;
+        _M_value= value_type(); _M_none= true;
         return *this;
     }
 
@@ -85,18 +87,18 @@ struct optional
     const T& value() const { return _M_value; }
     T& value() { return _M_value; }
 
-    operator const T&() const { return value(); }
+    operator const value_type&() const { return value(); }
 
-    const T* operator->() const { return &_M_value; }
-    T* operator->() { return &_M_value; }
+    const value_type* operator->() const { return &_M_value; }
+    value_type* operator->() { return &_M_value; }
 
-    const T& operator*() const { return _M_value; }
-    T& operator*() { return _M_value; }
+    const value_type& operator*() const { return _M_value; }
+    value_type& operator*() { return _M_value; }
 
     bool is_none() { return _M_none; }
 
 private:
-    T _M_value;
+    value_type _M_value;
     bool _M_none;
 };
 
@@ -115,7 +117,7 @@ inline bool operator==(const optional<T>& x, const optional<T>& y)
 }
 
 template<typename T>
-inline bool operator!=(const optional<T>& x, const optional<U>& y) { return !(x==y); }
+inline bool operator!=(const optional<T>& x, const optional<T>& y) { return !(x==y); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #endif // OPTIONAL_H
