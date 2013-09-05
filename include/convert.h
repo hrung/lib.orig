@@ -17,6 +17,10 @@
 #include <iomanip>
 #include <stdexcept>
 
+#ifdef QT_CORE_LIB
+#  include <QString>
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace convert
 {
@@ -60,8 +64,27 @@ ToType to(const FromType& source, int base=0)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef QT_CORE_LIB
+template<typename ToType, typename FromType= std::string,
+         typename std::enable_if< std::is_same<ToType, QString>::value, int >::type=0 >
+ToType to(const FromType& source)
+{
+    std::stringstream stream;
+    std::string value;
+
+    if(convert(stream, source, value))
+        return QString::fromStdString(value);
+    else throw except("Conversion failed");
+}
+#endif
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename ToType= std::string, typename FromType= std::string,
+#ifdef QT_CORE_LIB
+         typename std::enable_if< !std::is_integral<ToType>::value && !std::is_same<ToType, QString>::value, int >::type=0 >
+#else
          typename std::enable_if< !std::is_integral<ToType>::value, int >::type=0 >
+#endif
 ToType to(const FromType& source)
 {
     std::stringstream stream;
