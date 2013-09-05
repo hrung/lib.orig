@@ -245,7 +245,7 @@ private:
     template<typename T>
     struct _M_to
     {
-        static T func(slap::entry* e, const std::string name, size_t index=0)
+        static T func(const slap::entry* e, const std::string name, size_t index=0)
         {
             return e->attribute(name).to<T>(index);
         }
@@ -254,7 +254,7 @@ private:
     template<typename T>
     struct _M_to<optional<T>>
     {
-        static T func(slap::entry* e, const std::string name, size_t index=0)
+        static T func(const slap::entry* e, const std::string name, size_t index=0)
         {
             if(e->count(name))
                 return e->attribute(name).to<typename T::value_type>(index);
