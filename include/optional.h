@@ -95,7 +95,7 @@ struct optional
     const value_type& operator*() const { return _M_value; }
     value_type& operator*() { return _M_value; }
 
-    bool is_none() { return _M_none; }
+    bool is_none() const { return _M_none; }
 
 private:
     value_type _M_value;
