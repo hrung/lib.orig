@@ -26,73 +26,91 @@ namespace convert
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+template<typename ToType, typename FromType, typename= void>
+struct _M_convert
+{
+    static ToType to(const FromType& source)
+    {
+        std::stringstream stream;
+        ToType value;
+
+        if((stream << source) && (stream >> std::ws >> value) && (stream >> std::ws).eof())
+            return value;
+        else throw except("Conversion failed");
+    }
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename ToType, typename FromType>
-inline bool convert(std::stringstream& stream, const FromType& source, ToType& value)
+struct _M_convert<ToType, FromType, typename std::enable_if< std::is_integral<ToType>::value &&
+                                                            !std::is_same<ToType, bool>::value >::type>
 {
-    return (stream << source) && (stream >> std::ws >> value) && (stream >> std::ws).eof();
-}
+    static ToType to(const FromType& source, int base=0)
+    {
+        std::stringstream stream;
+        ToType value;
+
+        stream >> std::setbase(base);
+
+        if((stream << source) && (stream >> std::ws >> value) && (stream >> std::ws).eof())
+            return value;
+        else throw except("Conversion failed");
+    }
+};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-template<typename ToType, typename FromType= std::string,
-         typename std::enable_if< std::is_same<ToType, bool>::value, int >::type=0 >
-ToType to(const FromType& source, bool bool_alpha= false)
+template<typename FromType>
+struct _M_convert<bool, FromType, void>
 {
-    std::stringstream stream;
-    bool value;
+    static bool to(const FromType& source, bool bool_alpha= true)
+    {
+        std::stringstream stream;
+        bool value;
 
-    stream >> (bool_alpha? std::boolalpha: std::noboolalpha);
+        stream >> (bool_alpha? std::boolalpha: std::noboolalpha);
 
-    if(convert(stream, source, value))
-        return value;
-    else throw except("Conversion failed");
-}
+        if((stream << source) && (stream >> std::ws >> value) && (stream >> std::ws).eof())
+            return value;
+        else throw except("Conversion failed");
+    }
+};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-template<typename ToType, typename FromType= std::string,
-         typename std::enable_if< !std::is_same<ToType, bool>::value &&
-                                   std::is_integral<ToType>::value, int >::type=0 >
-ToType to(const FromType& source, int base=0)
+template<typename FromType>
+struct _M_convert<std::string, FromType, void>
 {
-    std::stringstream stream;
-    ToType value;
+    static std::string to(const FromType& source)
+    {
+        std::stringstream stream;
 
-    stream >> std::setbase(base);
-
-    if(convert(stream, source, value))
-        return value;
-    else throw except("Conversion failed");
-}
+        if(stream << source)
+            return stream.str();
+        else throw except("Conversion failed");
+    }
+};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #ifdef QT_CORE_LIB
-template<typename ToType, typename FromType= std::string,
-         typename std::enable_if< std::is_same<ToType, QString>::value, int >::type=0 >
-ToType to(const FromType& source)
+template<typename FromType>
+struct _M_convert<QString, FromType, void>
 {
-    std::stringstream stream;
-    std::string value;
+    static QString to(const FromType& source)
+    {
+        std::stringstream stream;
 
-    if(convert(stream, source, value))
-        return QString::fromStdString(value);
-    else throw except("Conversion failed");
-}
+        if(stream << source)
+            return QString::fromStdString(stream.str());
+        else throw except("Conversion failed");
+    }
+};
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-template<typename ToType= std::string, typename FromType= std::string,
-#ifdef QT_CORE_LIB
-         typename std::enable_if< !std::is_integral<ToType>::value && !std::is_same<ToType, QString>::value, int >::type=0 >
-#else
-         typename std::enable_if< !std::is_integral<ToType>::value, int >::type=0 >
-#endif
+///////////////////////////////////////////////////////////////////////////////////////////////////
+template<typename ToType= std::string, typename FromType= std::string>
 ToType to(const FromType& source)
 {
-    std::stringstream stream;
-    ToType value;
-
-    if(convert(stream, source, value))
-        return value;
-    else throw except("Conversion failed");
+    return _M_convert<ToType, FromType>::to(source);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
