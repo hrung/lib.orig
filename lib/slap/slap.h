@@ -16,6 +16,7 @@
 
 #include <functional>
 #include <initializer_list>
+#include <type_traits>
 #include <vector>
 #include <set>
 #include <string>
@@ -32,7 +33,6 @@ enum class operation
     replace
 };
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 typedef std::vector<std::string> values;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -98,15 +98,25 @@ public:
           std::string& value(size_t index=0)       { return _M_values.at(index); }
 
     ////////////////////
-    template<typename T>
-    T to(size_t index=0) const { return convert::to<T>(value(index)); }
+    template<typename T, typename std::enable_if< !std::is_same<T, bool>::value, int >::type=0>
+    T to(size_t index=0) const
+    {
+        return convert::to<T>(value(index));
+    }
 
+    template<typename T, typename std::enable_if< std::is_same<T, bool>::value, int >::type=0>
+    T to(size_t index=0) const
+    {
+        return (value(index)=="TRUE")? true: false;
+    }
+
+    ////////////////////
     template<typename T>
     bool get(T& value, size_t index=0) const
     {
         try
         {
-            value= convert::to<T>(value(index));
+            value= to<T>(index);
             return true;
         }
         catch(...) { return false; }
@@ -198,7 +208,10 @@ public:
 
     ////////////////////
     template<typename T>
-    T to(const std::string name, size_t index=0) const { return _M_to<T>::func(this, name, index); }
+    T to(const std::string name, size_t index=0) const
+    {
+        return _M_to<T>::func(this, name, index);
+    }
 
     ////////////////////
     template<typename T>
@@ -206,21 +219,7 @@ public:
     {
         try
         {
-            value= attribute(name).to<T>(index);
-            return true;
-        }
-        catch(...) { return false; }
-    }
-
-    template<typename T>
-    bool get(optional<T>& value, const std::string& name, size_t index=0) const
-    {
-        try
-        {
-            if(count(name))
-                value= attribute(name).to<T>(index);
-            else value= optional<T>();
-
+            value= to<T>(name, index);
             return true;
         }
         catch(...) { return false; }
@@ -254,11 +253,11 @@ private:
     template<typename T>
     struct _M_to<optional<T>>
     {
-        static T func(const slap::entry* e, const std::string name, size_t index=0)
+        static optional<T> func(const slap::entry* e, const std::string name, size_t index=0)
         {
             if(e->count(name))
-                return e->attribute(name).to<typename T::value_type>(index);
-            else return T();
+                return e->attribute(name).to<T>(index);
+            else return optional<T>();
         }
     };
 };
