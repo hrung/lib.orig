@@ -76,7 +76,7 @@ void parse(int argc, char* argv[], options& opts, int& index)
             std::string value;
             if( (popt->arg==required || popt->arg==optional) && optarg ) value= optarg;
 
-            popt->value.push_back(value);
+            popt->values.push_back(value);
         }
     }
     catch(std::exception& e)

@@ -52,17 +52,17 @@ struct option
     short_name(_m_short), arg(_m_arg), desc(_m_desc) { }
 
     ////////////////////
-    std::vector<std::string> value;
+    std::vector<std::string> values;
 
     template<typename T>
-    T to(size_t index=0) const { return convert::to<T>(value.at(index)); }
+    T to(size_t index=0) const { return convert::to<T>(values.at(index)); }
 
     template<typename T>
     bool get(T& value, size_t index=0) const
     {
         try
         {
-            value= convert::to<T>(value.at(index));
+            value= convert::to<T>(values.at(index));
             return true;
         }
         catch(...) { return false; }
@@ -80,7 +80,7 @@ option_map map(const opt::options& options);
 inline const option* find(const option_map& map, const std::string& name)
 {
     auto ri= map.find(name);
-    return (ri!=map.end() && ri->second->value.size())? ri->second: nullptr;
+    return (ri!=map.end() && ri->second->values.size())? ri->second: nullptr;
 }
 
 template<typename T>
