@@ -92,7 +92,7 @@ public:
     bool empty() const { return _M_values.empty(); }
     size_t size() const { return _M_values.size(); }
 
-    const slap::values& values() { return _M_values; }
+    const slap::values& values() const { return _M_values; }
 
     const std::string& value(size_t index=0) const { return _M_values.at(index); }
           std::string& value(size_t index=0)       { return _M_values.at(index); }
