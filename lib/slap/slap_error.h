@@ -123,7 +123,7 @@ enum class slap_error
 class slap_category: public std::error_category
 {
 public:
-    const char* name() const override { return "ldap"; }
+    const char* name() const noexcept override { return "ldap"; }
     std::string message(int ev) const override { return std::string(ldap_err2string(ev)); }
 };
 
