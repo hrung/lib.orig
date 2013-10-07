@@ -96,13 +96,15 @@ struct _M_convert<QString, FromType, void>
 {
     static QString to(const FromType& source)
     {
-        std::stringstream stream;
-
-        if(stream << source)
-            return QString::fromStdString(stream.str());
-        else throw except("Conversion failed");
+        return QString::fromStdString(_M_convert<std::string, FromType>::to(source));
     }
 };
+
+template<typename ToType= std::string>
+ToType to(const QString& source)
+{
+    return _M_convert<ToType, std::string>::to(source.toStdString());
+}
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
