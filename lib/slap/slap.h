@@ -126,6 +126,11 @@ public:
     void insert(const std::string& value) { _M_values.push_back(value); }
     void insert(std::string&& value) { _M_values.push_back(value); }
 
+    void insert(bool value) { _M_values.push_back(value? "TRUE": "FALSE"); }
+
+    template<typename T>
+    void insert(const T& value) { insert(convert::to(value)); }
+
     template<typename... Args>
     void emplace(Args&&... args) { _M_values.emplace_back(args...); }
 
