@@ -54,6 +54,9 @@ public:
     file() { }
     file(const std::string& name, open_flags flags) { open(name, flags); }
 
+    file(const file&) = delete;
+    file& operator=(const file&) = delete;
+
     virtual ~file() { close(); }
 
     void open(const std::string& name, open_flags flags, perm = 0644);
