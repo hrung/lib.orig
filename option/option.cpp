@@ -6,8 +6,8 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "stream.h"
 #include "option.h"
+#include "stream.h"
 
 #include <iomanip>
 #include <sstream>
@@ -21,7 +21,7 @@ namespace opt
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void parse(int argc, char* argv[], options& opts, int& index)
+void options::parse(int argc, char* argv[], int& index)
 {
     std::vector<::option> long_opt;
     std::string short_opt(":");
@@ -30,15 +30,17 @@ void parse(int argc, char* argv[], options& opts, int& index)
     std::map<int, option*> tmp;
 
     ////////////////////
-    for(option& opt: opts)
+    for(auto ri= _M_map.begin(); ri!=_M_map.end(); ++ri)
     {
-        int val;
-        if(opt.short_name)
-        {
-            val= opt.short_name;
-            short_opt+= opt.short_name;
+        option* opt= &ri->second;
 
-            switch(opt.arg)
+        int val;
+        if(opt->short_name)
+        {
+            val= opt->short_name;
+            short_opt+= opt->short_name;
+
+            switch(opt->arg)
             {
                 case optional: short_opt+= ':';
                 case required: short_opt+= ':';
@@ -47,8 +49,8 @@ void parse(int argc, char* argv[], options& opts, int& index)
         }
         else val= unique++;
 
-        if(opt.name.size()) long_opt.push_back({ opt.name.data(), opt.arg, nullptr, val });
-        tmp[val]= &opt;
+        if(!opt->name.empty()) long_opt.push_back({ opt->name.data(), opt->arg, nullptr, val });
+        tmp[val]= opt;
     }
     long_opt.push_back({0, 0, 0, 0});
 
@@ -71,19 +73,19 @@ void parse(int argc, char* argv[], options& opts, int& index)
 
             auto ri= tmp.find(c);
                 if(ri==tmp.end()) throw std::invalid_argument("Unexpected option");
-            option* popt= ri->second;
+            option* opt= ri->second;
 
             std::string value;
-            if( (popt->arg==required || popt->arg==optional) && optarg ) value= optarg;
+            if( (opt->arg==required || opt->arg==optional) && optarg ) value= optarg;
 
-            popt->values.push_back(value);
+            opt->values.push_back(value);
         }
     }
     catch(std::exception& e)
     {
         index= optind;
 
-        stream error;
+        std::string error;
         error << e.what() << " '";
             if(optopt) error << char(optopt); else error << argv[--index];
         error << "'";
@@ -95,23 +97,22 @@ void parse(int argc, char* argv[], options& opts, int& index)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-option_map map(const opt::options& options)
+const option* options::find(const std::string& name) const
 {
-    option_map _M_map;
-
-    for(const option& opt: options)
-        _M_map[ opt.name.size()? opt.name: (std::string()+ opt.short_name) ]= &opt;
-    return _M_map;
+    auto ri= _M_map.find(name);
+    return ( ri!=_M_map.end() && ri->second.values.size() )? &ri->second: nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 using std::setw; using std::left; using std::right; using std::endl;
 
-std::string usage(const options& opts)
+std::string options::usage()
 {
     std::ostringstream stream;
-    for(const option& opt: opts)
+    for(auto ri: _M_map)
     {
+        option& opt= ri.second;
+
         stream << setw(8) << right;
         if(opt.short_name)
             stream << std::string("-")+ opt.short_name+ (opt.name.size()? ", ": "  ");
