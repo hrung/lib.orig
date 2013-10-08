@@ -7,12 +7,31 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "common.h"
+#include "stream.h"
+
+#include <fstream>
 
 #include <memory.h>
 #include <signal.h>
+#include <string.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-std::string prog_name;
+const std::string program()
+{
+    std::string name;
+
+    std::ifstream stream("/proc/self/cmdline");
+    if(stream)
+    {
+        std::getline(stream, name);
+        name.erase(name.find(char(0)));
+
+        name= basename(name.data());
+    }
+    return name;
+}
+
+const std::string version() { return std::string() << major << '.' << minor; }
 
 bool verbose= false;
 bool logging= false;

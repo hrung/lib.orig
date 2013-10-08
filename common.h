@@ -13,7 +13,11 @@
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-extern std::string prog_name;
+const std::string program();
+
+extern const int major;
+extern const int minor;
+const std::string version();
 
 extern bool verbose;
 extern bool logging;
