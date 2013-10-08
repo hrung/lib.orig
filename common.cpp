@@ -31,6 +31,7 @@ const std::string program()
     return name;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
 const std::string version() { return std::string() << major << '.' << minor; }
 
 bool verbose= false;
@@ -42,8 +43,6 @@ int  exit_code=0;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct action
 {
-    static void func(int) { exiting= true; }
-
     action()
     {
         struct sigaction sa;
@@ -55,7 +54,7 @@ struct action
         sigaction(SIGINT, &sa, NULL);
         sigaction(SIGTERM, &sa, NULL);
     }
-};
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-class action_init { static action _M_action; } _M_init;
+    static void func(int) { exiting= true; }
+}
+_M_action;
