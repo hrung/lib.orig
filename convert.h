@@ -41,9 +41,12 @@ struct _M_convert
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+template<typename T>
+using enable_if_int = typename std::enable_if< std::is_integral<T>::value &&
+                                              !std::is_same<T, bool>::value >::type;
+
 template<typename ToType, typename FromType>
-struct _M_convert<ToType, FromType, typename std::enable_if< std::is_integral<ToType>::value &&
-                                                            !std::is_same<ToType, bool>::value >::type>
+struct _M_convert<ToType, FromType, enable_if_int<ToType>>
 {
     static ToType to(const FromType& source, int base=0)
     {
@@ -113,6 +116,29 @@ template<typename ToType= std::string, typename FromType= std::string>
 ToType to(const FromType& source)
 {
     return _M_convert<ToType, FromType>::to(source);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+template<typename ViaType= int, typename FromType, enable_if_int<ViaType>* = nullptr>
+std::string oct(const FromType& source)
+{
+    std::stringstream stream;
+
+    if(stream << std::oct << to<ViaType>(source))
+        return stream.str();
+    else throw except("Conversion failed");
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+template<typename ViaType= int, typename FromType, enable_if_int<ViaType>* = nullptr>
+std::string hex(const FromType& source)
+{
+    std::stringstream stream;
+
+    if(stream << std::hex << to<ViaType>(source))
+        return stream.str();
+    else throw except("Conversion failed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
