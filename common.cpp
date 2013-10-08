@@ -1,0 +1,42 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2009-2013 Dimitry Ishenko
+// Distributed under the GNU GPL v2. For full terms please visit:
+// http://www.gnu.org/licenses/gpl.html
+//
+// Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+#include "common.h"
+
+#include <memory.h>
+#include <signal.h>
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+std::string prog_name;
+
+bool verbose= false;
+bool logging= false;
+
+bool exiting= false;
+int  exit_code=0;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct action
+{
+    static void func(int) { exiting= true; }
+
+    action()
+    {
+        struct sigaction sa;
+        memset(&sa, 0, sizeof(sa));
+
+        sa.sa_handler= func;
+        sa.sa_flags= SA_RESTART;
+
+        sigaction(SIGINT, &sa, NULL);
+        sigaction(SIGTERM, &sa, NULL);
+    }
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class action_init { static action _M_action; } _M_init;
