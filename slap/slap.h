@@ -131,9 +131,6 @@ public:
     template<typename T>
     void insert(const T& value) { insert(convert::to(value)); }
 
-    template<typename... Args>
-    void emplace(Args&&... args) { _M_values.emplace_back(args...); }
-
 private:
     std::string     _M_name;
     slap::operation _M_operation;
