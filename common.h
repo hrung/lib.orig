@@ -19,6 +19,8 @@ extern const int major;
 extern const int minor;
 const std::string version();
 
+const std::string hostname();
+
 extern bool verbose;
 extern bool logging;
 
