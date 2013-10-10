@@ -63,11 +63,11 @@ class system_exception: public exception
 {
 public:
     system_exception(const std::string& message= std::string()):
-        exception(message, std::error_code(errno, std::system_category()))
+        exception(message, std::error_code(errno, std::generic_category()))
     { }
 
     system_exception(const std::string& file, const std::string& func, int line, const std::string& message= std::string()):
-        exception(file, func, line, message, std::error_code(errno, std::system_category()))
+        exception(file, func, line, message, std::error_code(errno, std::generic_category()))
     { }
 };
 
