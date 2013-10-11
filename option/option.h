@@ -67,10 +67,7 @@ class options
 {
 public:
     options() { }
-    options(std::initializer_list<option> opts)
-    {
-        for(auto&& opt: opts) insert(opt);
-    }
+    options(std::initializer_list<option> opts) { for(auto&& opt: opts) insert(opt); }
 
     bool insert(const option& opt) { return _M_map.insert(std::make_pair(opt.name_or_short(), opt)).second; }
     bool insert(option&& opt)      { return _M_map.insert(std::make_pair(opt.name_or_short(), opt)).second; }
@@ -79,9 +76,11 @@ public:
     void parse(int argc, char* argv[], int& index);
 
     ////////////////////
+    bool empty() const { return _M_map.empty(); }
+    int   size() const { return _M_map.size(); }
     void clear() { _M_map.clear(); }
-    int count(const std::string& name) const { return _M_map.count(name); }
 
+    int count(const std::string& name) const { return _M_map.count(name); }
     const option* find(const std::string& name) const;
 
     ////////////////////
