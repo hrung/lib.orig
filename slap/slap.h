@@ -39,16 +39,16 @@ typedef std::vector<std::string> values;
 class attribute
 {
 public:
-    explicit attribute(const std::string& _m_name, slap::operation _m_mod= operation::add):
-        _M_name(_m_name), _M_operation(_m_mod)
+    explicit attribute(const std::string& name, slap::operation mod= operation::add):
+        _M_name(name), _M_operation(mod)
     { }
 
-    attribute(const std::string& _m_name, std::initializer_list<std::string> _m_values):
-        _M_name(_m_name), _M_operation(operation::add), _M_values(_m_values)
+    attribute(const std::string& name, std::initializer_list<std::string> values):
+        _M_name(name), _M_operation(operation::add), _M_values(values)
     { }
 
-    attribute(const std::string& _m_name, slap::operation _m_mod, std::initializer_list<std::string> _m_values):
-        _M_name(_m_name), _M_operation(_m_mod), _M_values(_m_values)
+    attribute(const std::string& name, slap::operation mod, std::initializer_list<std::string> values):
+        _M_name(name), _M_operation(mod), _M_values(values)
     { }
 
    ~attribute() { delete_mod(); }
