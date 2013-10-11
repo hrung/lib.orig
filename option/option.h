@@ -80,8 +80,12 @@ public:
     int   size() const { return _M_map.size(); }
     void clear() { _M_map.clear(); }
 
+    const option* find(const std::string& name) const
+    {
+        auto ri= _M_map.find(name);
+        return ( ri!=_M_map.end() && ri->second.values.size() )? &ri->second: nullptr;
+    }
     int count(const std::string& name) const { return _M_map.count(name); }
-    const option* find(const std::string& name) const;
 
     ////////////////////
     template<typename T>

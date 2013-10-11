@@ -97,13 +97,6 @@ void options::parse(int argc, char* argv[], int& index)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-const option* options::find(const std::string& name) const
-{
-    auto ri= _M_map.find(name);
-    return ( ri!=_M_map.end() && ri->second.values.size() )? &ri->second: nullptr;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 using std::setw; using std::left; using std::right; using std::endl;
 
 std::string options::usage()
