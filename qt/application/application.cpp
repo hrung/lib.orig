@@ -8,7 +8,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "application.h"
 
-#include "common/common.h"
+#include "message.h"
 #include "except.h"
 
 #include <QMessageBox>
@@ -30,19 +30,19 @@ int Application::run()
     }
     catch(except::user_exception& e)
     {
-        show_message(e);
+        show_error(e);
         return message(e.user_message());
     }
     catch(except::exception& e)
     {
-        show_message(e);
+        show_error(e);
         if(e.message().size())
             return message(e.message());
         else return message(e.what());
     }
     catch(std::exception& e)
     {
-        show_message(e.what(), level::error);
+        show_error(e.what());
         return message(e.what());
     }
 }
