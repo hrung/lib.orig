@@ -147,7 +147,7 @@ class connection;
 class entry
 {
 public:
-    explicit entry(const std::string& _m_dn): _M_dn(_m_dn) { }
+    explicit entry(const std::string& dn): _M_dn(dn) { }
 
    ~entry() { delete_mod(); }
 
