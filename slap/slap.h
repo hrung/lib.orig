@@ -17,6 +17,7 @@
 #include <functional>
 #include <initializer_list>
 #include <type_traits>
+#include <stdexcept>
 #include <vector>
 #include <set>
 #include <string>
@@ -91,6 +92,7 @@ public:
     slap::operation operation() const { return _M_operation; }
 
     slap::values& values() { return _M_values; }
+    const slap::values& values() const { return _M_values; }
 
     std::string value(size_t index=0) const { return _M_values.at(index); }
 
@@ -182,6 +184,7 @@ public:
     std::string dn() const { return _M_dn; }
 
     slap::attributes& attributes() { return _M_attributes; }
+    const slap::attributes& attributes() const { return _M_attributes; }
 
     const attribute* find(const std::string& name) const
     {
