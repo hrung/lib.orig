@@ -43,13 +43,22 @@ public:
     explicit attribute(const std::string& name, slap::operation mod= operation::add):
         _M_name(name), _M_operation(mod)
     { }
+    explicit attribute(std::string&& name, slap::operation mod= operation::add):
+        _M_name(std::move(name)), _M_operation(mod)
+    { }
 
     attribute(const std::string& name, std::initializer_list<std::string> values):
         _M_name(name), _M_operation(operation::add), _M_values(values)
     { }
+    attribute(std::string&& name, std::initializer_list<std::string> values):
+        _M_name(std::move(name)), _M_operation(operation::add), _M_values(values)
+    { }
 
     attribute(const std::string& name, slap::operation mod, std::initializer_list<std::string> values):
         _M_name(name), _M_operation(mod), _M_values(values)
+    { }
+    attribute(std::string&& name, slap::operation mod, std::initializer_list<std::string> values):
+        _M_name(std::move(name)), _M_operation(mod), _M_values(values)
     { }
 
    ~attribute() { delete_mod(); }
@@ -70,19 +79,19 @@ public:
 
     ////////////////////
     attribute(attribute&& other):
-        _M_name      (other._M_name),
-        _M_operation (other._M_operation),
-        _M_values    (other._M_values),
-        _M_mod       (other._M_mod)
+        _M_name      (std::move(other._M_name)),
+        _M_operation (std::move(other._M_operation)),
+        _M_values    (std::move(other._M_values)),
+        _M_mod       (std::move(other._M_mod))
     { other._M_mod= nullptr; }
 
     attribute& operator=(attribute&& other)
     {
-        _M_name=      other._M_name;
-        _M_operation= other._M_operation;
-        _M_values=    other._M_values;
+        _M_name=      std::move(other._M_name);
+        _M_operation= std::move(other._M_operation);
+        _M_values=    std::move(other._M_values);
         delete_mod();
-        _M_mod=       other._M_mod;
+        _M_mod=       std::move(other._M_mod);
         other._M_mod= nullptr;
         return *this;
     }
@@ -117,7 +126,7 @@ public:
 
     ////////////////////
     void insert(const std::string& value) { _M_values.push_back(value); }
-    void insert(std::string&& value) { _M_values.push_back(value); }
+    void insert(std::string&& value) { _M_values.push_back(std::move(value)); }
 
     void insert(bool value) { _M_values.push_back(value? "TRUE": "FALSE"); }
 
@@ -148,6 +157,7 @@ class entry
 {
 public:
     explicit entry(const std::string& dn): _M_dn(dn) { }
+    explicit entry(std::string&& dn): _M_dn(std::move(dn)) { }
 
    ~entry() { delete_mod(); }
 
@@ -165,17 +175,17 @@ public:
 
     ////////////////////
     entry(entry&& other):
-        _M_dn         (other._M_dn),
-        _M_attributes (other._M_attributes),
-        _M_mod        (other._M_mod)
+        _M_dn         (std::move(other._M_dn)),
+        _M_attributes (std::move(other._M_attributes)),
+        _M_mod        (std::move(other._M_mod))
     { other._M_mod= nullptr; }
 
     entry& operator=(entry&& other)
     {
-        _M_dn=         other._M_dn;
-        _M_attributes= other._M_attributes;
+        _M_dn=         std::move(other._M_dn);
+        _M_attributes= std::move(other._M_attributes);
         delete_mod();
-        _M_mod=        other._M_mod;
+        _M_mod=        std::move(other._M_mod);
         other._M_mod= nullptr;
         return *this;
     }
@@ -221,7 +231,7 @@ public:
 
     ////////////////////
     bool insert(const slap::attribute& x) { return _M_attributes.insert(x).second; }
-    bool insert(slap::attribute&& x) { return _M_attributes.insert(x).second; }
+    bool insert(slap::attribute&& x) { return _M_attributes.insert(std::move(x)).second; }
 
 private:
     std::string      _M_dn;
