@@ -56,6 +56,7 @@ public:
     std::string desc() const { return _M_desc; }
 
     opt::values& values() { return _M_values; }
+    const opt::values& values() const { return _M_values; }
 
     std::string value(size_t index=0) const { return _M_values.at(index); }
 
@@ -92,7 +93,7 @@ public:
     const option* find(const std::string& name) const
     {
         auto ri= _M_map.find(name);
-        return ( ri!=_M_map.end() && ri->second.values.size() )? &ri->second: nullptr;
+        return ( ri!=_M_map.end() && ri->second.values().size() )? &ri->second: nullptr;
     }
     int count(const std::string& name) const { return _M_map.count(name); }
 
