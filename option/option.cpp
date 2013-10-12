@@ -35,12 +35,12 @@ void options::parse(int argc, char* argv[], int& index)
         option* opt= &ri->second;
 
         int val;
-        if(opt->short_name)
+        if(opt->_M_abbr)
         {
-            val= opt->short_name;
-            short_opt+= opt->short_name;
+            val= opt->_M_abbr;
+            short_opt+= opt->_M_abbr;
 
-            switch(opt->arg)
+            switch(opt->_M_arg)
             {
                 case optional: short_opt+= ':';
                 case required: short_opt+= ':';
@@ -49,7 +49,7 @@ void options::parse(int argc, char* argv[], int& index)
         }
         else val= unique++;
 
-        if(!opt->name.empty()) long_opt.push_back({ opt->name.data(), opt->arg, nullptr, val });
+        if(!opt->_M_name.empty()) long_opt.push_back({ opt->_M_name.data(), opt->_M_arg, nullptr, val });
         tmp[val]= opt;
     }
     long_opt.push_back({0, 0, 0, 0});
@@ -76,9 +76,9 @@ void options::parse(int argc, char* argv[], int& index)
             option* opt= ri->second;
 
             std::string value;
-            if( (opt->arg==required || opt->arg==optional) && optarg ) value= optarg;
+            if( (opt->_M_arg==required || opt->_M_arg==optional) && optarg ) value= optarg;
 
-            opt->values.push_back(value);
+            opt->_M_values.push_back(value);
         }
     }
     catch(std::exception& e)
@@ -107,16 +107,16 @@ std::string options::usage()
         option& opt= ri.second;
 
         stream << setw(8) << right;
-        if(opt.short_name)
-            stream << std::string("-")+ opt.short_name+ (opt.name.size()? ", ": "  ");
+        if(opt._M_abbr)
+            stream << std::string("-")+ opt._M_abbr+ (opt._M_name.size()? ", ": "  ");
         else stream << ' ';
 
         stream << setw(20) << left;
-        if(opt.name.size())
-            stream << std::string("--")+ opt.name+ (opt.arg==opt::required? "=<arg>": opt.arg==opt::optional? "[=arg]": "");
+        if(opt._M_name.size())
+            stream << std::string("--")+ opt._M_name+ (opt._M_arg==opt::required? "=<arg>": opt._M_arg==opt::optional? "[=arg]": "");
         else stream << ' ';
 
-        if(opt.desc.size()) stream << opt.desc;
+        if(opt._M_desc.size()) stream << opt._M_desc;
         stream << std::endl;
     }
 

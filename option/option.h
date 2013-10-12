@@ -27,39 +27,52 @@ enum argument
     no, required, optional
 };
 
+typedef std::vector<std::string> values;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class option
 {
 public:
     option(const std::string& _m_name,
-        const char _m_short,
-        argument _m_arg= no,
-        const std::string& _m_desc= std::string()):
-    name(_m_name), short_name(_m_short), arg(_m_arg), desc(_m_desc) { }
+        const char abbr,
+        argument arg= no,
+        const std::string& desc= std::string()):
+    _M_name(_m_name), _M_abbr(abbr), _M_arg(arg), _M_desc(desc) { }
 
-    option(const std::string& _m_name,
-        argument _m_arg= no,
-        const std::string& _m_desc= std::string()):
-    name(_m_name), short_name(0), arg(_m_arg), desc(_m_desc) { }
+    option(const std::string& name,
+        argument arg= no,
+        const std::string& desc= std::string()):
+    _M_name(name), _M_abbr(0), _M_arg(arg), _M_desc(desc) { }
 
-    option(const char _m_short,
-        argument _m_arg= no,
-        const std::string& _m_desc= std::string()):
-    short_name(_m_short), arg(_m_arg), desc(_m_desc) { }
+    option(const char abbr,
+        argument arg= no,
+        const std::string& desc= std::string()):
+    _M_abbr(abbr), _M_arg(arg), _M_desc(desc) { }
 
     ////////////////////
-    std::string name;
-    char short_name;
-    argument arg;
+    std::string name() const { return _M_name; }
+    char abbr() const { return _M_abbr; }
+    opt::argument argument() const { return _M_arg; }
+    std::string desc() const { return _M_desc; }
 
-    std::string desc;
+    opt::values& values() { return _M_values; }
 
-    std::vector<std::string> values;
+    std::string value(size_t index=0) const { return _M_values.at(index); }
 
+    ////////////////////
     template<typename T>
-    T to(size_t index=0) const { return convert::to<T>(values.at(index)); }
+    T to(size_t index=0) const { return convert::to<T>(_M_values.at(index)); }
 
-    std::string name_or_short() const { return name.empty()? (std::string()+ short_name): name; }
+    std::string name_or_abbr() const { return _M_name.empty()? (std::string()+ _M_abbr): _M_name; }
+
+private:
+    std::string _M_name;
+    char _M_abbr;
+    opt::argument _M_arg;
+
+    std::string _M_desc;
+
+    opt::values _M_values;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -68,10 +81,6 @@ class options
 public:
     options() { }
     options(std::initializer_list<option> opts) { for(auto&& opt: opts) insert(opt); }
-
-    bool insert(const option& opt) { return _M_map.insert(std::make_pair(opt.name_or_short(), opt)).second; }
-    bool insert(option&& opt)      { return _M_map.insert(std::make_pair(opt.name_or_short(), opt)).second; }
-    bool erase(const std::string& name) { return _M_map.erase(name); }
 
     void parse(int argc, char* argv[], int& index);
 
@@ -99,6 +108,11 @@ public:
         }
         else return false;
     }
+
+    ////////////////////
+    bool insert(const option& opt) { return _M_map.insert(std::make_pair(opt.name_or_abbr(), opt)).second; }
+    bool insert(option&& opt)      { return _M_map.insert(std::make_pair(opt.name_or_abbr(), opt)).second; }
+    bool erase(const std::string& name) { return _M_map.erase(name); }
 
     std::string usage();
 
