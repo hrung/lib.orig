@@ -69,18 +69,19 @@ public:
 
     ////////////////////
     attribute(attribute&& other):
-        _M_name      (std::move(other._M_name)),
-        _M_operation (std::move(other._M_operation)),
-        _M_values    (std::move(other._M_values)),
-        _M_mod       (std::move(other._M_mod))
+        _M_name      (other._M_name),
+        _M_operation (other._M_operation),
+        _M_values    (other._M_values),
+        _M_mod       (other._M_mod)
     { other._M_mod= nullptr; }
 
     attribute& operator=(attribute&& other)
     {
-        _M_name=      std::move(other._M_name);
-        _M_operation= std::move(other._M_operation);
-        _M_values=    std::move(other._M_values);
-        _M_mod=       std::move(other._M_mod);
+        _M_name=      other._M_name;
+        _M_operation= other._M_operation;
+        _M_values=    other._M_values;
+        delete_mod();
+        _M_mod=       other._M_mod;
         other._M_mod= nullptr;
         return *this;
     }
@@ -89,13 +90,9 @@ public:
     std::string name() const { return _M_name; }
     slap::operation operation() const { return _M_operation; }
 
-    bool empty() const { return _M_values.empty(); }
-    size_t size() const { return _M_values.size(); }
+    slap::values& values() { return _M_values; }
 
-    const slap::values& values() const { return _M_values; }
-
-    const std::string& value(size_t index=0) const { return _M_values.at(index); }
-          std::string& value(size_t index=0)       { return _M_values.at(index); }
+    std::string value(size_t index=0) const { return _M_values.at(index); }
 
     ////////////////////
     template<typename T, typename std::enable_if< !std::is_same<T, bool>::value, int >::type=0>
@@ -172,16 +169,17 @@ public:
 
     ////////////////////
     entry(entry&& other):
-        _M_dn         (std::move(other._M_dn)),
-        _M_attributes (std::move(other._M_attributes)),
-        _M_mod        (std::move(other._M_mod))
+        _M_dn         (other._M_dn),
+        _M_attributes (other._M_attributes),
+        _M_mod        (other._M_mod)
     { other._M_mod= nullptr; }
 
     entry& operator=(entry&& other)
     {
-        _M_dn=         std::move(other._M_dn);
-        _M_attributes= std::move(other._M_attributes);
-        _M_mod=        std::move(other._M_mod);
+        _M_dn=         other._M_dn;
+        _M_attributes= other._M_attributes;
+        delete_mod();
+        _M_mod=        other._M_mod;
         other._M_mod= nullptr;
         return *this;
     }
@@ -189,30 +187,28 @@ public:
     ////////////////////
     std::string dn() const { return _M_dn; }
 
-    bool empty() const { return _M_attributes.empty(); }
-    size_t size() const { return _M_attributes.size(); }
+    slap::attributes& attributes() { return _M_attributes; }
 
-    int count(const std::string& name) const { return _M_attributes.count(slap::attribute(name)); }
+    int count(const std::string& name) const { return _M_attributes.count(attribute(name)); }
 
-    const slap::attributes& attributes() { return _M_attributes; }
-
-    const slap::attribute& attribute(const std::string& name) const
+    const attribute* find(const std::string& name) const
     {
-        if(count(name))
-            return *_M_attributes.find(slap::attribute(name));
-        else throw std::out_of_range("entry::attribute");
+        auto ri= _M_attributes.find(attribute(name));
+        return ri!=_M_attributes.end()? &*ri: nullptr;
     }
 
-    const std::string& value(const std::string& name, size_t index=0) const
+    std::string value(const std::string& name, size_t index=0) const
     {
-        return attribute(name).value(index);
+        if(auto ri= find(name))
+            return ri->value(index);
+        else throw std::out_of_range("entry::value");
     }
 
     ////////////////////
     template<typename T>
     T to(const std::string name, size_t index=0) const
     {
-        return _M_to<T>::func(this, name, index);
+        return _M_to<T>::func(*this, name, index);
     }
 
     ////////////////////
@@ -246,19 +242,21 @@ private:
     template<typename T>
     struct _M_to
     {
-        static T func(const slap::entry* e, const std::string name, size_t index=0)
+        static T func(const slap::entry& e, const std::string name, size_t index=0)
         {
-            return e->attribute(name).to<T>(index);
+            if(auto ri= e.find(name))
+                return ri->to<T>(index);
+            else throw std::out_of_range("entry::to");
         }
     };
 
     template<typename T>
     struct _M_to<optional<T>>
     {
-        static optional<T> func(const slap::entry* e, const std::string name, size_t index=0)
+        static optional<T> func(const slap::entry& e, const std::string name, size_t index=0)
         {
-            if(e->count(name))
-                return e->attribute(name).to<T>(index);
+            if(auto ri= e.find(name))
+                return ri->to<T>(index);
             else return optional<T>();
         }
     };
