@@ -96,16 +96,10 @@ public:
 
     ////////////////////
     template<typename T, typename std::enable_if< !std::is_same<T, bool>::value, int >::type=0>
-    T to(size_t index=0) const
-    {
-        return convert::to<T>(value(index));
-    }
+    T to(size_t index=0) const { return convert::to<T>(value(index)); }
 
     template<typename T, typename std::enable_if< std::is_same<T, bool>::value, int >::type=0>
-    T to(size_t index=0) const
-    {
-        return (value(index)=="TRUE")? true: false;
-    }
+    T to(size_t index=0) const { return (value(index)=="TRUE")? true: false; }
 
     ////////////////////
     template<typename T>
@@ -189,13 +183,12 @@ public:
 
     slap::attributes& attributes() { return _M_attributes; }
 
-    int count(const std::string& name) const { return _M_attributes.count(attribute(name)); }
-
     const attribute* find(const std::string& name) const
     {
         auto ri= _M_attributes.find(attribute(name));
         return ri!=_M_attributes.end()? &*ri: nullptr;
     }
+    int count(const std::string& name) const { return _M_attributes.count(attribute(name)); }
 
     std::string value(const std::string& name, size_t index=0) const
     {
