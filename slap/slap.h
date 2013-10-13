@@ -127,6 +127,7 @@ public:
     ////////////////////
     void insert(const std::string& value) { _M_values.push_back(value); }
     void insert(std::string&& value) { _M_values.push_back(std::move(value)); }
+    void insert(std::initializer_list<std::string> values) { _M_values.insert(_M_values.end(), values); }
 
     void insert(bool value) { _M_values.push_back(value? "TRUE": "FALSE"); }
 
@@ -158,6 +159,13 @@ class entry
 public:
     explicit entry(const std::string& dn): _M_dn(dn) { }
     explicit entry(std::string&& dn): _M_dn(std::move(dn)) { }
+
+    entry(const std::string& dn, std::initializer_list<attribute> attributes):
+        _M_dn(dn), _M_attributes(attributes)
+    { }
+    entry(std::string&& dn, std::initializer_list<attribute> attributes):
+        _M_dn(std::move(dn)), _M_attributes(attributes)
+    { }
 
    ~entry() { delete_mod(); }
 
@@ -230,8 +238,9 @@ public:
     }
 
     ////////////////////
-    bool insert(const slap::attribute& x) { return _M_attributes.insert(x).second; }
-    bool insert(slap::attribute&& x) { return _M_attributes.insert(std::move(x)).second; }
+    bool insert(const attribute& x) { return _M_attributes.insert(x).second; }
+    bool insert(attribute&& x) { return _M_attributes.insert(std::move(x)).second; }
+    void insert(std::initializer_list<attribute> x) { return _M_attributes.insert(x); }
 
 private:
     std::string      _M_dn;
