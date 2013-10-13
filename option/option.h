@@ -33,21 +33,26 @@ typedef std::vector<std::string> values;
 class option
 {
 public:
-    option(const std::string& _m_name,
-        const char abbr,
-        argument arg= no,
-        const std::string& desc= std::string()):
-    _M_name(_m_name), _M_abbr(abbr), _M_arg(arg), _M_desc(desc) { }
+    option(const std::string& name, const char abbr, opt::argument arg= no, const std::string& desc= std::string()):
+        _M_name(name), _M_abbr(abbr), _M_arg(arg), _M_desc(desc)
+    { }
+    option(std::string&& name, const char abbr, opt::argument arg= no, std::string&& desc= std::string()):
+        _M_name(std::move(name)), _M_abbr(abbr), _M_arg(arg), _M_desc(std::move(desc))
+    { }
 
-    option(const std::string& name,
-        argument arg= no,
-        const std::string& desc= std::string()):
-    _M_name(name), _M_abbr(0), _M_arg(arg), _M_desc(desc) { }
+    option(const std::string& name, opt::argument arg= no, const std::string& desc= std::string()):
+        _M_name(name), _M_abbr(0), _M_arg(arg), _M_desc(desc)
+    { }
+    option(std::string&& name, opt::argument arg= no, std::string&& desc= std::string()):
+        _M_name(std::move(name)), _M_abbr(0), _M_arg(arg), _M_desc(std::move(desc))
+    { }
 
-    option(const char abbr,
-        argument arg= no,
-        const std::string& desc= std::string()):
-    _M_abbr(abbr), _M_arg(arg), _M_desc(desc) { }
+    option(const char abbr, opt::argument arg= no, const std::string& desc= std::string()):
+        _M_abbr(abbr), _M_arg(arg), _M_desc(desc)
+    { }
+    option(const char abbr, opt::argument arg= no, std::string&& desc= std::string()):
+        _M_abbr(abbr), _M_arg(arg), _M_desc(std::move(desc))
+    { }
 
     ////////////////////
     std::string name() const { return _M_name; }
@@ -63,8 +68,6 @@ public:
     ////////////////////
     template<typename T>
     T to(size_t index=0) const { return convert::to<T>(_M_values.at(index)); }
-
-    std::string name_or_abbr() const { return _M_name.empty()? (std::string()+ _M_abbr): _M_name; }
 
 private:
     std::string _M_name;
@@ -111,14 +114,21 @@ public:
     }
 
     ////////////////////
-    bool insert(const option& opt) { return _M_map.insert(std::make_pair(opt.name_or_abbr(), opt)).second; }
-    bool insert(option&& opt)      { return _M_map.insert(std::make_pair(opt.name_or_abbr(), opt)).second; }
+    bool insert(const option& opt) { return _M_map.insert(std::make_pair(name(opt), opt)).second; }
+    bool insert(option&& opt)      { return _M_map.insert(std::make_pair(name(opt), std::move(opt))).second; }
     bool erase(const std::string& name) { return _M_map.erase(name); }
 
     std::string usage();
 
 private:
     std::map<std::string, option> _M_map;
+
+    static std::string name(const option& opt)
+    {
+        return opt.name().empty()?
+            std::string()+ opt.abbr():
+        opt.name();
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
