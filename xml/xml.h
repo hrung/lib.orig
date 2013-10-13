@@ -171,6 +171,9 @@ public:
     xml::tag& tag() { return _M_tag; }
     const xml::tag& tag() const { return _M_tag; }
 
+    xml::elements& children() { return _M_children; }
+    const xml::elements& children() const { return _M_children; }
+
     bool empty() const { return _M_tag.empty() && _M_children.empty() && _M_value.empty(); }
     bool complex() const { return !_M_children.empty(); }
 
