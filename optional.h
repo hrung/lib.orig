@@ -84,11 +84,6 @@ struct optional
     }
 
     ////////////////////
-    const T& value() const { return _M_value; }
-    T& value() { return _M_value; }
-
-    operator const value_type&() const { return value(); }
-
     const value_type* operator->() const { return &_M_value; }
     value_type* operator->() { return &_M_value; }
 
@@ -118,6 +113,13 @@ inline bool operator==(const optional<T>& x, const optional<T>& y)
 
 template<typename T>
 inline bool operator!=(const optional<T>& x, const optional<T>& y) { return !(x==y); }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+template<typename T> inline bool operator==(const optional<T>& x, const T& y) { return x==optional<T>(y); }
+template<typename T> inline bool operator==(const T& x, const optional<T>& y) { return optional<T>(x)==y; }
+
+template<typename T> inline bool operator!=(const T& x, const optional<T>& y) { return optional<T>(x)!=y; }
+template<typename T> inline bool operator!=(const optional<T>& x, const T& y) { return x!=optional<T>(y); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #endif // OPTIONAL_H
