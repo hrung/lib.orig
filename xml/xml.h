@@ -210,16 +210,6 @@ public:
 
     ////////////////////
     std::string write(bool nice= false) const { return _M_write(nice, 0); }
-    void parse(const std::string& source)
-    {
-        std::string copy= source;
-        _M_parse(copy);
-    }
-    void parse(std::string&& source)
-    {
-        std::string copy= std::move(source);
-        _M_parse(copy);
-    }
 
 private:
     xml::tag _M_tag;
@@ -229,13 +219,18 @@ private:
 
     std::string _M_write(bool nice= false, int ix=0) const;
     void _M_parse(std::string& source);
+
+    friend element parse(const std::string& source);
+    friend element parse(std::string&& source);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline element parse(const std::string& source)
 {
     element e;
-    e.parse(source);
+    std::string copy= source;
+
+    e._M_parse(copy);
     return e;
 }
 
@@ -243,7 +238,9 @@ inline element parse(const std::string& source)
 inline element parse(std::string&& source)
 {
     element e;
-    e.parse(std::move(source));
+    std::string move= std::move(source);
+
+    e._M_parse(move);
     return e;
 }
 
