@@ -34,8 +34,8 @@ void attribute::create_mod() const
     _M_mod->mod_values= nullptr;
 
     // set mod_type
-    int n= _M_name.size()+1;
-    _M_mod->mod_type= new char[n];
+    int n= _M_name.size();
+    _M_mod->mod_type= new char[n+1];
     _M_name.copy(_M_mod->mod_type, n);
     _M_mod->mod_type[n]= 0;
 
@@ -46,8 +46,8 @@ void attribute::create_mod() const
 
     for(const std::string& value: _M_values)
     {
-        n= value.size()+1;
-        *val= new char[n];
+        n= value.size();
+        *val= new char[n+1];
         value.copy(*val, n); (*val)[n]=0;
         ++val;
     }
