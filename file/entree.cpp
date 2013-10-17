@@ -26,11 +26,11 @@ entrees entree::get(const std::string& path, const filter f, const compare c)
     dirent** names= nullptr;
 
     int n= scandir(path.data(), &names,
-        [] (const dirent* e) -> int { return _M_filter({ e->d_name, (enum type)e->d_type, e->d_ino }); },
+        [] (const dirent* e) -> int { return _M_filter({ e->d_name, static_cast<enum type>(e->d_type), e->d_ino }); },
         [] (const dirent** e1, const dirent** e2) -> int
         {
-            return _M_compare( { (*e1)->d_name, (enum type)(*e1)->d_type, (*e1)->d_ino },
-                               { (*e2)->d_name, (enum type)(*e2)->d_type, (*e2)->d_ino } );
+            return _M_compare( { (*e1)->d_name, static_cast<enum type>((*e1)->d_type), (*e1)->d_ino },
+                               { (*e2)->d_name, static_cast<enum type>((*e2)->d_type), (*e2)->d_ino } );
         }
     );
     if(n>=0)
@@ -39,7 +39,7 @@ entrees entree::get(const std::string& path, const filter f, const compare c)
 
         for(dirent** name= names; n; ++name, --n)
         {
-            entries.push_back({ (*name)->d_name, (enum type)(*name)->d_type, (*name)->d_ino });
+            entries.push_back({ (*name)->d_name, static_cast<enum type>((*name)->d_type), (*name)->d_ino });
             free(*name);
         }
 

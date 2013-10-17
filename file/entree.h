@@ -3,6 +3,8 @@
 #define ENTREE_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+#include "file.h"
+
 #include <functional>
 #include <vector>
 #include <string>
@@ -25,20 +27,23 @@ extern const compare compare_version;
 extern const compare compare_alpha;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+enum class type
+{
+    block=   DT_BLK,
+    chr=     DT_CHR,
+    dir=     DT_DIR,
+    fifo=    DT_FIFO,
+    link=    DT_LNK,
+    file=    DT_REG,
+    sock=    DT_SOCK,
+    unknown= DT_UNKNOWN
+};
+
+inline enum type type(const std::string& name) { return static_cast<enum type>((mode(name) & S_IFMT) >> 12); }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 struct entree
 {
-    enum class type
-    {
-        block=   DT_BLK,
-        chr=     DT_CHR,
-        dir=     DT_DIR,
-        fifo=    DT_FIFO,
-        link=    DT_LNK,
-        file=    DT_REG,
-        sock=    DT_SOCK,
-        unknown= DT_UNKNOWN
-    };
-
     static entrees get(const std::string& path, const filter f= filter_all, const compare c= compare_version);
 
     std::string name;
