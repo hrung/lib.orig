@@ -15,55 +15,62 @@ class flags
 {
 public:
     constexpr flags(): _M_value(0) { }
-    constexpr flags(Enum x): _M_value(int(x)) { }
     constexpr flags(const flags& x): _M_value(x._M_value) { }
+    constexpr flags(Enum x): _M_value(int(x)) { }
 
     ////////////////////
-    bool contains(Enum x) const { return (_M_value & int(x)) == int(x) && (int(x) || !_M_value); }
-    bool empty() const { return _M_value; }
+    constexpr bool contains(flags x) const { return (_M_value & x._M_value) == x._M_value && (x._M_value || !_M_value); }
+    constexpr bool contains(Enum x)  const { return contains(flags(x)); }
+
+    constexpr bool empty() const { return _M_value; }
     void clear() { _M_value=0; }
 
     constexpr operator int() const { return _M_value; }
 
     ////////////////////
-    constexpr flags operator&(Enum x)  const { return Enum(_M_value & int(x)); }
-    constexpr flags operator&(flags x) const { return Enum(_M_value & int(x)); }
+    constexpr flags operator&(flags x) const { return flags(_M_value & x._M_value); }
+    constexpr flags operator|(flags x) const { return flags(_M_value | x._M_value); }
+    constexpr flags operator^(flags x) const { return flags(_M_value ^ x._M_value); }
 
-    constexpr flags operator|(Enum x)  const { return Enum(_M_value | int(x)); }
-    constexpr flags operator|(flags x) const { return Enum(_M_value | int(x)); }
+    constexpr flags operator~()        const { return flags(~_M_value); }
 
-    constexpr flags operator^(Enum x)  const { return Enum(_M_value ^ int(x)); }
-    constexpr flags operator^(flags x) const { return Enum(_M_value ^ int(x)); }
-
-    constexpr flags operator~()        const { return Enum(~_M_value); }
+    constexpr bool operator==(flags x) const { return _M_value == x._M_value; }
+    constexpr bool operator!=(flags x) const { return _M_value != x._M_value; }
 
     ////////////////////
-    flags& operator=(Enum x)   { _M_value = int(x);     return *this; }
-    flags& operator=(flags x)  { _M_value = x._M_value; return *this; }
-
-    flags& operator&=(Enum x)  { _M_value&= int(x);     return *this; }
-    flags& operator&=(flags x) { _M_value&= x._M_value; return *this; }
-    flags& operator&=(int x)   { _M_value&= x;          return *this; }
-
-    flags& operator|=(Enum x)  { _M_value|= int(x);     return *this; }
-    flags& operator|=(flags x) { _M_value|= x._M_value; return *this; }
-
-    flags& operator^=(Enum x)  { _M_value^= int(x);     return *this; }
-    flags& operator^=(flags x) { _M_value^= x._M_value; return *this; }
+    flags& operator =(flags x) { _M_value = x._M_value; return (*this); }
+    flags& operator =(Enum y)  { return (*this) = flags(y); }
+    flags& operator&=(flags x) { _M_value&= x._M_value; return (*this); }
+    flags& operator&=(Enum y)  { return (*this)&= flags(y); }
+    flags& operator|=(flags x) { _M_value|= x._M_value; return (*this); }
+    flags& operator|=(Enum y)  { return (*this)|= flags(y); }
+    flags& operator^=(flags x) { _M_value^= x._M_value; return (*this); }
+    flags& operator^=(Enum y)  { return (*this)^= flags(y); }
 
 private:
     int _M_value;
+
+    constexpr explicit flags(int x): _M_value(x) { }
 };
 
 #define ENUM_FLAGS(Enum) \
     typedef flags<Enum> Enum##_flags; \
+    constexpr Enum##_flags operator&(Enum##_flags x, Enum y) { return x & Enum##_flags(y); } \
     constexpr Enum##_flags operator&(Enum x, Enum##_flags y) { return y & x; } \
-    constexpr Enum##_flags operator&(Enum x, Enum y)       { return Enum##_flags(x) & y; } \
+    constexpr Enum##_flags operator&(Enum x, Enum y)         { return Enum##_flags(x) & y; } \
+    constexpr Enum##_flags operator|(Enum##_flags x, Enum y) { return x | Enum##_flags(y); } \
     constexpr Enum##_flags operator|(Enum x, Enum##_flags y) { return y | x; } \
-    constexpr Enum##_flags operator|(Enum x, Enum y)       { return Enum##_flags(x) | y; } \
+    constexpr Enum##_flags operator|(Enum x, Enum y)         { return Enum##_flags(x) | y; } \
+    constexpr Enum##_flags operator^(Enum##_flags x, Enum y) { return x ^ Enum##_flags(x); } \
     constexpr Enum##_flags operator^(Enum x, Enum##_flags y) { return y ^ x; } \
-    constexpr Enum##_flags operator^(Enum x, Enum y)       { return Enum##_flags(x) ^ y; } \
-    constexpr Enum##_flags operator~(Enum x) { return ~Enum##_flags(x); }
+    constexpr Enum##_flags operator^(Enum x, Enum y)         { return Enum##_flags(x) ^ y; } \
+    constexpr Enum##_flags operator~(Enum x) { return ~Enum##_flags(x); } \
+    constexpr bool operator==(Enum##_flags x, Enum y) { return x == Enum##_flags(y); } \
+    constexpr bool operator==(Enum x, Enum##_flags y) { return y == x; } \
+    constexpr bool operator==(Enum x, Enum y)         { return Enum##_flags(x) == y; } \
+    constexpr bool operator!=(Enum##_flags x, Enum y) { return x != Enum##_flags(y); } \
+    constexpr bool operator!=(Enum x, Enum##_flags y) { return y != x; } \
+    constexpr bool operator!=(Enum x, Enum y)         { return Enum##_flags(x) != y; } \
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #endif // FLAGS_H
