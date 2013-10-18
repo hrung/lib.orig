@@ -8,17 +8,17 @@ namespace file
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-const filter filter_all= [] (const entree&) -> bool
+filter filter_all= [] (const entree&) -> bool
     { return true; };
 
-const compare compare_version= [] (const entree& e1, const entree& e2) -> int
+compare compare_version= [] (const entree& e1, const entree& e2) -> int
     { return strverscmp(e1.name.data(), e2.name.data()); };
 
-const compare compare_alpha= [] (const entree& e1, const entree& e2) -> int
+compare compare_alpha= [] (const entree& e1, const entree& e2) -> int
     { return strcoll(e1.name.data(), e2.name.data()); };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-entrees entree::get(const std::string& path, const filter f, const compare c)
+entrees entree::get(const std::string& path, const filter& f, const compare& c)
 {
     static filter _M_filter= f;
     static compare _M_compare= c;

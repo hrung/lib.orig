@@ -22,9 +22,9 @@ typedef std::function<bool(const entree&)> filter;
 typedef std::function<int(const entree&, const entree&)> compare;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-extern const filter filter_all;
-extern const compare compare_version;
-extern const compare compare_alpha;
+extern filter filter_all;
+extern compare compare_version;
+extern compare compare_alpha;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum class type
@@ -44,7 +44,7 @@ inline enum type type(const std::string& name) { return static_cast<enum type>((
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct entree
 {
-    static entrees get(const std::string& path, const filter f= filter_all, const compare c= compare_version);
+    static entrees get(const std::string& path, const filter& f= filter_all, const compare& c= compare_version);
 
     std::string name;
     enum type type;
