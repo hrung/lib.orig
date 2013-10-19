@@ -18,13 +18,13 @@ namespace file
 struct entree;
 typedef std::vector<entree> entrees;
 
-typedef std::function<bool(const entree&)> filter;
-typedef std::function<int(const entree&, const entree&)> compare;
+typedef std::function<bool(const entree&)> filter_func;
+typedef std::function<int(const entree&, const entree&)> compare_func;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-extern filter filter_all;
-extern compare compare_version;
-extern compare compare_alpha;
+extern const filter_func filter_all;
+extern const compare_func compare_version;
+extern const compare_func compare_alpha;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum class type
@@ -44,7 +44,7 @@ inline enum type type(const std::string& name) { return static_cast<enum type>((
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct entree
 {
-    static entrees get(const std::string& path, const filter& f= filter_all, const compare& c= compare_version);
+    static entrees get(const std::string& path, const filter_func& filter= filter_all, const compare_func& compare= compare_version);
 
     std::string name;
     enum type type;

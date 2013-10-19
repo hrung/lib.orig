@@ -8,22 +8,24 @@ namespace file
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-filter filter_all= [] (const entree&) -> bool
+const filter_func filter_all= [] (const entree&) -> bool
     { return true; };
 
-compare compare_version= [] (const entree& e1, const entree& e2) -> int
+const compare_func compare_version= [] (const entree& e1, const entree& e2) -> int
     { return strverscmp(e1.name.data(), e2.name.data()); };
 
-compare compare_alpha= [] (const entree& e1, const entree& e2) -> int
+const compare_func compare_alpha= [] (const entree& e1, const entree& e2) -> int
     { return strcoll(e1.name.data(), e2.name.data()); };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-entrees entree::get(const std::string& path, const filter& f, const compare& c)
+entrees entree::get(const std::string& path, const filter_func& filter, const compare_func& compare)
 {
-    static filter _M_filter= f;
-    static compare _M_compare= c;
+    static filter_func _M_filter;
+    static compare_func _M_compare;
 
     dirent** names= nullptr;
+    _M_filter= filter;
+    _M_compare= compare;
 
     int n= scandir(path.data(), &names,
         [] (const dirent* e) -> int { return _M_filter({ e->d_name, static_cast<enum type>(e->d_type), e->d_ino }); },
