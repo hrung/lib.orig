@@ -45,15 +45,15 @@
 ****************************************************************************/
 
 /*!
-    \class QtTelnet
-    \brief The QtTelnet class proveds an API to connect to Telnet servers,
+    \class QTelnet
+    \brief The QTelnet class proveds an API to connect to Telnet servers,
     issue commands and receive replies.
 
-    When a QtTelnet object has been created, you need to call
+    When a QTelnet object has been created, you need to call
     connectToHost() to establish a connection with a Telnet server.
     When the connection is established the connected() signal is
     emitted. At this point you should call login(). The
-    QtTelnet object will emit connectionError() if the connection
+    QTelnet object will emit connectionError() if the connection
     fails, and authenticationFailed() if the login() failed.
 
     Once the connection has been successfully established and
@@ -63,11 +63,11 @@
     close().
 
     You can use your own socket if you call setSocket() before
-    connecting. The socket used by QtTelnet is available from
+    connecting. The socket used by QTelnet is available from
     socket().
 */
 
-#include "qttelnet.h"
+#include "qtelnet.h"
 #include <QtNetwork/QTcpSocket>
 #include <QtCore/QList>
 #include <QtCore/QMap>
@@ -86,19 +86,19 @@
 #  include <netinet/in.h>
 #endif
 
-// #define QTTELNET_DEBUG
+// #define QTELNET_DEBUG
 
-#ifdef QTTELNET_DEBUG
+#ifdef QTELNET_DEBUG
 #include <QtCore/QDebug>
 #endif
 
-class QtTelnetAuth
+class QTelnetAuth
 {
 public:
     enum State { AuthIntermediate, AuthSuccess, AuthFailure };
 
-    QtTelnetAuth(char code) : st(AuthIntermediate), cd(code) {}
-    virtual ~QtTelnetAuth() {}
+    QTelnetAuth(char code) : st(AuthIntermediate), cd(code) {}
+    virtual ~QTelnetAuth() {}
 
     int code() const { return cd; }
     State state() const { return st; }
@@ -111,10 +111,10 @@ private:
     int   cd;
 };
 
-class QtTelnetReceiveBuffer
+class QTelnetReceiveBuffer
 {
 public:
-    QtTelnetReceiveBuffer() : bytesAvailable(0) {}
+    QTelnetReceiveBuffer() : bytesAvailable(0) {}
     void append(const QByteArray &data) { buffers.append(data); }
     void push_back(const QByteArray &data) { buffers.prepend(data); }
     long size() const { return bytesAvailable; }
@@ -179,7 +179,7 @@ namespace Common // RFC854
     const char Environment = 39; // RFC1572, should be implemented
     const char Encrypt = 38; // RFC2946, not implemented
 
-#ifdef QTTELNET_DEBUG
+#ifdef QTELNET_DEBUG
     QString typeStr(char op)
     {
         QString str;
@@ -309,7 +309,7 @@ namespace Auth // RFC1416
         SRA_REJECT = 5
     };
 
-#ifdef QTTELNET_DEBUG
+#ifdef QTELNET_DEBUG
     QString authStr(int op)
     {
         QString str;
@@ -470,15 +470,15 @@ namespace LineMode // RFC1184
     };
 }
 
-class QtTelnetAuthNull : public QtTelnetAuth
+class QTelnetAuthNull : public QTelnetAuth
 {
 public:
-    QtTelnetAuthNull() : QtTelnetAuth(0) {}
+    QTelnetAuthNull() : QTelnetAuth(0) {}
 
     QByteArray authStep(const QByteArray &data);
 };
 
-QByteArray QtTelnetAuthNull::authStep(const QByteArray &data)
+QByteArray QTelnetAuthNull::authStep(const QByteArray &data)
 {
     Q_ASSERT(data[0] == Common::Authentication);
 
@@ -492,19 +492,19 @@ QByteArray QtTelnetAuthNull::authStep(const QByteArray &data)
     return QByteArray(buf, sizeof(buf));
 }
 
-class QtTelnetPrivate : public QObject
+class QTelnetPrivate : public QObject
 {
     Q_OBJECT
 public:
-    QtTelnetPrivate(QtTelnet *parent);
-    ~QtTelnetPrivate();
+    QTelnetPrivate(QTelnet *parent);
+    ~QTelnetPrivate();
 
     QMap<char, bool> modes;
     QList< QPair<char, char> > osent;
 
-    QtTelnet *q;
+    QTelnet *q;
     QTcpSocket *socket;
-    QtTelnetReceiveBuffer buffer;
+    QTelnetReceiveBuffer buffer;
     QSocketNotifier *notifier;
 
     QSize windowSize;
@@ -512,8 +512,8 @@ public:
     bool connected, nocheckp;
     bool triedlogin, triedpass, firsttry;
 
-    QMap<int, QtTelnetAuth*> auths;
-    QtTelnetAuth *curauth;
+    QMap<int, QTelnetAuth*> auths;
+    QTelnetAuth *curauth;
     bool nullauth;
 
     QRegExp loginp, passp, promptp;
@@ -553,7 +553,7 @@ public slots:
     void socketException(int);
 };
 
-QtTelnetPrivate::QtTelnetPrivate(QtTelnet *parent)
+QTelnetPrivate::QTelnetPrivate(QTelnet *parent)
     : q(parent), socket(0), notifier(0),
       connected(false), nocheckp(false),
       triedlogin(false), triedpass(false), firsttry(true),
@@ -563,14 +563,14 @@ QtTelnetPrivate::QtTelnetPrivate(QtTelnet *parent)
     setSocket(new QTcpSocket(this));
 }
 
-QtTelnetPrivate::~QtTelnetPrivate()
+QTelnetPrivate::~QTelnetPrivate()
 {
     delete socket;
     delete notifier;
     delete curauth;
 }
 
-void QtTelnetPrivate::setSocket(QTcpSocket *s)
+void QTelnetPrivate::setSocket(QTcpSocket *s)
 {
     if (socket) {
         q->logout();
@@ -590,7 +590,7 @@ void QtTelnetPrivate::setSocket(QTcpSocket *s)
 /*
    Returns the opposite value of the one we pass in.
 */
-char QtTelnetPrivate::opposite(char operation, bool positive)
+char QTelnetPrivate::opposite(char operation, bool positive)
 {
     if (operation == Common::DO)
         return (positive ? Common::WILL : Common::WONT);
@@ -603,7 +603,7 @@ char QtTelnetPrivate::opposite(char operation, bool positive)
     return 0;
 }
 
-void QtTelnetPrivate::consume()
+void QTelnetPrivate::consume()
 {
     const QByteArray data = buffer.readAll();
     int currpos = 0;
@@ -622,18 +622,18 @@ void QtTelnetPrivate::consume()
         buffer.push_back(data.mid(currpos));
 }
 
-bool QtTelnetPrivate::isCommand(const char c)
+bool QTelnetPrivate::isCommand(const char c)
 {
     return (c == Common::DM);
 }
 
-bool QtTelnetPrivate::isOperation(const char c)
+bool QTelnetPrivate::isOperation(const char c)
 {
     return (c == Common::WILL || c == Common::WONT
             || c == Common::DO ||c == Common::DONT);
 }
 
-QByteArray QtTelnetPrivate::getSubOption(const QByteArray &data)
+QByteArray QTelnetPrivate::getSubOption(const QByteArray &data)
 {
     Q_ASSERT(!data.isEmpty() && data[0] == Common::IAC);
 
@@ -648,12 +648,12 @@ QByteArray QtTelnetPrivate::getSubOption(const QByteArray &data)
     return QByteArray();
 }
 
-void QtTelnetPrivate::parseSubNAWS(const QByteArray &data)
+void QTelnetPrivate::parseSubNAWS(const QByteArray &data)
 {
     Q_UNUSED(data);
 }
 
-void QtTelnetPrivate::parseSubTT(const QByteArray &data)
+void QTelnetPrivate::parseSubTT(const QByteArray &data)
 {
     Q_ASSERT(!data.isEmpty() && data[0] == Common::TerminalType);
 
@@ -668,7 +668,7 @@ void QtTelnetPrivate::parseSubTT(const QByteArray &data)
     sendCommand(c2, sizeof(c2));
 }
 
-void QtTelnetPrivate::parseSubAuth(const QByteArray &data)
+void QTelnetPrivate::parseSubAuth(const QByteArray &data)
 {
     Q_ASSERT(data[0] == Common::Authentication);
 
@@ -684,7 +684,7 @@ void QtTelnetPrivate::parseSubAuth(const QByteArray &data)
             }
         }
         if (!curauth) {
-            curauth = new QtTelnetAuthNull;
+            curauth = new QTelnetAuthNull;
             nullauth = true;
             if (loginp.isEmpty() && passp.isEmpty()) {
                 // emit q->loginRequired();
@@ -697,9 +697,9 @@ void QtTelnetPrivate::parseSubAuth(const QByteArray &data)
         if (!a.isEmpty())
             sendCommand(a);
 
-        if (curauth->state() == QtTelnetAuth::AuthFailure)
+        if (curauth->state() == QTelnetAuth::AuthFailure)
             emit q->loginFailed();
-        else if (curauth->state() == QtTelnetAuth::AuthSuccess) {
+        else if (curauth->state() == QTelnetAuth::AuthSuccess) {
             if (loginp.isEmpty() && passp.isEmpty())
                 emit q->loggedIn();
             if (!nullauth)
@@ -711,7 +711,7 @@ void QtTelnetPrivate::parseSubAuth(const QByteArray &data)
 /*
   returns number of bytes consumed
 */
-int QtTelnetPrivate::parseIAC(const QByteArray &data)
+int QTelnetPrivate::parseIAC(const QByteArray &data)
 {
     if (data.isEmpty())
         return 0;
@@ -757,14 +757,14 @@ int QtTelnetPrivate::parseIAC(const QByteArray &data)
         parseSubNAWS(data);
         break;
     default:
-        qWarning("QtTelnetPrivate::parseIAC: unknown suboption %d",
+        qWarning("QTelnetPrivate::parseIAC: unknown suboption %d",
                  quint8(suboption.at(0)));
         break;
     }
     return suboption.size() + 4;
 }
 
-int QtTelnetPrivate::parsePlaintext(const QByteArray &data)
+int QTelnetPrivate::parsePlaintext(const QByteArray &data)
 {
     int consumed = 0;
     int length = data.indexOf('\0');
@@ -818,7 +818,7 @@ int QtTelnetPrivate::parsePlaintext(const QByteArray &data)
     return consumed;
 }
 
-bool QtTelnetPrivate::replyNeeded(char operation, char option)
+bool QTelnetPrivate::replyNeeded(char operation, char option)
 {
     if (operation == Common::DO || operation == Common::DONT) {
         // RFC854 requires that we don't acknowledge
@@ -831,7 +831,7 @@ bool QtTelnetPrivate::replyNeeded(char operation, char option)
     return true;
 }
 
-void QtTelnetPrivate::setMode(char operation, char option)
+void QTelnetPrivate::setMode(char operation, char option)
 {
     if (operation != Common::DO && operation != Common::DONT)
         return;
@@ -841,7 +841,7 @@ void QtTelnetPrivate::setMode(char operation, char option)
         sendWindowSize();
 }
 
-void QtTelnetPrivate::sendWindowSize()
+void QTelnetPrivate::sendWindowSize()
 {
     if (!modes[Common::NAWS])
         return;
@@ -856,12 +856,12 @@ void QtTelnetPrivate::sendWindowSize()
     sendCommand(c, sizeof(c));
 }
 
-void QtTelnetPrivate::addSent(char operation, char option)
+void QTelnetPrivate::addSent(char operation, char option)
 {
     osent.append(QPair<char, char>(operation, option));
 }
 
-bool QtTelnetPrivate::alreadySent(char operation, char option)
+bool QTelnetPrivate::alreadySent(char operation, char option)
 {
     QPair<char, char> value(operation, option);
     if (osent.contains(value)) {
@@ -871,7 +871,7 @@ bool QtTelnetPrivate::alreadySent(char operation, char option)
     return false;
 }
 
-void QtTelnetPrivate::sendString(const QString &str)
+void QTelnetPrivate::sendString(const QString &str)
 {
     if (!connected || str.length() == 0)
         return;
@@ -879,7 +879,7 @@ void QtTelnetPrivate::sendString(const QString &str)
     socket->write(str.toLocal8Bit());
 }
 
-void QtTelnetPrivate::sendCommand(const QByteArray &command)
+void QTelnetPrivate::sendCommand(const QByteArray &command)
 {
     if (!connected || command.isEmpty())
         return;
@@ -894,19 +894,19 @@ void QtTelnetPrivate::sendCommand(const QByteArray &command)
     socket->write(command);
 }
 
-void QtTelnetPrivate::sendCommand(const char operation, const char option)
+void QTelnetPrivate::sendCommand(const char operation, const char option)
 {
     const char c[3] = { Common::IAC, operation, option };
     sendCommand(c, 3);
 }
 
-void QtTelnetPrivate::sendCommand(const char *command, int length)
+void QTelnetPrivate::sendCommand(const char *command, int length)
 {
     QByteArray a(command, length);
     sendCommand(a);
 }
 
-bool QtTelnetPrivate::allowOption(int /*oper*/, int opt)
+bool QTelnetPrivate::allowOption(int /*oper*/, int opt)
 {
     if (opt == Common::Authentication ||
         opt == Common::SuppressGoAhead ||
@@ -920,7 +920,7 @@ bool QtTelnetPrivate::allowOption(int /*oper*/, int opt)
     return false;
 }
 
-void QtTelnetPrivate::sendOptions()
+void QTelnetPrivate::sendOptions()
 {
     sendCommand(Common::WILL, Common::Authentication);
     sendCommand(Common::DO, Common::SuppressGoAhead);
@@ -930,7 +930,7 @@ void QtTelnetPrivate::sendOptions()
         sendCommand(Common::WILL, Common::NAWS);
 }
 
-void QtTelnetPrivate::socketConnected()
+void QTelnetPrivate::socketConnected()
 {
     connected = true;
     delete notifier;
@@ -941,12 +941,12 @@ void QtTelnetPrivate::socketConnected()
     sendOptions();
 }
 
-void QtTelnetPrivate::socketException(int)
+void QTelnetPrivate::socketException(int)
 {
     // qDebug("out-of-band data received, should handle that here!");
 }
 
-void QtTelnetPrivate::socketConnectionClosed()
+void QTelnetPrivate::socketConnectionClosed()
 {
     delete notifier;
     notifier = 0;
@@ -954,19 +954,19 @@ void QtTelnetPrivate::socketConnectionClosed()
     emit q->loggedOut();
 }
 
-void QtTelnetPrivate::socketReadyRead()
+void QTelnetPrivate::socketReadyRead()
 {
     buffer.append(socket->readAll());
     consume();
 }
 
-void QtTelnetPrivate::socketError(QAbstractSocket::SocketError error)
+void QTelnetPrivate::socketError(QAbstractSocket::SocketError error)
 {
     emit q->connectionError(error);
 }
 
 /*!
-    \enum QtTelnet::Control
+    \enum QTelnet::Control
 
     This enum specifies control messages you can send to the Telnet server
     using sendControl().
@@ -1001,7 +1001,7 @@ void QtTelnetPrivate::socketError(QAbstractSocket::SocketError error)
 */
 
 /*!
-    Constructs a QtTelnet object.
+    Constructs a QTelnet object.
 
     You must call connectToHost() before calling any of the other
     member functions.
@@ -1010,24 +1010,24 @@ void QtTelnetPrivate::socketError(QAbstractSocket::SocketError error)
 
     \sa connectToHost()
 */
-QtTelnet::QtTelnet(QObject *parent)
-    : QObject(parent), d(new QtTelnetPrivate(this))
+QTelnet::QTelnet(QObject *parent)
+    : QObject(parent), d(new QTelnetPrivate(this))
 {
 }
 
 /*!
-    Destroys the QtTelnet object. This will also close
+    Destroys the QTelnet object. This will also close
     the connection to the server.
 
     \sa logout()
 */
-QtTelnet::~QtTelnet()
+QTelnet::~QTelnet()
 {
     delete d;
 }
 
 /*!
-    Calling this function will make the QtTelnet object attempt to
+    Calling this function will make the QTelnet object attempt to
     connect to a Telnet server specified by the given \a host and \a
     port.
 
@@ -1038,7 +1038,7 @@ QtTelnet::~QtTelnet()
 
     \sa close()
 */
-void QtTelnet::connectToHost(const QString &host, quint16 port)
+void QTelnet::connectToHost(const QString &host, quint16 port)
 {
     if (d->connected)
         return;
@@ -1050,7 +1050,7 @@ void QtTelnet::connectToHost(const QString &host, quint16 port)
 
     \sa connectToHost() login()
 */
-void QtTelnet::close()
+void QTelnet::close()
 {
     if (!d->connected)
         return;
@@ -1063,11 +1063,11 @@ void QtTelnet::close()
 
 /*!
     Sends the control message \a ctrl to the Telnet server the
-    QtTelnet object is connected to.
+    QTelnet object is connected to.
 
     \sa Control sendData() sendSync()
 */
-void QtTelnet::sendControl(Control ctrl)
+void QTelnet::sendControl(Control ctrl)
 {
     bool sendsync = false;
     char c;
@@ -1120,7 +1120,7 @@ void QtTelnet::sendControl(Control ctrl)
 
     \sa sendControl()
 */
-void QtTelnet::sendData(const QString &data)
+void QTelnet::sendData(const QString &data)
 {
     if (!d->connected)
         return;
@@ -1136,7 +1136,7 @@ void QtTelnet::sendData(const QString &data)
 
     \sa login() sendData() sendControl()
 */
-void QtTelnet::logout()
+void QTelnet::logout()
 {
     d->sendCommand(Common::DO, Common::Logout);
 }
@@ -1149,7 +1149,7 @@ void QtTelnet::logout()
 
     \sa isValidWindowSize()
 */
-void QtTelnet::setWindowSize(const QSize &size)
+void QTelnet::setWindowSize(const QSize &size)
 {
     setWindowSize(size.width(), size.height());
 }
@@ -1161,7 +1161,7 @@ void QtTelnet::setWindowSize(const QSize &size)
 
     \overload
 */
-void QtTelnet::setWindowSize(int width, int height)
+void QTelnet::setWindowSize(int width, int height)
 {
     bool wasvalid = isValidWindowSize();
 
@@ -1182,7 +1182,7 @@ void QtTelnet::setWindowSize(int width, int height)
 
     \sa isValidWindowSize()
 */
-QSize QtTelnet::windowSize() const
+QSize QTelnet::windowSize() const
 {
     return (d->modes[Common::NAWS] ? d->windowSize : QSize());
 }
@@ -1193,7 +1193,7 @@ QSize QtTelnet::windowSize() const
 
     \sa setWindowSize()
 */
-bool QtTelnet::isValidWindowSize() const
+bool QTelnet::isValidWindowSize() const
 {
     return windowSize().isValid();
 }
@@ -1209,7 +1209,7 @@ bool QtTelnet::isValidWindowSize() const
 
     \sa socket(), connectToHost(), logout()
 */
-void QtTelnet::setSocket(QTcpSocket *socket)
+void QTelnet::setSocket(QTcpSocket *socket)
 {
     d->setSocket(socket);
 }
@@ -1219,7 +1219,7 @@ void QtTelnet::setSocket(QTcpSocket *socket)
 
     \sa setSocket()
 */
-QTcpSocket *QtTelnet::socket() const
+QTcpSocket *QTelnet::socket() const
 {
     return d->socket;
 }
@@ -1232,7 +1232,7 @@ QTcpSocket *QtTelnet::socket() const
 
     \sa sendControl()
 */
-void QtTelnet::sendSync()
+void QTelnet::sendSync()
 {
     if (!d->connected)
         return;
@@ -1252,13 +1252,13 @@ void QtTelnet::sendSync()
 
     \sa login(), loggedIn()
 */
-void QtTelnet::setPromptPattern(const QRegExp &pattern)
+void QTelnet::setPromptPattern(const QRegExp &pattern)
 {
     d->promptp = pattern;
 }
 
 /*!
-    \fn void QtTelnet::setPromptString(const QString &pattern)
+    \fn void QTelnet::setPromptString(const QString &pattern)
 
     Sets the expected shell prompt to \a pattern.
 
@@ -1274,13 +1274,13 @@ void QtTelnet::setPromptPattern(const QRegExp &pattern)
 
     \sa login()
 */
-void QtTelnet::setLoginPattern(const QRegExp &pattern)
+void QTelnet::setLoginPattern(const QRegExp &pattern)
 {
     d->loginp = pattern;
 }
 
 /*!
-    \fn void QtTelnet::setLoginString(const QString &login)
+    \fn void QTelnet::setLoginString(const QString &login)
 
     Sets the expected login string to \a login.
 
@@ -1296,13 +1296,13 @@ void QtTelnet::setLoginPattern(const QRegExp &pattern)
 
     \sa login()
 */
-void QtTelnet::setPasswordPattern(const QRegExp &pattern)
+void QTelnet::setPasswordPattern(const QRegExp &pattern)
 {
     d->passp = pattern;
 }
 
 /*!
-    \fn void QtTelnet::setPasswordString(const QString &pattern)
+    \fn void QTelnet::setPasswordString(const QString &pattern)
 
     Sets the expected password prompt to \a pattern.
 
@@ -1315,7 +1315,7 @@ void QtTelnet::setPasswordPattern(const QRegExp &pattern)
 
     \sa setLoginPattern(), setPasswordPattern()
 */
-void QtTelnet::login(const QString &username, const QString &password)
+void QTelnet::login(const QString &username, const QString &password)
 {
     d->triedpass = d->triedlogin = false;
     d->login = username;
@@ -1323,9 +1323,9 @@ void QtTelnet::login(const QString &username, const QString &password)
 }
 
 /*!
-    \fn void QtTelnet::loginRequired()
+    \fn void QTelnet::loginRequired()
 
-    This signal is emitted when the QtTelnet class sees
+    This signal is emitted when the QTelnet class sees
     that the Telnet server expects authentication and you
     have not already called login().
 
@@ -1336,7 +1336,7 @@ void QtTelnet::login(const QString &username, const QString &password)
 */
 
 /*!
-    \fn void QtTelnet::loginFailed()
+    \fn void QTelnet::loginFailed()
 
     This signal is emitted when the login has failed.
     Do note that you might in certain cases see several
@@ -1349,7 +1349,7 @@ void QtTelnet::login(const QString &username, const QString &password)
 */
 
 /*!
-    \fn void QtTelnet::loggedOut()
+    \fn void QTelnet::loggedOut()
 
     This signal is emitted when you have called logout()
     and the Telnet server has actually logged you out.
@@ -1358,7 +1358,7 @@ void QtTelnet::login(const QString &username, const QString &password)
 */
 
 /*!
-    \fn void QtTelnet::loggedIn()
+    \fn void QTelnet::loggedIn()
 
     This signal is emitted when you have been logged in
     to the server as a result of the login() command
@@ -1371,7 +1371,7 @@ void QtTelnet::login(const QString &username, const QString &password)
 */
 
 /*!
-    \fn void QtTelnet::connectionError(QAbstractSocket::SocketError error)
+    \fn void QTelnet::connectionError(QAbstractSocket::SocketError error)
 
     This signal is emitted if the underlying socket
     implementation receives an error. The \a error
@@ -1380,13 +1380,13 @@ void QtTelnet::login(const QString &username, const QString &password)
 */
 
 /*!
-    \fn void QtTelnet::message(const QString &data)
+    \fn void QTelnet::message(const QString &data)
 
-    This signal is emitted when the QtTelnet object
+    This signal is emitted when the QTelnet object
     receives more \a data from the Telnet server.
 
     \sa sendData()
 */
 
-#include "qttelnet.moc"
+#include "qtelnet.moc"
 
