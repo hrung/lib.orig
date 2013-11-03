@@ -61,6 +61,20 @@ public:
         _M_name(std::move(name)), _M_operation(mod), _M_values(values)
     { }
 
+    attribute(const std::string& name, const std::string& value):
+        _M_name(name), _M_operation(operation::add), _M_values({ value })
+    { }
+    attribute(std::string&& name, std::string&& value):
+        _M_name(std::move(name)), _M_operation(operation::add), _M_values({ std::move(value) })
+    { }
+
+    attribute(const std::string& name, slap::operation mod, const std::string& value):
+        _M_name(name), _M_operation(mod), _M_values({ value })
+    { }
+    attribute(std::string&& name, slap::operation mod, std::string&& value):
+        _M_name(std::move(name)), _M_operation(mod), _M_values({ std::move(value) })
+    { }
+
    ~attribute() { delete_mod(); }
 
     ////////////////////
