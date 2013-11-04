@@ -47,6 +47,7 @@ public:
         _M_name(std::move(name)), _M_operation(mod)
     { }
 
+    ////////////////////
     attribute(const std::string& name, std::initializer_list<std::string> values):
         _M_name(name), _M_operation(operation::add), _M_values(values)
     { }
@@ -54,6 +55,7 @@ public:
         _M_name(std::move(name)), _M_operation(operation::add), _M_values(values)
     { }
 
+    ////////////////////
     attribute(const std::string& name, slap::operation mod, std::initializer_list<std::string> values):
         _M_name(name), _M_operation(mod), _M_values(values)
     { }
@@ -61,19 +63,29 @@ public:
         _M_name(std::move(name)), _M_operation(mod), _M_values(values)
     { }
 
-    attribute(const std::string& name, const std::string& value):
-        _M_name(name), _M_operation(operation::add), _M_values({ value })
-    { }
-    attribute(std::string&& name, std::string&& value):
-        _M_name(std::move(name)), _M_operation(operation::add), _M_values({ std::move(value) })
-    { }
+    ////////////////////
+    template<typename T>
+    attribute(const std::string& name, T&& value): _M_name(name), _M_operation(operation::add)
+    {
+        insert(std::forward(value));
+    }
+    template<typename T>
+    attribute(std::string&& name, T&& value): _M_name(std::move(name)), _M_operation(operation::add)
+    {
+        insert(std::forward(value));
+    }
 
-    attribute(const std::string& name, slap::operation mod, const std::string& value):
-        _M_name(name), _M_operation(mod), _M_values({ value })
-    { }
-    attribute(std::string&& name, slap::operation mod, std::string&& value):
-        _M_name(std::move(name)), _M_operation(mod), _M_values({ std::move(value) })
-    { }
+    ////////////////////
+    template<typename T>
+    attribute(const std::string& name, slap::operation mod, T&& value): _M_name(name), _M_operation(mod)
+    {
+        insert(std::forward(value));
+    }
+    template<typename T>
+    attribute(std::string&& name, slap::operation mod, T&& value): _M_name(std::move(name)), _M_operation(mod)
+    {
+        insert(std::forward(value));
+    }
 
    ~attribute() { delete_mod(); }
 
