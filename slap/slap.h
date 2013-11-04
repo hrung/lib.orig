@@ -67,24 +67,24 @@ public:
     template<typename T>
     attribute(const std::string& name, T&& value): _M_name(name), _M_operation(operation::add)
     {
-        insert(std::forward(value));
+        insert(std::forward<T>(value));
     }
     template<typename T>
     attribute(std::string&& name, T&& value): _M_name(std::move(name)), _M_operation(operation::add)
     {
-        insert(std::forward(value));
+        insert(std::forward<T>(value));
     }
 
     ////////////////////
     template<typename T>
     attribute(const std::string& name, slap::operation mod, T&& value): _M_name(name), _M_operation(mod)
     {
-        insert(std::forward(value));
+        insert(std::forward<T>(value));
     }
     template<typename T>
     attribute(std::string&& name, slap::operation mod, T&& value): _M_name(std::move(name)), _M_operation(mod)
     {
-        insert(std::forward(value));
+        insert(std::forward<T>(value));
     }
 
    ~attribute() { delete_mod(); }
