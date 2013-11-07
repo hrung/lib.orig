@@ -61,7 +61,7 @@ private:
     constexpr Enum##_flags operator|(Enum##_flags x, Enum y) { return x | Enum##_flags(y); } \
     constexpr Enum##_flags operator|(Enum x, Enum##_flags y) { return y | x; } \
     constexpr Enum##_flags operator|(Enum x, Enum y)         { return Enum##_flags(x) | y; } \
-    constexpr Enum##_flags operator^(Enum##_flags x, Enum y) { return x ^ Enum##_flags(x); } \
+    constexpr Enum##_flags operator^(Enum##_flags x, Enum y) { return x ^ Enum##_flags(y); } \
     constexpr Enum##_flags operator^(Enum x, Enum##_flags y) { return y ^ x; } \
     constexpr Enum##_flags operator^(Enum x, Enum y)         { return Enum##_flags(x) ^ y; } \
     constexpr Enum##_flags operator~(Enum x) { return ~Enum##_flags(x); } \
