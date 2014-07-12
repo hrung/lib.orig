@@ -53,8 +53,8 @@ private:
     constexpr explicit flags(int x): _M_value(x) { }
 };
 
-#define ENUM_FLAGS(Enum) \
-    typedef flags<Enum> Enum##_flags; \
+#define DECLARE_FLAGS_TYPE(Enum) typedef flags<Enum> Enum##_flags;
+#define DECLARE_FLAGS_OPERATOR(Enum) \
     constexpr Enum##_flags operator&(Enum##_flags x, Enum y) { return x & Enum##_flags(y); } \
     constexpr Enum##_flags operator&(Enum x, Enum##_flags y) { return y & x; } \
     constexpr Enum##_flags operator&(Enum x, Enum y)         { return Enum##_flags(x) & y; } \
@@ -71,6 +71,8 @@ private:
     constexpr bool operator!=(Enum##_flags x, Enum y) { return x != Enum##_flags(y); } \
     constexpr bool operator!=(Enum x, Enum##_flags y) { return y != x; } \
     constexpr bool operator!=(Enum x, Enum y)         { return Enum##_flags(x) != y; } \
+
+#define DECLARE_FLAGS(Enum) DECLARE_FLAGS_TYPE(Enum) DECLARE_FLAGS_OPERATOR(Enum)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #endif // FLAGS_H
