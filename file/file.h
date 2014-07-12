@@ -38,7 +38,7 @@ enum class open
     create=   O_CREAT,
     truncate= O_TRUNC
 };
-ENUM_FLAGS(open)
+DECLARE_FLAGS(open)
 
 enum class origin
 {
