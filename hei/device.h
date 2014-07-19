@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2009-2013 Dimitry Ishenko
+// Copyright (c) 2009-2014 Dimitry Ishenko
 // Distributed under the GNU GPL v2. For full terms please visit:
 // http://www.gnu.org/licenses/gpl.html
 //
@@ -11,8 +11,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "types.h"
-#include "hei_error.h"
-
 #include <string>
 
 #define HEIUNIX
@@ -43,8 +41,8 @@ public:
     hei::family family() const { return _M_family; }
     hei::module_type module_type() const { return _M_type; }
 
-    void read_data(data_type, unsigned address, unsigned count, void* buf);
-    void write_data(data_type, unsigned address, unsigned count, void* buf);
+    void read_data(data_type, unsigned address, unsigned count, void* buffer);
+    void write_data(data_type, unsigned address, unsigned count, void* buffer);
 
     bool read_input(unsigned offset, unsigned input);
 

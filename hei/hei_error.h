@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013 Dimitry Ishenko
+// Copyright (c) 2013-2014 Dimitry Ishenko
 // Distributed under the GNU GPL v2. For full terms please visit:
 // http://www.gnu.org/licenses/gpl.html
 //
@@ -10,8 +10,6 @@
 #define HEI_ERROR_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "except.h"
-
 #include <system_error>
 #include <hei.h>
 
@@ -150,35 +148,23 @@ namespace std
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-namespace except
-{
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-class hei_exception: public exception
+class hei_error: public std::system_error
 {
 public:
-    hei_exception(int error, const std::string& message= std::string()):
-        exception(message, std::error_code(error, hei::hei_category()))
+    hei_error(int code):
+        std::system_error(std::error_code(code, hei::hei_category()))
+    { }
+    hei_error(int code, const std::string& message):
+        std::system_error(std::error_code(code, hei::hei_category()), message)
     { }
 
-    hei_exception(hei::errc error, const std::string& message= std::string()):
-        exception(message, std::error_code(int(error), hei::hei_category()))
+    hei_error(hei::errc code):
+        std::system_error(std::error_code(static_cast<int>(code), hei::hei_category()))
     { }
-
-    hei_exception(const std::string& file, const std::string& func, int line, int error, const std::string& message= std::string()):
-        exception(file, func, line, message, std::error_code(error, hei::hei_category()))
-    { }
-
-    hei_exception(const std::string& file, const std::string& func, int line, hei::errc error, const std::string& message= std::string()):
-        exception(file, func, line, message, std::error_code(int(error), hei::hei_category()))
+    hei_error(hei::errc code, const std::string& message):
+        std::system_error(std::error_code(static_cast<int>(code), hei::hei_category()), message)
     { }
 };
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-#define hei_except(args...) except::hei_exception(__FILE__, __FUNCTION__, __LINE__, ##args)
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #endif // HEI_ERROR_H
