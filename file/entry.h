@@ -1,6 +1,13 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef ENTREE_H
-#define ENTREE_H
+// Copyright (c) 2013-2014 Dimitry Ishenko
+// Distributed under the GNU GPL v2. For full terms please visit:
+// http://www.gnu.org/licenses/gpl.html
+//
+// Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+#ifndef ENTRY_H
+#define ENTRY_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "file.h"
@@ -11,15 +18,15 @@
 #include <dirent.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-namespace file
+namespace storage
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct entree;
-typedef std::vector<entree> entrees;
+struct entry;
+typedef std::vector<entry> entries;
 
-typedef std::function<bool(const entree&)> filter_func;
-typedef std::function<int(const entree&, const entree&)> compare_func;
+typedef std::function<bool(const entry&)> filter_func;
+typedef std::function<int(const entry&, const entry&)> compare_func;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 extern const filter_func filter_all;
@@ -39,15 +46,16 @@ enum class type
     unknown= DT_UNKNOWN
 };
 
-inline enum type type(const std::string& name) { return static_cast<enum type>((mode(name) & S_IFMT) >> 12); }
+inline type get_type(const std::string& name) { return static_cast<type>((mode(name) & S_IFMT) >> 12); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct entree
+struct entry
 {
-    static entrees get(const std::string& path, const filter_func& filter= filter_all, const compare_func& compare= compare_version);
+    static entries get(const std::string& path, const filter_func& filter= filter_all,
+                                                const compare_func& compare= compare_version);
 
     std::string name;
-    enum type type;
+    storage::type type;
 
     ino_t inode;
 };
@@ -56,4 +64,4 @@ struct entree
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#endif // ENTREE_H
+#endif // ENTRY_H
