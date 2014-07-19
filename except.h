@@ -52,17 +52,21 @@ public:
 
     ~context() { _M_trace.pop_back(); }
 
+    const std::string& message() const { return _M_message; }
+
     static const context_trace& global_trace() { return _M_global; }
 
 private:
+    std::string _M_message;
     context_trace& _M_trace;
 
     static context_trace _M_global;
 };
 
-std::ostream& operator<<(std::ostream& stream, const context_trace& x)
+inline std::ostream& operator<<(std::ostream& stream, const context_trace& x)
 {
-    for(auto& ctx: x) stream << ctx << std::endl;
+    for(auto& ctx: x) stream << ctx.message() << std::endl;
+    return stream;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
