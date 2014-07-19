@@ -67,7 +67,7 @@ struct optional
     template<typename U>
     optional& operator=(const optional<U>& x)
     {
-        _M_value= x; _M_none= false;
+        _M_value= x._M_value; _M_none= false;
         return *this;
     }
 
@@ -78,7 +78,7 @@ struct optional
     template<typename U>
     optional& operator=(optional<U>&& x)
     {
-        _M_value= x; _M_none= false;
+        _M_value= std::move(x._M_value); _M_none= false;
         x= none;
         return *this;
     }
