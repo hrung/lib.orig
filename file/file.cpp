@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013 Dimitry Ishenko
+// Copyright (c) 2013-2014 Dimitry Ishenko
 // Distributed under the GNU GPL v2. For full terms please visit:
 // http://www.gnu.org/licenses/gpl.html
 //
@@ -7,7 +7,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "file.h"
-
+#include "except.h"
 #include <memory>
 
 #include <unistd.h>
@@ -18,12 +18,12 @@
 #include <limits.h> // PATH_MAX
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-namespace file
+namespace storage
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void file::open(const std::string& name, open_flags flags, perm p)
+void file::open(const std::string& name, open_flags flags, perm perm)
 {
     int mode= flags & ~open::read_write;
     if(flags.contains(open::read_write))
@@ -32,8 +32,8 @@ void file::open(const std::string& name, open_flags flags, perm p)
         mode|= O_WRONLY;
     else mode|= O_RDONLY;
 
-    _M_fd= ::open(name.data(), mode, p);
-    if(_M_fd == invalid_desc) throw system_except();
+    _M_fd= ::open(name.data(), mode, perm);
+    if(_M_fd == invalid_desc) throw error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -47,48 +47,42 @@ void file::close()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-ssize_t file::write(const std::string& value)
+ssize_t file::write(const void* buffer, size_t n)
 {
-    return write(value.data(), value.size());
+    ssize_t count= ::write(_M_fd, buffer, n);
+    if(count == -1) throw error();
+
+    return count;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-ssize_t file::write(const void* p, size_t n)
-{
-    ssize_t l= ::write(_M_fd, p, n);
-    if(l == -1) throw system_except();
-
-    return l;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-ssize_t file::read(std::string& value, size_t max, bool wait)
+ssize_t file::read(std::string& string, size_t max, bool wait)
 {
     std::unique_ptr<char[]> buffer(new char[max+1]);
-    ssize_t num= read(buffer.get(), max, wait);
-    buffer[num]=0;
+    ssize_t count= read(buffer.get(), max, wait);
+    buffer[count]=0;
 
-    value.assign(buffer.get(), num);
-    return num;
+    string.assign(buffer.get(), count);
+    return count;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-ssize_t file::read(void* pointer, size_t max, bool wait)
+ssize_t file::read(void* buffer, size_t max, bool wait)
 {
-    ssize_t num=0;
-    if(wait || can_read()) num= ::read(_M_fd, pointer, max);
+    ssize_t count=0;
+    if(wait || can_read()) count= ::read(_M_fd, buffer, max);
 
-    if(num == -1) throw system_except();
-    return num;
+    if(count == -1) throw error();
+    return count;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-off_t file::seek(off_t value, origin o)
+off_t file::seek(off_t value, storage::origin origin)
 {
-    off_t f= ::lseek(_M_fd, value, int(o));
-    if(f == -1) throw system_except();
+    off_t offset= ::lseek(_M_fd, value, int(origin));
+    if(offset == -1) throw error();
 
-    return f;
+    return offset;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -109,7 +103,7 @@ bool file::can_read(timeval* tv)
     FD_SET(_M_fd, &fds);
 
     int n= select(_M_fd+1, &fds, 0, 0, tv);
-    if(n == -1) throw system_except();
+    if(n == -1) throw error();
 
     return n;
 }
@@ -122,41 +116,22 @@ bool file::can_write(timeval* tv)
     FD_SET(_M_fd, &fds);
 
     int n= select(_M_fd+1, 0, &fds, 0, tv);
-    if(n == -1) throw system_except();
+    if(n == -1) throw error();
 
     return n;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-bool file::stat(struct stat& buf)
-{
-    return ::fstat(_M_fd, &buf)==0;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-mode_t file::mode()
-{
-    struct stat buf;
-    return stat(buf)? buf.st_mode: 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-void file::chown(uid_t uid, gid_t gid)
-{
-    if(fchown(_M_fd, uid, gid)) throw system_except();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void remove(const std::string& name)
 {
-    if( ::remove(name.data()) ) throw system_except();
+    if( ::remove(name.data()) ) throw error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void rename(const std::string& prev, const std::string& name)
 {
-    if(::rename(prev.data(), name.data())) throw system_except();
+    if(::rename(prev.data(), name.data())) throw error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -167,28 +142,28 @@ std::string real_path(const std::string& path)
 
     if(::realpath(path.data(), buffer.get()))
         real.assign(buffer.get());
-    else throw system_except();
+    else throw error();
 
     return real;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool stat(const std::string& name, struct stat& buf)
+bool stat(const std::string& name, struct stat& value)
 {
-    return ::stat(name.data(), &buf)==0;
+    return ::stat(name.data(), &value)==0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void chown(const std::string& name, uid_t uid, gid_t gid, bool deref)
 {
-    if( (deref? ::chown(name.data(), uid, gid): lchown(name.data(), uid, gid)) ) throw system_except();
+    if( (deref? ::chown(name.data(), uid, gid): lchown(name.data(), uid, gid)) ) throw error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 mode_t mode(const std::string& name)
 {
-    struct stat buf;
-    return stat(name, buf)? buf.st_mode: 0;
+    struct stat value;
+    return stat(name, value)? value.st_mode: 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

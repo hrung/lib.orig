@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013 Dimitry Ishenko
+// Copyright (c) 2013-2014 Dimitry Ishenko
 // Distributed under the GNU GPL v2. For full terms please visit:
 // http://www.gnu.org/licenses/gpl.html
 //
@@ -11,8 +11,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "flags.h"
-#include "except.h"
-
 #include <string>
 
 #include <sys/types.h>
@@ -20,7 +18,7 @@
 #include <fcntl.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-namespace file
+namespace storage
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -66,11 +64,12 @@ public:
     void close();
     bool is_open() const { return _M_fd != invalid_desc; }
 
-    ssize_t write(const std::string& value);
-    ssize_t write(const void* p, size_t n);
+    ssize_t write(const std::string& string)
+        { return write(string.data(), string.size()); }
+    ssize_t write(const void* buffer, size_t n);
 
-    ssize_t read(std::string& value, size_t max, bool wait= true);
-    ssize_t read(void* pointer, size_t max, bool wait= true);
+    ssize_t read(std::string& string, size_t max, bool wait= true);
+    ssize_t read(void* buffer, size_t max, bool wait= true);
 
     off_t seek(off_t value, origin = origin::start);
     off_t tell() { return seek(0, origin::current); }
@@ -81,23 +80,10 @@ public:
     bool can_write(int wait_usec=0) { timeval tv= {0, wait_usec}; return can_write((wait_usec<0)? 0: &tv); }
     bool can_write(timeval* tv);
 
-    desc fd() const { return _M_fd; }
+    storage::desc desc() const { return _M_fd; }
 
-    bool stat(struct stat&);
-    void chown(uid_t uid, gid_t gid);
-
-    bool is_file()   { return S_ISREG(mode()); }
-    bool is_dir()    { return S_ISDIR(mode()); }
-    bool is_char()   { return S_ISCHR(mode()); }
-    bool is_block()  { return S_ISBLK(mode()); }
-    bool is_fifo()   { return S_ISFIFO(mode()); }
-    bool is_link()   { return S_ISLNK(mode()); }
-    bool is_socket() { return S_ISSOCK(mode()); }
-
-private:
-    desc _M_fd= invalid_desc;
-
-    mode_t mode();
+protected:
+    storage::desc _M_fd= invalid_desc;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -110,13 +96,13 @@ bool stat(const std::string& name, struct stat&);
 void chown(const std::string& name, uid_t uid, gid_t gid, bool deref= true);
 
 mode_t mode(const std::string& name);
-inline bool exists(const std::string& name)    { return mode(name); }
-inline bool is_file(const std::string& name)   { return S_ISREG(mode(name)); }
-inline bool is_dir(const std::string& name)    { return S_ISDIR(mode(name)); }
-inline bool is_char(const std::string& name)   { return S_ISCHR(mode(name)); }
-inline bool is_block(const std::string& name)  { return S_ISBLK(mode(name)); }
-inline bool is_fifo(const std::string& name)   { return S_ISFIFO(mode(name)); }
-inline bool is_link(const std::string& name)   { return S_ISLNK(mode(name)); }
+inline bool exists   (const std::string& name) { return mode(name); }
+inline bool is_file  (const std::string& name) { return S_ISREG(mode(name)); }
+inline bool is_dir   (const std::string& name) { return S_ISDIR(mode(name)); }
+inline bool is_char  (const std::string& name) { return S_ISCHR(mode(name)); }
+inline bool is_block (const std::string& name) { return S_ISBLK(mode(name)); }
+inline bool is_fifo  (const std::string& name) { return S_ISFIFO(mode(name)); }
+inline bool is_link  (const std::string& name) { return S_ISLNK(mode(name)); }
 inline bool is_socket(const std::string& name) { return S_ISSOCK(mode(name)); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
