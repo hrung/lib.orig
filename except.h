@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013 Dimitry Ishenko
+// Copyright (c) 2013-2014 Dimitry Ishenko
 // Distributed under the GNU GPL v2. For full terms please visit:
 // http://www.gnu.org/licenses/gpl.html
 //
@@ -11,97 +11,58 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include <system_error>
-#include <stdexcept>
+#include <cerrno>
+
+#include <sstream>
+#include <vector>
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-namespace except
-{
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-class exception: public std::system_error
+class error: public std::system_error
 {
 public:
-    exception(const std::string& message, std::error_code code= std::error_code()):
-        std::system_error(code),
-        _M_message(message)
-    { }
-
-    exception(const std::string& file, const std::string& func, int line, const std::string& message, std::error_code code= std::error_code()):
-        std::system_error(code),
-        _M_message(message),
-        _M_file(file), _M_func(func), _M_line(line)
-    { }
-
-    std::string message() const { return _M_message; }
-    std::string file() const { return _M_file; }
-    std::string func() const { return _M_func; }
-    int line() const { return _M_line; }
-
-protected:
-    std::string _M_message;
-    std::string _M_file;
-    std::string _M_func;
-    int _M_line=0;
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-class critical_exception: public exception
-{
-public:
-    using exception::exception;
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-class not_exception: public exception
-{
-public:
-    using exception::exception;
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-class system_exception: public exception
-{
-public:
-    system_exception(const std::string& message= std::string()):
-        exception(message, std::error_code(errno, std::generic_category()))
-    { }
-
-    system_exception(const std::string& file, const std::string& func, int line, const std::string& message= std::string()):
-        exception(file, func, line, message, std::error_code(errno, std::generic_category()))
+    error(): std::system_error(std::error_code(errno, std::generic_category())) { }
+    error(const std::string& message):
+        std::system_error(std::error_code(errno, std::generic_category()), message)
     { }
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class user_exception: public exception
+class context;
+typedef std::vector<context> context_trace;
+
+class context
 {
 public:
-    user_exception(const std::string& message, const std::string& user_message):
-        exception(message),
-        _M_user_message(user_message)
-    { }
+    context(const std::string& name):
+        _M_trace(_M_global)
+    { _M_trace.push_back(name); }
 
-    user_exception(const std::string& file, const std::string& func, int line, const std::string& message, const std::string& user_message):
-        exception(file, func, line, message),
-        _M_user_message(user_message)
-    { }
+    context(std::string&& name):
+        _M_trace(_M_global)
+    { _M_trace.push_back(std::move(name)); }
 
-    std::string user_message() const { return _M_user_message; }
+    context(const std::string& name, context_trace& x):
+        _M_trace(x)
+    { _M_trace.push_back(name); }
 
-protected:
-    std::string _M_user_message;
+    context(std::string&& name, context_trace& x):
+        _M_trace(x)
+    { _M_trace.push_back(std::move(name)); }
+
+    ~context() { _M_trace.pop_back(); }
+
+    static const context_trace& global_trace() { return _M_global; }
+
+private:
+    context_trace& _M_trace;
+
+    static context_trace _M_global;
 };
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-#define except(args...)             except::exception         (__FILE__, __FUNCTION__, __LINE__, args)
-
-#define critical_except(args...)    except::critical_exception(__FILE__, __FUNCTION__, __LINE__, args)
-#define not_except(args...)         except::not_exception     (__FILE__, __FUNCTION__, __LINE__, args)
-
-#define system_except(args...)      except::system_exception  (__FILE__, __FUNCTION__, __LINE__, ##args)
-#define user_except(args...)        except::user_exception    (__FILE__, __FUNCTION__, __LINE__, args)
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
+std::ostream& operator<<(std::ostream& stream, const context_trace& x)
+{
+    for(auto& ctx: x) stream << ctx << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
