@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013 Dimitry Ishenko
+// Copyright (c) 2013-14 Dimitry Ishenko
 // Distributed under the GNU GPL v2. For full terms please visit:
 // http://www.gnu.org/licenses/gpl.html
 //
@@ -16,7 +16,7 @@ class flags
 public:
     constexpr flags(): _M_value(0) { }
     constexpr flags(const flags& x): _M_value(x._M_value) { }
-    constexpr flags(Enum x): _M_value(int(x)) { }
+    constexpr flags(Enum x): _M_value(static_cast<int>(x)) { }
 
     ////////////////////
     constexpr bool contains(flags x) const { return (_M_value & x._M_value) == x._M_value && (x._M_value || !_M_value); }
