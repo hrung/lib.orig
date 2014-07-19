@@ -12,6 +12,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <map>
+#include <cstring>
 
 #include <getopt.h>
 
@@ -23,6 +24,8 @@ namespace app
 void options::parse(int argc, char* argv[], int& index)
 {
     std::vector<struct ::option> long_opt;
+    std::vector<std::vector<char>> long_opt_name;
+
     std::string short_opt(":");
 
     int unique= 1000;
@@ -44,9 +47,16 @@ void options::parse(int argc, char* argv[], int& index)
         }
         else code= unique++;
 
-        if(option.longname().size()) long_opt.push_back({ option.longname().data(),
-            option.arg()==uncertain? optional_argument: option.arg()? required_argument: no_argument,
-        nullptr, code });
+        int length= option.longname().size();
+        if(length)
+        {
+            long_opt_name.push_back(std::vector<char>(length+1));
+            std::strcpy(long_opt_name.back().data(), option.longname().data());
+
+            long_opt.push_back({ long_opt_name.back().data(),
+                option.arg()==uncertain? optional_argument: option.arg()? required_argument: no_argument,
+            nullptr, code });
+        }
 
         map[code]= &option;
     }
