@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2009-2013 Dimitry Ishenko
+// Copyright (c) 2009-2014 Dimitry Ishenko
 // Distributed under the GNU GPL v2. For full terms please visit:
 // http://www.gnu.org/licenses/gpl.html
 //
@@ -17,7 +17,7 @@
 template<typename T>
 std::string& operator<<(std::string& stream, const T& value)
 {
-    stream+= convert::to(value);
+    stream+= convert::to<std::string>(value);
     return stream;
 }
 
@@ -25,7 +25,7 @@ std::string& operator<<(std::string& stream, const T& value)
 template<typename T>
 std::string operator<<(std::string&& stream, const T& value)
 {
-    stream+= convert::to(value);
+    stream+= convert::to<std::string>(value);
     return stream;
 }
 
