@@ -10,7 +10,7 @@
 #define HEI_ERROR_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include <system_error>
+#include "except.h"
 #include <hei.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -148,21 +148,21 @@ namespace std
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class hei_error: public std::system_error
+class hei_error: public system_error
 {
 public:
     hei_error(int code):
-        std::system_error(std::error_code(code, hei::hei_category()))
+        system_error(std::error_code(code, hei::hei_category()))
     { }
     hei_error(int code, const std::string& message):
-        std::system_error(std::error_code(code, hei::hei_category()), message)
+        system_error(std::error_code(code, hei::hei_category()), message)
     { }
 
     hei_error(hei::errc code):
-        std::system_error(std::error_code(static_cast<int>(code), hei::hei_category()))
+        system_error(std::error_code(static_cast<int>(code), hei::hei_category()))
     { }
     hei_error(hei::errc code, const std::string& message):
-        std::system_error(std::error_code(static_cast<int>(code), hei::hei_category()), message)
+        system_error(std::error_code(static_cast<int>(code), hei::hei_category()), message)
     { }
 };
 
