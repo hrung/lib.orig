@@ -7,6 +7,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "slap.h"
+#include <memory>
 #include <ldap.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -236,18 +237,19 @@ entries connection::search(const std::string& base,
     slap::entries entries;
 
     std::vector<char*> _M_names;
-    std::vector<std::vector<char>> _M_names_data;
+    std::vector<std::unique_ptr<char[]>> _M_names_data;
+
     if(names.size())
     {
         for(const std::string& name: names)
         {
             int length= name.size();
-            _M_names_data.push_back(std::vector<char>(length+1));
+            _M_names_data.emplace_back(new char[length+1]);
 
-            name.copy(_M_names_data.back().data(), length);
+            name.copy(_M_names_data.back().get(), length);
             _M_names_data.back()[length]=0;
 
-            _M_names.push_back(_M_names_data.back().data());
+            _M_names.push_back(_M_names_data.back().get());
         }
         _M_names.push_back(nullptr);
     }
