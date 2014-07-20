@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013 Dimitry Ishenko
+// Copyright (c) 2013-2014 Dimitry Ishenko
 // Distributed under the GNU GPL v2. For full terms please visit:
 // http://www.gnu.org/licenses/gpl.html
 //
@@ -11,8 +11,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "except.h"
-
-#include <system_error>
 #include <ldap.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -155,35 +153,15 @@ namespace std
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-namespace except
-{
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-class slap_exception: public exception
+class slap_error: public system_error
 {
 public:
-    slap_exception(int error, const std::string& message= std::string()):
-        exception(message, std::error_code(error, slap::slap_category()))
-    { }
+    slap_error(int code): system_error(std::error_code(code, slap::slap_category())) { }
+    slap_error(int code, const std::string& message): system_error(std::error_code(code, slap::slap_category()), message) { }
 
-    slap_exception(slap::errc error, const std::string& message= std::string()):
-        exception(message, std::error_code(int(error), slap::slap_category()))
-    { }
-
-    slap_exception(const std::string& file, const std::string& func, int line, int error, const std::string& message= std::string()):
-        exception(file, func, line, message, std::error_code(error, slap::slap_category()))
-    { }
-
-    slap_exception(const std::string& file, const std::string& func, int line, slap::errc error, const std::string& message= std::string()):
-        exception(file, func, line, message, std::error_code(int(error), slap::slap_category()))
-    { }
+    slap_error(slap::errc code): system_error(std::error_code(static_cast<int>(code), slap::slap_category())) { }
+    slap_error(slap::errc code, const std::string& message): system_error(std::error_code(static_cast<int>(code), slap::slap_category()), message) { }
 };
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-#define slap_except(args...) except::slap_exception(__FILE__, __FUNCTION__, __LINE__, ##args)
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #endif // SLAP_ERROR_H
