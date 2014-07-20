@@ -205,11 +205,11 @@ public:
     template<typename... Args>
     void emplace(Args&&... args) { _M_options.emplace_back(std::forward<Args>(args)...); }
 
-    void remove(const std::string& longname) { _M_options.erase(find(longname)); }
-    void remove(const char name) { _M_options.erase(find(name)); }
+    iterator remove(const std::string& longname) { return _M_options.erase(find(longname)); }
+    iterator remove(const char name) { return _M_options.erase(find(name)); }
 
-    void remove(iterator ri_0, iterator ri_1) { _M_options.erase(ri_0, ri_1); }
-    void remove(iterator ri) { _M_options.erase(ri); }
+    iterator remove(const_iterator ri_0, const_iterator ri_1) { return _M_options.erase(ri_0, ri_1); }
+    iterator remove(const_iterator ri) { return _M_options.erase(ri); }
 
     ////////////////////
     iterator find(const std::string& longname)
