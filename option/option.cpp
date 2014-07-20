@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <sstream>
 #include <map>
+#include <memory>
 
 #include <getopt.h>
 
@@ -26,7 +27,7 @@ void options::parse(int argc, char* argv[], int& index)
     FUNCTION_CONTEXT(ctx);
 
     std::vector<struct ::option> long_opt;
-    std::vector<std::vector<char>> long_opt_name;
+    std::vector<std::unique_ptr<char[]>> long_opt_name;
 
     std::string short_opt(":");
 
@@ -52,12 +53,12 @@ void options::parse(int argc, char* argv[], int& index)
         int length= option.longname().size();
         if(length)
         {
-            long_opt_name.push_back(std::vector<char>(length+1));
+            long_opt_name.emplace_back(new char[length+1]);
 
-            option.longname().copy(long_opt_name.back().data(), length);
+            option.longname().copy(long_opt_name.back().get(), length);
             long_opt_name.back()[length]=0;
 
-            long_opt.push_back({ long_opt_name.back().data(),
+            long_opt.push_back({ long_opt_name.back().get(),
                 option.arg()==uncertain? optional_argument: option.arg()? required_argument: no_argument,
             nullptr, code });
         }
