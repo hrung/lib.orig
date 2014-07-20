@@ -25,6 +25,8 @@ namespace storage
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void file::open(const std::string& name, open_flags flags, perm perm)
 {
+    FUNCTION_CONTEXT(ctx);
+
     int mode= flags & ~open::read_write;
     if(flags.contains(open::read_write))
         mode|= O_RDWR;
@@ -49,6 +51,8 @@ void file::close()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ssize_t file::write(const void* buffer, size_t n)
 {
+    FUNCTION_CONTEXT(ctx);
+
     ssize_t count= ::write(_M_fd, buffer, n);
     if(count == -1) throw system_error();
 
@@ -58,6 +62,8 @@ ssize_t file::write(const void* buffer, size_t n)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ssize_t file::read(std::string& string, size_t max, bool wait)
 {
+    FUNCTION_CONTEXT(ctx);
+
     std::unique_ptr<char[]> buffer(new char[max+1]);
     ssize_t count= read(buffer.get(), max, wait);
     buffer[count]=0;
@@ -69,6 +75,8 @@ ssize_t file::read(std::string& string, size_t max, bool wait)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ssize_t file::read(void* buffer, size_t max, bool wait)
 {
+    FUNCTION_CONTEXT(ctx);
+
     ssize_t count=0;
     if(wait || can_read()) count= ::read(_M_fd, buffer, max);
 
@@ -79,6 +87,8 @@ ssize_t file::read(void* buffer, size_t max, bool wait)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 off_t file::seek(off_t value, storage::origin origin)
 {
+    FUNCTION_CONTEXT(ctx);
+
     off_t offset= ::lseek(_M_fd, value, int(origin));
     if(offset == -1) throw system_error();
 
@@ -98,6 +108,8 @@ off_t file::size()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 bool file::can_read(timeval* tv)
 {
+    FUNCTION_CONTEXT(ctx);
+
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(_M_fd, &fds);
@@ -111,6 +123,8 @@ bool file::can_read(timeval* tv)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 bool file::can_write(timeval* tv)
 {
+    FUNCTION_CONTEXT(ctx);
+
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(_M_fd, &fds);
@@ -125,18 +139,22 @@ bool file::can_write(timeval* tv)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void remove(const std::string& name)
 {
+    FUNCTION_CONTEXT(ctx);
     if( ::remove(name.data()) ) throw system_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void rename(const std::string& prev, const std::string& name)
 {
+    FUNCTION_CONTEXT(ctx);
     if(::rename(prev.data(), name.data())) throw system_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 std::string real_path(const std::string& path)
 {
+    FUNCTION_CONTEXT(ctx);
+
     std::unique_ptr<char[]> buffer(new char[PATH_MAX]);
     std::string real;
 
@@ -156,6 +174,7 @@ bool stat(const std::string& name, struct stat& value)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void chown(const std::string& name, uid_t uid, gid_t gid, bool deref)
 {
+    FUNCTION_CONTEXT(ctx);
     if( (deref? ::chown(name.data(), uid, gid): lchown(name.data(), uid, gid)) ) throw system_error();
 }
 
