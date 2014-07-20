@@ -10,10 +10,11 @@
 #define CONVERT_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+#include "except.h"
+
 #include <type_traits>
 #include <sstream>
 #include <iomanip>
-#include <stdexcept>
 
 #ifdef QT_CORE_LIB
 #  include <QString>
@@ -50,7 +51,7 @@ struct _M_convert<ToType, FromType, enable_if_integer<ToType>>
 
         if((stream << source) && (stream >> std::ws >> value) && (stream >> std::ws).eof())
             return value;
-        else throw std::invalid_argument("Conversion failed");
+        else throw invalid_argument("Conversion failed");
     }
 };
 
@@ -67,7 +68,7 @@ struct _M_convert<bool, FromType, void>
 
         if((stream << source) && (stream >> std::ws >> value) && (stream >> std::ws).eof())
             return value;
-        else throw std::invalid_argument("Conversion failed");
+        else throw invalid_argument("Conversion failed");
     }
 };
 
@@ -81,7 +82,7 @@ struct _M_convert<std::string, FromType, void>
 
         if(stream << source)
             return stream.str();
-        else throw std::invalid_argument("Conversion failed");
+        else throw invalid_argument("Conversion failed");
     }
 };
 
@@ -112,6 +113,7 @@ struct _M_convert<QString, FromType, void>
 template<typename ToType= std::string, typename FromType>
 ToType to(const FromType& source)
 {
+    FUNCTION_CONTEXT(ctx);
     return _M_convert<ToType, FromType>::to(source);
 }
 
@@ -127,6 +129,7 @@ ToType to(const FromType& source)
 template<typename ToType= std::string>
 ToType to(const QString& source)
 {
+    FUNCTION_CONTEXT(ctx);
     return _M_convert<ToType, std::string>::to(source.toStdString());
 }
 #endif
@@ -143,6 +146,7 @@ ToType to(const QString& source)
 template<typename ToType= int, typename FromType, enable_if_integer<ToType>* = nullptr>
 ToType to(const FromType& source, int base)
 {
+    FUNCTION_CONTEXT(ctx);
     return _M_convert<ToType, FromType>::to(source, base);
 }
 
@@ -158,6 +162,7 @@ ToType to(const FromType& source, int base)
 template<typename FromType>
 bool to_bool(const FromType& source, bool text)
 {
+    FUNCTION_CONTEXT(ctx);
     return _M_convert<bool, FromType>::to(source, text);
 }
 
@@ -172,11 +177,12 @@ bool to_bool(const FromType& source, bool text)
 template<typename ViaType= int, typename FromType, enable_if_integer<ViaType>* = nullptr>
 std::string to_oct(const FromType& source)
 {
+    FUNCTION_CONTEXT(ctx);
     std::stringstream stream;
 
     if(stream << std::oct << to<ViaType>(source))
         return stream.str();
-    else throw std::invalid_argument("Conversion failed");
+    else throw invalid_argument("Conversion failed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -190,11 +196,12 @@ std::string to_oct(const FromType& source)
 template<typename ViaType= int, typename FromType, enable_if_integer<ViaType>* = nullptr>
 std::string to_hex(const FromType& source)
 {
+    FUNCTION_CONTEXT(ctx);
     std::stringstream stream;
 
     if(stream << std::hex << to<ViaType>(source))
         return stream.str();
-    else throw std::invalid_argument("Conversion failed");
+    else throw invalid_argument("Conversion failed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
