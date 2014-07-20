@@ -9,8 +9,10 @@
 #include "process.h"
 #include "except.h"
 
+#include <vector>
 #include <memory>
 #include <cstdlib>
+
 #include <unistd.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -38,17 +40,25 @@ bool process(const std::string& command, int* return_val)
 pid execute(const std::string& name, const arguments& args)
 {
     FUNCTION_CONTEXT(ctx);
-    const char* _M_name= name.data();
 
-    std::unique_ptr<const char*> buffer( new const char* [args.size()+2] );
-    const char** _M_arg= buffer.get();
+    arguments c;
+    c.push_back(name);
+    c.insert(c.end(), args.begin(), args.end());
 
-    _M_arg[0]= _M_name;
+    std::vector<char*> _M_arg;
+    std::vector<std::unique_ptr<char[]>> _M_arg_data;
 
-    int rn=1;
-    for(auto ri= args.begin(); ri!=args.end(); ++ri, ++rn)
-        _M_arg[rn]= ri->data();
-    _M_arg[rn]= nullptr;
+    for(const std::string& arg: c)
+    {
+        int length= arg.size();
+        _M_arg_data.emplace_back(new char[length+1]);
+
+        arg.copy(_M_arg_data.back().get(), length);
+        _M_arg_data.back().get()[length]=0;
+
+        _M_arg.push_back(_M_arg_data.back().get());
+    }
+    _M_arg.push_back(nullptr);
 
     pid_t pid= fork();
     switch(pid)
@@ -58,7 +68,7 @@ pid execute(const std::string& name, const arguments& args)
         break;
 
     case 0: // child code
-        execvp(_M_name, const_cast<char**>(_M_arg));
+        execvp(_M_arg[0], _M_arg.data());
         exit(EXIT_FAILURE); // if exec returned, we have a problem...
         break;
     }
