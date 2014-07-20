@@ -33,7 +33,7 @@ void file::open(const std::string& name, open_flags flags, perm perm)
     else mode|= O_RDONLY;
 
     _M_fd= ::open(name.data(), mode, perm);
-    if(_M_fd == invalid_desc) throw error();
+    if(_M_fd == invalid_desc) throw system_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -50,7 +50,7 @@ void file::close()
 ssize_t file::write(const void* buffer, size_t n)
 {
     ssize_t count= ::write(_M_fd, buffer, n);
-    if(count == -1) throw error();
+    if(count == -1) throw system_error();
 
     return count;
 }
@@ -72,7 +72,7 @@ ssize_t file::read(void* buffer, size_t max, bool wait)
     ssize_t count=0;
     if(wait || can_read()) count= ::read(_M_fd, buffer, max);
 
-    if(count == -1) throw error();
+    if(count == -1) throw system_error();
     return count;
 }
 
@@ -80,7 +80,7 @@ ssize_t file::read(void* buffer, size_t max, bool wait)
 off_t file::seek(off_t value, storage::origin origin)
 {
     off_t offset= ::lseek(_M_fd, value, int(origin));
-    if(offset == -1) throw error();
+    if(offset == -1) throw system_error();
 
     return offset;
 }
@@ -103,7 +103,7 @@ bool file::can_read(timeval* tv)
     FD_SET(_M_fd, &fds);
 
     int n= select(_M_fd+1, &fds, 0, 0, tv);
-    if(n == -1) throw error();
+    if(n == -1) throw system_error();
 
     return n;
 }
@@ -116,7 +116,7 @@ bool file::can_write(timeval* tv)
     FD_SET(_M_fd, &fds);
 
     int n= select(_M_fd+1, 0, &fds, 0, tv);
-    if(n == -1) throw error();
+    if(n == -1) throw system_error();
 
     return n;
 }
@@ -125,13 +125,13 @@ bool file::can_write(timeval* tv)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void remove(const std::string& name)
 {
-    if( ::remove(name.data()) ) throw error();
+    if( ::remove(name.data()) ) throw system_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void rename(const std::string& prev, const std::string& name)
 {
-    if(::rename(prev.data(), name.data())) throw error();
+    if(::rename(prev.data(), name.data())) throw system_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -142,7 +142,7 @@ std::string real_path(const std::string& path)
 
     if(::realpath(path.data(), buffer.get()))
         real.assign(buffer.get());
-    else throw error();
+    else throw system_error();
 
     return real;
 }
@@ -156,7 +156,7 @@ bool stat(const std::string& name, struct stat& value)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void chown(const std::string& name, uid_t uid, gid_t gid, bool deref)
 {
-    if( (deref? ::chown(name.data(), uid, gid): lchown(name.data(), uid, gid)) ) throw error();
+    if( (deref? ::chown(name.data(), uid, gid): lchown(name.data(), uid, gid)) ) throw system_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
