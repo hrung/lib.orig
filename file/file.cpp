@@ -98,6 +98,8 @@ off_t file::seek(off_t value, storage::origin origin)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 off_t file::size()
 {
+    FUNCTION_CONTEXT(ctx);
+
     off_t n= tell();
     off_t e= seek(0, origin::end);
 
