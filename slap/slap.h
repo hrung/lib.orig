@@ -310,7 +310,6 @@ public:
     ////////////////////
     std::string dn() const { return _M_dn; }
 
-    ////////////////////
     bool empty() const { return _M_attributes.empty(); }
     size_type size() const { return _M_attributes.size(); }
     void clear() { _M_attributes.clear(); }
