@@ -25,8 +25,6 @@ namespace app
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 constexpr auto optional= uncertain;
 
-class options;
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class option
 {
@@ -160,13 +158,19 @@ public:
     options(std::initializer_list<option> value) { for(const_reference option: value) append(option); }
     options() = default;
 
-    typedef option& reference;
-    typedef const option& const_reference;
-    typedef option* pointer;
+    typedef std::vector<option> container_type;
+    typedef typename container_type::value_type value_type;
 
-    typedef std::vector<option>::size_type size_type;
-    typedef std::vector<option>::iterator iterator;
-    typedef std::vector<option>::const_iterator const_iterator;
+    typedef typename container_type::reference reference;
+    typedef typename container_type::const_reference const_reference;
+    typedef typename container_type::pointer pointer;
+    typedef typename container_type::const_pointer const_pointer;
+
+    typedef typename container_type::size_type size_type;
+    typedef typename container_type::iterator iterator;
+    typedef typename container_type::const_iterator const_iterator;
+    typedef typename container_type::reverse_iterator reverse_iterator;
+    typedef typename container_type::const_reverse_iterator const_reverse_iterator;
 
     ////////////////////
     bool empty() const { return _M_options.empty(); }
@@ -187,8 +191,8 @@ public:
     const_reference operator()(const char name) const { return *find(name); }
 
     ////////////////////
-    void append(const app::option& option) { _M_options.push_back(option); }
-    void append(app::option&& option) { _M_options.push_back(std::move(option)); }
+    void append(const value_type& option) { _M_options.push_back(option); }
+    void append(value_type&& option) { _M_options.push_back(std::move(option)); }
 
     template<typename... Args>
     void emplace(Args&&... args) { _M_options.emplace_back(std::forward<Args>(args)...); }
@@ -227,12 +231,24 @@ public:
     iterator end() { return _M_options.end(); }
     const_iterator end() const { return _M_options.end(); }
 
+    reverse_iterator rbegin() { return _M_options.rbegin(); }
+    const_reverse_iterator rbegin() const { return _M_options.rbegin(); }
+
+    reverse_iterator rend() { return _M_options.rend(); }
+    const_reverse_iterator rend() const { return _M_options.rend(); }
+
+    const_iterator cbegin() const { return _M_options.cbegin(); }
+    const_iterator cend() const { return _M_options.cend(); }
+
+    const_reverse_iterator crbegin() const { return _M_options.crbegin(); }
+    const_reverse_iterator crend() const { return _M_options.crend(); }
+
     ////////////////////
     void parse(int argc, char* argv[], int& index);
     std::string usage();
 
 protected:
-    std::vector<option> _M_options;
+    container_type _M_options;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
