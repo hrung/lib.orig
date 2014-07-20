@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013 Dimitry Ishenko
+// Copyright (c) 2013-2014 Dimitry Ishenko
 // Distributed under the GNU GPL v2. For full terms please visit:
 // http://www.gnu.org/licenses/gpl.html
 //
@@ -39,13 +39,14 @@ public:
         _M_name(std::move(name)), _M_value(std::move(value))
     { }
 
-    std::string  name() const { return _M_name; }
-    std::string value() const { return _M_value; }
+    const std::string&  name() const { return _M_name; }
+    const std::string& value() const { return _M_value; }
 
     bool empty() const { return _M_name.empty() && _M_value.empty(); }
 
     void validate() const
     {
+        FUNCTION_CONTEXT(ctx);
         validate_name(_M_name);
         validate_value(_M_value);
     }
@@ -59,6 +60,8 @@ private:
     friend class tag;
 };
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
 inline bool operator<(const attribute& x, const attribute& y) { return x.name() < y.name(); }
 
 typedef std::set<attribute> attributes;
@@ -81,48 +84,77 @@ public:
         _M_attributes(attributes)
     { }
 
+    typedef attributes container_type;
+    typedef typename container_type::value_type value_type;
+
+    typedef typename container_type::reference reference;
+    typedef typename container_type::const_reference const_reference;
+    typedef typename container_type::pointer pointer;
+    typedef typename container_type::const_pointer const_pointer;
+
+    typedef typename container_type::size_type size_type;
+    typedef typename container_type::iterator iterator;
+    typedef typename container_type::const_iterator const_iterator;
+    typedef typename container_type::reverse_iterator reverse_iterator;
+    typedef typename container_type::const_reverse_iterator const_reverse_iterator;
+
     ////////////////////
     const std::string name() const { return _M_name; }
 
-    bool empty() const { return _M_name.empty() && _M_attributes.empty(); }
-
-    xml::attributes& attributes() { return _M_attributes; }
-    const xml::attributes& attributes() const { return _M_attributes; }
-
-    const attribute* find(const std::string& name) const
-    {
-        auto ri= _M_attributes.find(attribute(name));
-        return ri!=_M_attributes.end()? &*ri: nullptr;
-    }
-    int count(const std::string& name) const { return _M_attributes.count(attribute(name)); }
-
-    std::string value(const std::string& name) const
-    {
-        if(auto ri= find(name))
-            return ri->value();
-        else throw std::out_of_range("tag::value");
-    }
+    bool empty() const { return _M_attributes.empty(); }
+    size_type size() const { return _M_attributes.size(); }
+    void clear() { _M_attributes.clear(); }
 
     ////////////////////
-    bool get(std::string& var, const std::string& name)
-    {
-        if(auto value= find(name))
-        {
-            var= value->value();
-            return true;
-        }
-        else return false;
-    }
+    reference operator[](const std::string& name) { return const_cast<reference>(*find(name)); } // o.O
+    const_reference operator[](const std::string& name) const { return *find(name); }
 
     ////////////////////
-    bool insert(const attribute& x) { return _M_attributes.insert(x).second; }
-    bool insert(attribute&& x) { return _M_attributes.insert(std::move(x)).second; }
-    void insert(std::initializer_list<attribute> x) { return _M_attributes.insert(x); }
+    std::pair<iterator,bool> insert(const value_type& x) { return _M_attributes.insert(x); }
+    std::pair<iterator,bool> insert(value_type&& x) { return _M_attributes.insert(std::move(x)); }
+    void insert(std::initializer_list<value_type> x) { _M_attributes.insert(x); }
 
+    size_type remove(const value_type& value) { return _M_attributes.erase(value); }
+    size_type remove(const std::string& name) { return _M_attributes.erase(xml::attribute(name)); }
+
+    iterator remove(const_iterator ri_0, iterator ri_1) { return _M_attributes.erase(ri_0, ri_1); }
+    iterator remove(iterator ri) { return _M_attributes.erase(ri); }
+
+    ////////////////////
+    iterator begin() { return _M_attributes.begin(); }
+    const_iterator begin() const { return _M_attributes.begin(); }
+
+    iterator end() { return _M_attributes.end(); }
+    const_iterator end() const { return _M_attributes.end(); }
+
+    reverse_iterator rbegin() { return _M_attributes.rbegin(); }
+    const_reverse_iterator rbegin() const { return _M_attributes.rbegin(); }
+
+    reverse_iterator rend() { return _M_attributes.rend(); }
+    const_reverse_iterator rend() const { return _M_attributes.rend(); }
+
+    const_iterator cbegin() const { return _M_attributes.cbegin(); }
+    const_iterator cend() const { return _M_attributes.cend(); }
+
+    const_reverse_iterator crbegin() const { return _M_attributes.crbegin(); }
+    const_reverse_iterator crend() const { return _M_attributes.crend(); }
+
+    ////////////////////
+    iterator find(const value_type& value) { return _M_attributes.find(value); }
+    const_iterator find(const value_type& value) const { return _M_attributes.find(value); }
+
+    iterator find(const std::string& name) { return _M_attributes.find(xml::attribute(name)); }
+    const_iterator find(const std::string& name) const { return _M_attributes.find(xml::attribute(name)); }
+
+    size_type count(const value_type& value) const { return _M_attributes.count(value); }
+    size_type count(const std::string& name) const { return _M_attributes.count(xml::attribute(name)); }
+
+    ////////////////////
     void validate() const
     {
+        FUNCTION_CONTEXT(ctx);
         validate_name(_M_name);
-        for(auto& ri: _M_attributes) ri.validate();
+        for(const_reference x: _M_attributes) x.validate();
     }
 
 private:
@@ -177,21 +209,19 @@ public:
     bool empty() const { return _M_tag.empty() && _M_children.empty() && _M_value.empty(); }
     bool complex() const { return !_M_children.empty(); }
 
-    bool promote();
+    bool make_simple();
 
     ////////////////////
-    bool insert(const attribute& x) { return _M_tag.insert(x); }
-    bool insert(attribute&& x) { return _M_tag.insert(x); }
-    void insert(std::initializer_list<attribute> x) { _M_tag.insert(x); }
-
     void insert(const std::string& value)
     {
+        FUNCTION_CONTEXT(ctx);
         if(!complex())
             _M_value+= value;
         else insert(element(std::string(), value));
     }
     void insert(std::string&& value)
     {
+        FUNCTION_CONTEXT(ctx);
         if(!complex())
             _M_value+= value;
         else insert(element(std::string(), std::move(value)));
@@ -202,10 +232,13 @@ public:
 
     void validate()
     {
+        FUNCTION_CONTEXT(ctx);
+
         _M_tag.validate();
         if(complex())
             for(element& e: _M_children) e.validate();
-        else validate_content(_M_value);
+        else
+            validate_content(_M_value);
     }
 
     ////////////////////
@@ -227,6 +260,8 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline element parse(const std::string& source)
 {
+    FUNCTION_CONTEXT(ctx);
+
     element e;
     std::string copy= source;
 
@@ -237,6 +272,8 @@ inline element parse(const std::string& source)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline element parse(std::string&& source)
 {
+    FUNCTION_CONTEXT(ctx);
+
     element e;
     std::string move= std::move(source);
 

@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013 Dimitry Ishenko
+// Copyright (c) 2013-2014 Dimitry Ishenko
 // Distributed under the GNU GPL v2. For full terms please visit:
 // http://www.gnu.org/licenses/gpl.html
 //
@@ -7,9 +7,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "xml.h"
-
 #include "stream.h"
-#include "except.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace xml
@@ -28,23 +26,23 @@ const std::error_category& xml_category()
 void validate_name(const std::string& name)
 {
     auto ri= name.begin();
-    if( ri==name.end() || !(isalpha(*ri) || *ri==':' || *ri=='_') ) throw xml_except(errc::syntax);
+    if( ri==name.end() || !(isalpha(*ri) || *ri==':' || *ri=='_') ) throw xml_error(errc::syntax);
 
     for(++ri; ri!=name.end(); ++ri)
         if( !(isalnum(*ri) || *ri==':' || *ri=='_' || *ri=='.' || *ri=='-') )
-    throw xml_except(errc::syntax);
+    throw xml_error(errc::syntax);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void validate_value(const std::string& value)
 {
-    if(std::string::npos != value.find_first_of(R"('")")) throw xml_except(errc::syntax);
+    if(std::string::npos != value.find_first_of(R"('")")) throw xml_error(errc::syntax);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void validate_content(const std::string& value)
 {
-    if(std::string::npos && value.find_first_of("<>")) throw xml_except(errc::syntax);
+    if(std::string::npos && value.find_first_of("<>")) throw xml_error(errc::syntax);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -92,16 +90,16 @@ void attribute::_M_parse(std::string& source)
     _M_name.assign(name);
 
     parse_space(source);
-    if(source[0] != '=') throw xml_except(errc::invalid_token);
+    if(source[0] != '=') throw xml_error(errc::invalid_token);
     chop(source);
 
     parse_space(source);
     char quote= source[0];
-    if( !(quote=='"' || quote=='\'') ) throw xml_except(errc::invalid_token);
+    if( !(quote=='"' || quote=='\'') ) throw xml_error(errc::invalid_token);
     chop(source);
 
     size_t pos= source.find(quote);
-    if(pos==std::string::npos) throw xml_except(errc::invalid_token);
+    if(pos==std::string::npos) throw xml_error(errc::invalid_token);
     _M_value.assign(source, 0, pos);
     source.erase(0, ++pos);
 
@@ -135,21 +133,21 @@ std::string tag::_M_write(tag_type type, bool nice, int ix) const
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void tag::_M_parse(std::string& source, tag_type type, bool& empty)
 {
-    if(source[0] != '<') throw xml_except(errc::invalid_token);
+    if(source[0] != '<') throw xml_error(errc::invalid_token);
     chop(source);
 
     if(type==end_tag)
     {
-        if(source[0] != '/') throw xml_except(errc::invalid_token);
+        if(source[0] != '/') throw xml_error(errc::invalid_token);
         chop(source);
     }
 
     std::string name;
-    if(!parse_name(source, name)) throw xml_except(errc::syntax);
+    if(!parse_name(source, name)) throw xml_error(errc::syntax);
 
     if(type==end_tag)
     {
-        if(name!=_M_name) throw xml_except(errc::tag_mismatch);
+        if(name!=_M_name) throw xml_error(errc::tag_mismatch);
     }
     else _M_name.assign(name);
 
@@ -162,18 +160,18 @@ void tag::_M_parse(std::string& source, tag_type type, bool& empty)
 
         if(x.empty()) break;
 
-        if(count(x.name())) throw xml_except(errc::duplicate_attribute);
+        if(count(x.name())) throw xml_error(errc::duplicate_attribute);
         insert(std::move(x));
     }
 
     if(source[0] == '/')
     {
-        if(type==end_tag) throw xml_except(errc::invalid_token);
+        if(type==end_tag) throw xml_error(errc::invalid_token);
 
         chop(source);
         empty= true;
     }
-    if(source[0] != '>') throw xml_except(errc::unclosed_token);
+    if(source[0] != '>') throw xml_error(errc::unclosed_token);
     chop(source);
 }
 
@@ -191,7 +189,7 @@ std::string element::value() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool element::promote()
+bool element::make_simple()
 {
     if(_M_tag.empty() && _M_children.size()==1)
     {
@@ -279,7 +277,7 @@ void element::_M_parse(std::string& source)
             insert(std::move(e));
         }
     }
-    promote();
+    make_simple();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

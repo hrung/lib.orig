@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013 Dimitry Ishenko
+// Copyright (c) 2013-2014 Dimitry Ishenko
 // Distributed under the GNU GPL v2. For full terms please visit:
 // http://www.gnu.org/licenses/gpl.html
 //
@@ -11,8 +11,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "except.h"
-
-#include <system_error>
 #include <expat.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -101,35 +99,15 @@ namespace std
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-namespace except
-{
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-class xml_exception: public exception
+class xml_error: public system_error
 {
 public:
-    xml_exception(int error, const std::string& message= std::string()):
-        exception(message, std::error_code(error, xml::xml_category()))
-    { }
+    xml_error(int code): system_error(std::error_code(code, xml::xml_category())) { }
+    xml_error(int code, const std::string& message): system_error(std::error_code(code, xml::xml_category()), message) { }
 
-    xml_exception(xml::errc error, const std::string& message= std::string()):
-        exception(message, std::error_code(int(error), xml::xml_category()))
-    { }
-
-    xml_exception(const std::string& file, const std::string& func, int line, int error, const std::string& message= std::string()):
-        exception(file, func, line, message, std::error_code(error, xml::xml_category()))
-    { }
-
-    xml_exception(const std::string& file, const std::string& func, int line, xml::errc error, const std::string& message= std::string()):
-        exception(file, func, line, message, std::error_code(int(error), xml::xml_category()))
-    { }
+    xml_error(xml::errc code): system_error(std::error_code(int(code), xml::xml_category())) { }
+    xml_error(xml::errc code, const std::string& message): system_error(std::error_code(static_cast<int>(code), xml::xml_category()), message) { }
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#define xml_except(args...) except::xml_exception(__FILE__, __FUNCTION__, __LINE__, ##args)
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-#endif // SLAP_ERROR_H
+#endif // XML_ERROR_H
