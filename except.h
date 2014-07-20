@@ -21,7 +21,7 @@
 class backtrace: public std::stack<std::string>
 {
 public:
-    operator std::string() const;
+    std::string write(const std::string& separator= "\n") const;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
