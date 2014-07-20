@@ -8,6 +8,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "entry.h"
 #include "except.h"
+
+#include <cstdlib>
 #include <string.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -49,19 +51,19 @@ entries entry::get(const std::string& path, const filter_func& filter, const com
         for(dirent** name= names; n; ++name, --n)
         {
             entries.push_back({ (*name)->d_name, static_cast<storage::type>((*name)->d_type), (*name)->d_ino });
-            free(*name);
+            std::free(*name);
         }
 
-        free(names);
+        std::free(names);
         return entries;
     }
     else
     {
         int e= errno;
-        free(names);
+        std::free(names);
 
         errno=e;
-        throw error();
+        throw system_error();
     }
 }
 
