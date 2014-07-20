@@ -13,61 +13,129 @@
 #include <system_error>
 #include <cerrno>
 
-#include <sstream>
-#include <vector>
+#include <stack>
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class error: public std::system_error
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class backtrace: public std::stack<std::string>
 {
 public:
-    error(): std::system_error(std::error_code(errno, std::generic_category())) { }
-    error(const std::string& message):
-        std::system_error(std::error_code(errno, std::generic_category()), message)
-    { }
+    operator std::string() const;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class context;
-typedef std::vector<context> context_trace;
-
 class context
 {
 public:
-    context(const std::string& name):
-        _M_trace(_M_global)
-    { _M_trace.push_back(name); }
+    context(const std::string& name) { _M_current.push(name); }
+    context(std::string&& name) { _M_current.push(std::move(name)); }
 
-    context(std::string&& name):
-        _M_trace(_M_global)
-    { _M_trace.push_back(std::move(name)); }
-
-    context(const std::string& name, context_trace& x):
-        _M_trace(x)
-    { _M_trace.push_back(name); }
-
-    context(std::string&& name, context_trace& x):
-        _M_trace(x)
-    { _M_trace.push_back(std::move(name)); }
-
-    ~context() { _M_trace.pop_back(); }
-
-    const std::string& message() const { return _M_message; }
-
-    static const context_trace& global_trace() { return _M_global; }
+    ~context() { _M_current.pop(); }
 
 private:
-    std::string _M_message;
-    context_trace& _M_trace;
-
-    static context_trace _M_global;
+    static backtrace _M_current;
+    friend class context_error;
 };
 
-inline std::ostream& operator<<(std::ostream& stream, const context_trace& x)
+#define FUNCTION_CONTEXT(ctx) context ctx(std::string()+ "Function: "+ __FUNCTION__+ "()")
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class context_error
 {
-    for(auto& ctx: x) stream << ctx.message() << std::endl;
-    return stream;
-}
+public:
+    context_error(): _M_trace(context::_M_current) { }
+    const backtrace& trace() const { return _M_trace; }
+
+private:
+    backtrace _M_trace;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class exception: public std::exception, public context_error
+{
+public:
+    using std::exception::exception;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class logic_error: public std::logic_error, public context_error
+{
+public:
+    using std::logic_error::logic_error;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class domain_error: public std::domain_error, public context_error
+{
+public:
+    using std::domain_error::domain_error;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class invalid_argument: public std::invalid_argument, public context_error
+{
+public:
+    using std::invalid_argument::invalid_argument;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class length_error: public std::length_error, public context_error
+{
+public:
+    using std::length_error::length_error;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class out_of_range: public std::out_of_range, public context_error
+{
+public:
+    using std::out_of_range::out_of_range;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class runtime_error: public std::runtime_error, public context_error
+{
+public:
+    using std::runtime_error::runtime_error;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class range_error: public std::range_error, public context_error
+{
+public:
+    using std::range_error::range_error;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class overflow_error: public std::overflow_error, public context_error
+{
+public:
+    using std::overflow_error::overflow_error;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class underflow_error: public std::underflow_error, public context_error
+{
+public:
+    using std::underflow_error::underflow_error;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class system_error: public std::system_error, public context_error
+{
+public:
+    system_error(): std::system_error(std::error_code(errno, std::generic_category())) { }
+    system_error(const std::string& message): std::system_error(std::error_code(errno, std::generic_category()), message) { }
+
+    system_error(std::error_code c): std::system_error(c) { }
+    system_error(std::error_code c, const std::string& message): std::system_error(c, message) { }
+
+    system_error(int v, const std::error_category& c): std::system_error(v, c) { }
+    system_error(int v, const std::error_category& c, const std::string& message): std::system_error(v, c, message) { }
+};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #endif
