@@ -1,4 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2013-2014 Dimitry Ishenko
+// Distributed under the GNU GPL v2. For full terms please visit:
+// http://www.gnu.org/licenses/gpl.html
+//
+// Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef PROCESS_H
 #define PROCESS_H
 
@@ -6,17 +13,17 @@
 #include <vector>
 #include <string>
 
-#include <unistd.h>
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-namespace sys
+namespace app
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool process(const std::string& command);
+bool process(const std::string& command, int* return_val= nullptr);
 
+typedef int pid;
 typedef std::vector<std::string> arguments;
-pid_t execute(const std::string& name, const arguments& args= arguments());
+
+pid execute(const std::string& name, const arguments& args= arguments());
 
 inline void reboot() { execute("/sbin/reboot"); }
 

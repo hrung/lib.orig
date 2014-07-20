@@ -1,41 +1,43 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2013-2014 Dimitry Ishenko
+// Distributed under the GNU GPL v2. For full terms please visit:
+// http://www.gnu.org/licenses/gpl.html
+//
+// Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "process.h"
-#include "message.h"
-#include "stream.h"
 #include "except.h"
 
 #include <memory>
-
+#include <cstdlib>
 #include <unistd.h>
-#include <stdlib.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-namespace sys
+namespace app
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool process(const std::string& command)
+bool process(const std::string& command, int* return_val)
 {
-    show_message( "Launching "+ command );
+    FUNCTION_CONTEXT(ctx);
 
-    int value= system(command.data());
-    if(value==-1)
-        show_error("Execution failed");
-    else if(WIFEXITED(value))
-    {
-        if(( value= WEXITSTATUS(value) ))
-            show_error( std::string("Exited with status ") << value );
-        else return true;
-    }
-    else if(WIFSIGNALED(value))
-        show_error( std::string("Exited due to signal ") << WTERMSIG(value) );
+    int x;
+    if(!return_val) return_val= &x;
 
-    return false;
+    *return_val= std::system(command.data());
+    if( *return_val == -1 ) throw runtime_error("system() call failed");
+
+    else if(WIFEXITED(*return_val))
+        return !WEXITSTATUS(*return_val);
+
+    else return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-pid_t execute(const std::string& name, const arguments& args)
+pid execute(const std::string& name, const arguments& args)
 {
+    FUNCTION_CONTEXT(ctx);
     const char* _M_name= name.data();
 
     std::unique_ptr<const char*> buffer( new const char* [args.size()+2] );
@@ -43,24 +45,16 @@ pid_t execute(const std::string& name, const arguments& args)
 
     _M_arg[0]= _M_name;
 
-    std::string stream;
-    stream+= "Launching "+ name;
-
     int rn=1;
     for(auto ri= args.begin(); ri!=args.end(); ++ri, ++rn)
-    {
         _M_arg[rn]= ri->data();
-        stream+= ' '+ *ri;
-    }
     _M_arg[rn]= nullptr;
-
-    show_message(stream);
 
     pid_t pid= fork();
     switch(pid)
     {
     case -1:
-        throw system_except();
+        throw system_error();
         break;
 
     case 0: // child code
