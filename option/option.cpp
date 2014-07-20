@@ -11,7 +11,6 @@
 #include <iomanip>
 #include <sstream>
 #include <map>
-#include <cstring>
 
 #include <getopt.h>
 
@@ -52,7 +51,9 @@ void options::parse(int argc, char* argv[], int& index)
         if(length)
         {
             long_opt_name.push_back(std::vector<char>(length+1));
-            std::strcpy(long_opt_name.back().data(), option.longname().data());
+
+            option.longname().copy(long_opt_name.back().data(), length);
+            long_opt_name.back()[length]=0;
 
             long_opt.push_back({ long_opt_name.back().data(),
                 option.arg()==uncertain? optional_argument: option.arg()? required_argument: no_argument,
