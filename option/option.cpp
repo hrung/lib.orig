@@ -19,6 +19,8 @@ namespace app
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+constexpr int unique_code_min= 1000;
+
 void options::parse(int argc, char* argv[], int& index)
 {
     FUNCTION_CONTEXT(ctx);
@@ -28,7 +30,7 @@ void options::parse(int argc, char* argv[], int& index)
 
     std::string short_opt(":");
 
-    int unique= 1000;
+    int unique= unique_code_min;
     std::map<int, pointer> map;
 
     ////////////////////
@@ -96,7 +98,7 @@ void options::parse(int argc, char* argv[], int& index)
 
         std::string message= e.what();
         message+= " '";
-            if(optopt) message+= char(optopt); else message+= argv[--index];
+            if(optopt && optopt < unique_code_min) message+= char(optopt); else message+= argv[--index];
         message+= "'";
 
         throw invalid_argument(message);
