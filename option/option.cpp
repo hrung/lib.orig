@@ -7,10 +7,10 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "option.h"
+#include "except.h"
 
 #include <iomanip>
 #include <sstream>
-#include <stdexcept>
 #include <map>
 #include <cstring>
 
@@ -23,6 +23,8 @@ namespace app
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void options::parse(int argc, char* argv[], int& index)
 {
+    FUNCTION_CONTEXT(ctx);
+
     std::vector<struct ::option> long_opt;
     std::vector<std::vector<char>> long_opt_name;
 
@@ -74,16 +76,16 @@ void options::parse(int argc, char* argv[], int& index)
             if(c==-1) break;
 
             if(c=='?')
-                throw std::invalid_argument("Invalid option");
+                throw invalid_argument("Invalid option");
             else if(c==':')
-                throw std::invalid_argument("Missing argument");
+                throw invalid_argument("Missing argument");
 
             auto ri= map.find(c);
-                if(ri==map.end()) throw std::invalid_argument("Unexpected option");
+                if(ri==map.end()) throw invalid_argument("Unexpected option");
             pointer option= ri->second;
 
             ++option->_M_count;
-            if(option->once() && option->count()>1) throw std::invalid_argument("Extraneous option");
+            if(option->once() && option->count()>1) throw invalid_argument("Extraneous option");
 
             if(option->arg() != false && optarg) option->_M_assign(optarg);
         }
@@ -97,7 +99,7 @@ void options::parse(int argc, char* argv[], int& index)
             if(optopt) message+= char(optopt); else message+= argv[--index];
         message+= "'";
 
-        throw std::invalid_argument(message);
+        throw invalid_argument(message);
     }
 
     index= optind;
@@ -108,6 +110,8 @@ using std::setw; using std::left; using std::right; using std::endl;
 
 std::string options::usage()
 {
+    FUNCTION_CONTEXT(ctx);
+
     std::ostringstream stream;
     for(const_reference option: _M_options)
     {
