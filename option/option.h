@@ -10,6 +10,7 @@
 #define OPTION_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+#include "except.h"
 #include "convert.h"
 #include "tern.h"
 
@@ -178,11 +179,18 @@ public:
     void clear() { _M_options.clear(); }
 
     ////////////////////
-    reference operator[](size_type n) { return _M_options[n]; }
-    const_reference operator[](size_type n) const { return _M_options[n]; }
-
-    reference at(size_type n) { return _M_options.at(n); }
-    const_reference at(size_type n) const { return _M_options.at(n); }
+    reference operator[](size_type n)
+    {
+        FUNCTION_CONTEXT(ctx);
+        try { return _M_options.at(n); }
+        catch(std::out_of_range& e) { throw out_of_range(e); }
+    }
+    const_reference operator[](size_type n) const
+    {
+        FUNCTION_CONTEXT(ctx);
+        try { return _M_options.at(n); }
+        catch(std::out_of_range& e) { throw out_of_range(e); }
+    }
 
     reference operator()(const std::string& longname) { return *find(longname); }
     const_reference operator()(const std::string& longname) const { return *find(longname); }
