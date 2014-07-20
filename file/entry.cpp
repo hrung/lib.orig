@@ -29,6 +29,8 @@ const compare_func compare_alpha= [] (const entry& e1, const entry& e2) -> int
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 entries entry::get(const std::string& path, const filter_func& filter, const compare_func& compare)
 {
+    FUNCTION_CONTEXT(ctx);
+
     static filter_func _M_filter;
     static compare_func _M_compare;
 
