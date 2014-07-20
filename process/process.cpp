@@ -54,7 +54,7 @@ pid execute(const std::string& name, const arguments& args)
         _M_arg_data.emplace_back(new char[length+1]);
 
         arg.copy(_M_arg_data.back().get(), length);
-        _M_arg_data.back().get()[length]=0;
+        _M_arg_data.back()[length]=0;
 
         _M_arg.push_back(_M_arg_data.back().get());
     }
