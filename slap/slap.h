@@ -164,6 +164,9 @@ public:
         catch(std::out_of_range& e) { throw out_of_range(e); }
     }
 
+    reference operator*() { return operator[](0); }
+    const_reference operator*() const { return operator[](0); }
+
     ////////////////////
     template<typename T, typename std::enable_if< !std::is_same<T, bool>::value, int >::type=0>
     T to(size_type n=0) const
@@ -315,15 +318,29 @@ public:
     void clear() { _M_attributes.clear(); }
 
     ////////////////////
-    reference operator[](const std::string& name) { return const_cast<reference>(*find(name)); } // o.O
-    const_reference operator[](const std::string& name) const { return *find(name); }
-
-    ////////////////////
-    template<typename T>
-    T to(const std::string& name, attribute::size_type n=0) const
+    reference operator[](const std::string& name)
     {
         FUNCTION_CONTEXT(ctx);
-        return _M_to<T>::func(*this, name, n);
+
+        iterator ri= find(name);
+        if(ri == end()) throw out_of_range("entry::operator[]");
+        return const_cast<reference>(*ri); // o.O
+    }
+    const_reference operator[](const std::string& name) const
+    {
+        FUNCTION_CONTEXT(ctx);
+
+        const_iterator ri= find(name);
+        if(ri == cend()) throw out_of_range("entry::operator[]");
+        return *ri;
+    }
+
+    ////////////////////
+    template<typename ToType>
+    ToType to(const std::string& name, attribute::size_type n=0) const
+    {
+        FUNCTION_CONTEXT(ctx);
+        return _M_to<ToType>::func(*this, name, n);
     }
 
     ////////////////////
@@ -378,27 +395,24 @@ private:
     friend class connection;
 
     ////////////////////
-    template<typename T>
+    template<typename ToType>
     struct _M_to
     {
-        static T func(const slap::entry& e, const std::string& name, attribute::size_type n=0)
+        static ToType func(const slap::entry& e, const std::string& name, attribute::size_type n=0)
         {
-            const_iterator ri= e.find(name);
-            if(ri != e.end())
-                return ri->to<T>(n);
-            else throw out_of_range("entry::_M_to");
+            return e[name].to<ToType>(n);
         }
     };
 
-    template<typename T>
-    struct _M_to<optional<T>>
+    template<typename ToType>
+    struct _M_to<optional<ToType>>
     {
-        static optional<T> func(const slap::entry& e, const std::string& name, attribute::size_type n=0)
+        static optional<ToType> func(const slap::entry& e, const std::string& name, attribute::size_type n=0)
         {
             const_iterator ri= e.find(name);
-            if(ri != e.end())
-                return ri->to<T>(n);
-            else return optional<T>();
+            if(ri != e.cend())
+                return ri->to<ToType>(n);
+            else return optional<ToType>();
         }
     };
 };
