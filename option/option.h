@@ -192,11 +192,31 @@ public:
         catch(std::out_of_range& e) { throw out_of_range(e); }
     }
 
-    reference operator()(const std::string& longname) { return *find(longname); }
-    const_reference operator()(const std::string& longname) const { return *find(longname); }
+    reference operator[](const std::string& longname)
+    {
+        iterator ri= find(longname);
+        if(ri == end()) throw out_of_range("option::operator[]");
+        return *ri;
+    }
+    const_reference operator[](const std::string& longname) const
+    {
+        const_iterator ri= find(longname);
+        if(ri == end()) throw out_of_range("option::operator[]");
+        return *ri;
+    }
 
-    reference operator()(const char name) { return *find(name); }
-    const_reference operator()(const char name) const { return *find(name); }
+    reference operator[](const char name)
+    {
+        iterator ri= find(name);
+        if(ri == end()) throw out_of_range("option::operator[]");
+        return *ri;
+    }
+    const_reference operator[](const char name) const
+    {
+        const_iterator ri= find(name);
+        if(ri == end()) throw out_of_range("option::operator[]");
+        return *ri;
+    }
 
     ////////////////////
     void append(const value_type& option) { _M_options.push_back(option); }
