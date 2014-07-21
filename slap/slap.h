@@ -323,7 +323,7 @@ public:
     T to(const std::string& name, attribute::size_type n=0) const
     {
         FUNCTION_CONTEXT(ctx);
-        return _M_to<T>(*this, name, n);
+        return _M_to<T>::func(*this, name, n);
     }
 
     ////////////////////
@@ -381,7 +381,7 @@ private:
     template<typename T>
     struct _M_to
     {
-        T operator()(const slap::entry& e, const std::string& name, attribute::size_type n=0)
+        static T func(const slap::entry& e, const std::string& name, attribute::size_type n=0)
         {
             const_iterator ri= e.find(name);
             if(ri != e.end())
@@ -393,7 +393,7 @@ private:
     template<typename T>
     struct _M_to<optional<T>>
     {
-        optional<T> operator()(const slap::entry& e, const std::string& name, attribute::size_type n=0)
+        static optional<T> func(const slap::entry& e, const std::string& name, attribute::size_type n=0)
         {
             const_iterator ri= e.find(name);
             if(ri != e.end())
