@@ -30,7 +30,12 @@ struct _M_convert
 {
     static ToType to(const FromType& source)
     {
-        return source;
+        std::stringstream stream;
+        ToType value;
+
+        if((stream << source) && (stream >> value))
+            return value;
+        else throw invalid_argument("Conversion failed");
     }
 };
 
