@@ -22,8 +22,6 @@ namespace app
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 bool process(const std::string& command, int* return_val)
 {
-    FUNCTION_CONTEXT(ctx);
-
     int x;
     if(!return_val) return_val= &x;
 
@@ -39,8 +37,6 @@ bool process(const std::string& command, int* return_val)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 pid execute(const std::string& name, const arguments& args)
 {
-    FUNCTION_CONTEXT(ctx);
-
     arguments c;
     c.push_back(name);
     c.insert(c.end(), args.begin(), args.end());
