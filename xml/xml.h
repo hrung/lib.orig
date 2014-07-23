@@ -42,11 +42,12 @@ public:
     const std::string&  name() const { return _M_name; }
     const std::string& value() const { return _M_value; }
 
+    const std::string& operator*() const { return _M_value; }
+
     bool empty() const { return _M_name.empty() && _M_value.empty(); }
 
     void validate() const
     {
-        FUNCTION_CONTEXT(ctx);
         validate_name(_M_name);
         validate_value(_M_value);
     }
@@ -152,7 +153,6 @@ public:
     ////////////////////
     void validate() const
     {
-        FUNCTION_CONTEXT(ctx);
         validate_name(_M_name);
         for(const_reference x: _M_attributes) x.validate();
     }
@@ -214,14 +214,12 @@ public:
     ////////////////////
     void insert(const std::string& value)
     {
-        FUNCTION_CONTEXT(ctx);
         if(!complex())
             _M_value+= value;
         else insert(element(std::string(), value));
     }
     void insert(std::string&& value)
     {
-        FUNCTION_CONTEXT(ctx);
         if(!complex())
             _M_value+= value;
         else insert(element(std::string(), std::move(value)));
@@ -232,8 +230,6 @@ public:
 
     void validate()
     {
-        FUNCTION_CONTEXT(ctx);
-
         _M_tag.validate();
         if(complex())
             for(element& e: _M_children) e.validate();
@@ -260,8 +256,6 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline element parse(const std::string& source)
 {
-    FUNCTION_CONTEXT(ctx);
-
     element e;
     std::string copy= source;
 
@@ -272,8 +266,6 @@ inline element parse(const std::string& source)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline element parse(std::string&& source)
 {
-    FUNCTION_CONTEXT(ctx);
-
     element e;
     std::string move= std::move(source);
 
