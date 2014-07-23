@@ -31,7 +31,6 @@ struct address
 
     address(const std::string& string)
     {
-        FUNCTION_CONTEXT(ctx);
         if(string.empty()) return;
 
         in_addr ina;
