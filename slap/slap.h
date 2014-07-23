@@ -82,13 +82,11 @@ public:
     template<typename T>
     attribute(const std::string& name, T&& value): _M_name(name), _M_operation(operation::add)
     {
-        FUNCTION_CONTEXT(ctx);
         append(std::forward<T>(value));
     }
     template<typename T>
     attribute(std::string&& name, T&& value): _M_name(std::move(name)), _M_operation(operation::add)
     {
-        FUNCTION_CONTEXT(ctx);
         append(std::forward<T>(value));
     }
 
@@ -96,13 +94,11 @@ public:
     template<typename T>
     attribute(const std::string& name, slap::operation mod, T&& value): _M_name(name), _M_operation(mod)
     {
-        FUNCTION_CONTEXT(ctx);
         append(std::forward<T>(value));
     }
     template<typename T>
     attribute(std::string&& name, slap::operation mod, T&& value): _M_name(std::move(name)), _M_operation(mod)
     {
-        FUNCTION_CONTEXT(ctx);
         append(std::forward<T>(value));
     }
 
@@ -153,13 +149,11 @@ public:
     ////////////////////
     reference operator[](size_type n)
     {
-        FUNCTION_CONTEXT(ctx);
         try { return _M_values.at(n); }
         catch(std::out_of_range& e) { throw out_of_range(e); }
     }
     const_reference operator[](size_type n) const
     {
-        FUNCTION_CONTEXT(ctx);
         try { return _M_values.at(n); }
         catch(std::out_of_range& e) { throw out_of_range(e); }
     }
@@ -171,13 +165,11 @@ public:
     template<typename T, typename std::enable_if< !std::is_same<T, bool>::value, int >::type=0>
     T to(size_type n=0) const
     {
-        FUNCTION_CONTEXT(ctx);
         return convert::to<T>(operator[](n));
     }
     template<typename T, typename std::enable_if< std::is_same<T, bool>::value, int >::type=0>
     T to(size_type n=0) const
     {
-        FUNCTION_CONTEXT(ctx);
         return (operator[](n)=="TRUE")? true: false;
     }
 
@@ -189,11 +181,7 @@ public:
     void append(bool value) { _M_values.push_back(value? "TRUE": "FALSE"); }
 
     template<typename T>
-    void append(const T& value)
-    {
-        FUNCTION_CONTEXT(ctx);
-        append(convert::to<value_type>(value));
-    }
+    void append(const T& value) { append(convert::to<value_type>(value)); }
 
     iterator remove(const value_type& value) { return _M_values.erase(find(value)); }
 
@@ -320,16 +308,12 @@ public:
     ////////////////////
     reference operator[](const std::string& name)
     {
-        FUNCTION_CONTEXT(ctx);
-
         iterator ri= find(name);
         if(ri == end()) throw out_of_range("entry::operator[]");
         return const_cast<reference>(*ri); // o.O
     }
     const_reference operator[](const std::string& name) const
     {
-        FUNCTION_CONTEXT(ctx);
-
         const_iterator ri= find(name);
         if(ri == cend()) throw out_of_range("entry::operator[]");
         return *ri;
@@ -339,7 +323,6 @@ public:
     template<typename ToType>
     ToType to(const std::string& name, attribute::size_type n=0) const
     {
-        FUNCTION_CONTEXT(ctx);
         return _M_to<ToType>::func(*this, name, n);
     }
 
@@ -454,14 +437,12 @@ public:
     ////////////////////
     void open(const std::string& uri, bool start_TLS= true)
     {
-        FUNCTION_CONTEXT(ctx);
         _M_uri= uri;
         _M_start_TLS= start_TLS;
         _M_open();
     }
     void open(std::string&& uri, bool start_TLS= true)
     {
-        FUNCTION_CONTEXT(ctx);
         _M_uri= std::move(uri);
         _M_start_TLS= start_TLS;
         _M_open();
@@ -470,14 +451,12 @@ public:
 
     void bind(const std::string& dn, const std::string& passwd= std::string())
     {
-        FUNCTION_CONTEXT(ctx);
         _M_bind_dn= dn;
         _M_passwd= passwd;
         _M_bind();
     }
     void bind(std::string&& dn, const std::string& passwd= std::string())
     {
-        FUNCTION_CONTEXT(ctx);
         _M_bind_dn= std::move(dn);
         _M_passwd= passwd;
         _M_bind();

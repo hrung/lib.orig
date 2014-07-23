@@ -26,7 +26,6 @@ const std::error_category& slap_category()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void attribute::create_mod() const
 {
-    FUNCTION_CONTEXT(ctx);
     delete_mod();
 
     // create empty LDAPMod
@@ -58,7 +57,6 @@ void attribute::create_mod() const
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void attribute::delete_mod() const
 {
-    FUNCTION_CONTEXT(ctx);
     if(_M_mod)
     {
         char** val= _M_mod->mod_values;
@@ -83,7 +81,6 @@ void attribute::delete_mod() const
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void entry::create_mod() const
 {
-    FUNCTION_CONTEXT(ctx);
     delete_mod();
 
     int n= _M_attributes.size();
@@ -101,7 +98,6 @@ void entry::create_mod() const
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void entry::delete_mod() const
 {
-    FUNCTION_CONTEXT(ctx);
     if(_M_mod)
     {
         for(const_reference ri: _M_attributes) ri.delete_mod();
@@ -114,7 +110,6 @@ void entry::delete_mod() const
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void connection::_M_open()
 {
-    FUNCTION_CONTEXT(ctx);
     close();
 
     int err= ldap_initialize(&_M_ldap, _M_uri.data());
@@ -133,8 +128,6 @@ void connection::_M_open()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void connection::close()
 {
-    FUNCTION_CONTEXT(ctx);
-
     if(_M_ldap) ldap_unbind_ext_s(_M_ldap, nullptr, nullptr);
 
     _M_bind_dn.clear();
@@ -144,8 +137,6 @@ void connection::close()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void connection::_M_bind()
 {
-    FUNCTION_CONTEXT(ctx);
-
     BerValue cred;
     cred.bv_val= const_cast<char*>(_M_passwd.data());
     cred.bv_len= _M_passwd.size();
@@ -159,7 +150,6 @@ void connection::_M_bind()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void connection::add(const entry& e)
 {
-    FUNCTION_CONTEXT(ctx);
     e.create_mod();
 
     int err= ldap_add_ext_s(_M_ldap, e.dn().data(), e._M_mod, nullptr, nullptr);
@@ -171,8 +161,6 @@ void connection::add(const entry& e)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void connection::remove(const std::string& dn)
 {
-    FUNCTION_CONTEXT(ctx);
-
     int err= ldap_delete_ext_s(_M_ldap, dn.data(), nullptr, nullptr);
     if(err != LDAP_SUCCESS) throw slap_error(err);
 }
@@ -180,7 +168,6 @@ void connection::remove(const std::string& dn)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void connection::modify(const entry& e)
 {
-    FUNCTION_CONTEXT(ctx);
     e.create_mod();
 
     int err= ldap_modify_ext_s(_M_ldap, e.dn().data(), e._M_mod, nullptr, nullptr);
@@ -192,8 +179,6 @@ void connection::modify(const entry& e)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void connection::rename(const std::string& dn, const std::string& new_rdn, bool remove_old, const std::string& new_parent)
 {
-    FUNCTION_CONTEXT(ctx);
-
     int err= ldap_rename_s(_M_ldap,
         dn.data(),
         new_rdn.size()? new_rdn.data(): nullptr,
@@ -206,8 +191,6 @@ void connection::rename(const std::string& dn, const std::string& new_rdn, bool 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 bool connection::compare(const std::string& dn, const attribute& x)
 {
-    FUNCTION_CONTEXT(ctx);
-
     BerValue bv;
     bv.bv_val= const_cast<char*>(x[0].data());
     bv.bv_len= x[0].size();
@@ -233,7 +216,6 @@ entries connection::search(const std::string& base,
                            const order_func& func,
                            const slap::names& names, bool get_value)
 {
-    FUNCTION_CONTEXT(ctx);
     slap::entries entries;
 
     std::vector<char*> _M_names;
