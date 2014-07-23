@@ -16,6 +16,13 @@
 #include <stack>
 #include <string>
 
+// for applications compiled with -pthread
+#ifdef _REENTRANT
+#  include <thread>
+#  include <mutex>
+#  include <map>
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class backtrace: public std::stack<std::string>
@@ -28,14 +35,23 @@ public:
 class context
 {
 public:
-    context(const std::string& name) { _M_current.push(name); }
-    context(std::string&& name) { _M_current.push(std::move(name)); }
+    context(const std::string& name) { push(name); }
+    context(std::string&& name) { push(std::move(name)); }
+   ~context() { pop(); }
 
-    ~context() { _M_current.pop(); }
+    static backtrace current();
 
 private:
+    void push(const std::string& name);
+    void push(std::string&& name);
+    void pop();
+
+#ifdef _REENTRANT
+    static std::map<std::thread::id, backtrace> _M_current;
+    static std::mutex _M_mutex;
+#else
     static backtrace _M_current;
-    friend class context_error;
+#endif
 };
 
 #define FUNCTION_CONTEXT(ctx) context ctx(std::string()+ "Function: "+ __FUNCTION__+ "()")
@@ -44,7 +60,7 @@ private:
 class context_error
 {
 public:
-    context_error(): _M_trace(context::_M_current) { }
+    context_error(): _M_trace(context::current()) { }
     const backtrace& trace() const { return _M_trace; }
 
 private:
