@@ -162,15 +162,22 @@ public:
     const_reference operator[](size_type n) const { return value(n); }
 
     ////////////////////
-    template<typename T, typename std::enable_if< !std::is_same<T, bool>::value, int >::type=0>
-    T to(size_type n=0) const
+    template<typename ToType, typename std::enable_if< !std::is_same<ToType, bool>::value, int >::type=0>
+    ToType to(size_type n=0) const
     {
-        return convert::to<T>(operator[](n));
+        return convert::to<ToType>(operator[](n));
     }
-    template<typename T, typename std::enable_if< std::is_same<T, bool>::value, int >::type=0>
-    T to(size_type n=0) const
+    template<typename ToType, typename std::enable_if< std::is_same<ToType, bool>::value, int >::type=0>
+    ToType to(size_type n=0) const
     {
         return (operator[](n)=="TRUE")? true: false;
+    }
+
+    template<typename ToType>
+    void get(ToType& value, size_type n=0) const noexcept
+    {
+        try { value= to<ToType>(n); }
+        catch(...) { /* do nothing */ }
     }
 
     ////////////////////
@@ -260,10 +267,10 @@ public:
     explicit entry(const std::string& dn): _M_dn(dn) { }
     explicit entry(std::string&& dn): _M_dn(std::move(dn)) { }
 
-    entry(const std::string& dn, std::initializer_list<attribute> attributes):
+    entry(const std::string& dn, std::initializer_list<slap::attribute> attributes):
         _M_dn(dn), _M_attributes(attributes)
     { }
-    entry(std::string&& dn, std::initializer_list<attribute> attributes):
+    entry(std::string&& dn, std::initializer_list<slap::attribute> attributes):
         _M_dn(std::move(dn)), _M_attributes(attributes)
     { }
 
@@ -305,25 +312,35 @@ public:
     size_type size() const { return _M_attributes.size(); }
     void clear() { _M_attributes.clear(); }
 
-    ////////////////////
-    reference operator[](const std::string& name)
+    reference attribute(const std::string& name)
     {
         iterator ri= find(name);
-        if(ri == end()) throw out_of_range("entry::operator[]");
+        if(ri == end()) throw out_of_range("entry::value()");
         return const_cast<reference>(*ri); // o.O
     }
-    const_reference operator[](const std::string& name) const
+    const_reference attribute(const std::string& name) const
     {
         const_iterator ri= find(name);
-        if(ri == cend()) throw out_of_range("entry::operator[]");
+        if(ri == cend()) throw out_of_range("entry::value");
         return *ri;
     }
 
     ////////////////////
+    reference operator[](const std::string& name) { return attribute(name); }
+    const_reference operator[](const std::string& name) const { return attribute(name); }
+
+    ////////////////////
     template<typename ToType>
-    ToType to(const std::string& name, attribute::size_type n=0) const
+    ToType attribute_to(const std::string& name, slap::attribute::size_type n=0) const
     {
         return _M_to<ToType>::func(*this, name, n);
+    }
+
+    template<typename ToType>
+    void attribute_get(ToType& value, const std::string& name, slap::attribute::size_type n=0) const noexcept
+    {
+        try { value= attribute_to<ToType>(name, n); }
+        catch(...) { /* do nothing*/ }
     }
 
     ////////////////////
@@ -381,16 +398,16 @@ private:
     template<typename ToType>
     struct _M_to
     {
-        static ToType func(const slap::entry& e, const std::string& name, attribute::size_type n=0)
+        static ToType func(const slap::entry& e, const std::string& name, slap::attribute::size_type n=0)
         {
-            return e[name].to<ToType>(n);
+            return e.attribute(name).to<ToType>(n);
         }
     };
 
     template<typename ToType>
     struct _M_to<optional<ToType>>
     {
-        static optional<ToType> func(const slap::entry& e, const std::string& name, attribute::size_type n=0)
+        static optional<ToType> func(const slap::entry& e, const std::string& name, slap::attribute::size_type n=0)
         {
             const_iterator ri= e.find(name);
             if(ri != e.cend())
