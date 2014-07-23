@@ -24,8 +24,6 @@ constexpr int unique_code_min= 1000;
 
 void options::parse(int argc, char* argv[], int& index)
 {
-    FUNCTION_CONTEXT(ctx);
-
     std::vector<struct ::option> long_opt;
     std::vector<std::unique_ptr<char[]>> long_opt_name;
 
@@ -113,8 +111,6 @@ using std::setw; using std::left; using std::right; using std::endl;
 
 std::string options::usage()
 {
-    FUNCTION_CONTEXT(ctx);
-
     std::ostringstream stream;
     for(const_reference option: _M_options)
     {

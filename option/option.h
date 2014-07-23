@@ -181,13 +181,11 @@ public:
     ////////////////////
     reference operator[](size_type n)
     {
-        FUNCTION_CONTEXT(ctx);
         try { return _M_options.at(n); }
         catch(std::out_of_range& e) { throw out_of_range(e); }
     }
     const_reference operator[](size_type n) const
     {
-        FUNCTION_CONTEXT(ctx);
         try { return _M_options.at(n); }
         catch(std::out_of_range& e) { throw out_of_range(e); }
     }
