@@ -30,8 +30,6 @@ int device::_M_count=0;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void device::lib_open()
 {
-    FUNCTION_CONTEXT(ctx);
-
     HEIOpen(HEIAPIVERSION);
     ++_M_count;
 }
@@ -39,8 +37,6 @@ void device::lib_open()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void device::lib_close()
 {
-    FUNCTION_CONTEXT(ctx);
-
     if(_M_count)
     {
         HEIClose();
@@ -51,8 +47,6 @@ void device::lib_close()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void device::close()
 {
-    FUNCTION_CONTEXT(ctx);
-
     if(_M_open)
     {
         // close device
@@ -73,8 +67,6 @@ void device::close()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void device::open(transport tran, protocol proto, unsigned number, const std::string& name)
 {
-    FUNCTION_CONTEXT(ctx);
-
     // close device if it's already open
     close();
 
@@ -134,8 +126,6 @@ void device::open(transport tran, protocol proto, unsigned number, const std::st
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void device::read_data(data_type type, unsigned address, unsigned count, void* buf)
 {
-    FUNCTION_CONTEXT(ctx);
-
     if(!_M_open) throw hei_error(errc::user_error, "Device not open");
 
     int err= HEICCMRequest(&_M_dev, FALSE, int(type), address, count, (BYTE*)buf);
@@ -145,8 +135,6 @@ void device::read_data(data_type type, unsigned address, unsigned count, void* b
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void device::write_data(data_type type, unsigned address, unsigned count, void* buf)
 {
-    FUNCTION_CONTEXT(ctx);
-
     if(!_M_open) throw hei_error(errc::user_error, "Device not open");
 
     int err= HEICCMRequest(&_M_dev, TRUE, int(type), address, count, (BYTE*)buf);
@@ -156,8 +144,6 @@ void device::write_data(data_type type, unsigned address, unsigned count, void* 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 bool device::read_input(unsigned offset, unsigned input)
 {
-    FUNCTION_CONTEXT(ctx);
-
     if(!_M_open) throw hei_error(errc::user_error, "Device not open");
 
     unsigned address= offset+ (input-1)/8;
