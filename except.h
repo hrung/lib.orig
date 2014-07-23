@@ -48,7 +48,7 @@ private:
 
 #ifdef _REENTRANT
     static std::map<std::thread::id, backtrace> _M_current;
-    static std::mutex _M_mutex;
+    static std::recursive_mutex _M_mutex;
 #else
     static backtrace _M_current;
 #endif
