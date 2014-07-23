@@ -33,7 +33,7 @@ struct _M_convert
         std::stringstream stream;
         ToType value;
 
-        if((stream << source) && (stream >> value))
+        if((stream << source) && (stream >> value) && stream.eof())
             return value;
         else throw invalid_argument("Conversion failed");
     }
