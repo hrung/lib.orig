@@ -146,20 +146,20 @@ public:
     size_type size() const { return _M_values.size(); }
     void clear() { _M_values.clear(); }
 
-    ////////////////////
-    reference operator[](size_type n)
+    reference value(size_type n=0)
     {
         try { return _M_values.at(n); }
         catch(std::out_of_range& e) { throw out_of_range(e); }
     }
-    const_reference operator[](size_type n) const
+    const_reference value(size_type n=0) const
     {
         try { return _M_values.at(n); }
         catch(std::out_of_range& e) { throw out_of_range(e); }
     }
 
-    reference operator*() { return operator[](0); }
-    const_reference operator*() const { return operator[](0); }
+    ////////////////////
+    reference operator[](size_type n) { return value(n); }
+    const_reference operator[](size_type n) const { return value(n); }
 
     ////////////////////
     template<typename T, typename std::enable_if< !std::is_same<T, bool>::value, int >::type=0>
