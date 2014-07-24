@@ -316,13 +316,13 @@ public:
     reference attribute(const std::string& name)
     {
         iterator ri= find(name);
-        if(ri == end()) throw out_of_range("entry::value()");
+        if(ri == end()) throw out_of_range("entry::attribute()");
         return const_cast<reference>(*ri); // o.O
     }
     const_reference attribute(const std::string& name) const
     {
         const_iterator ri= find(name);
-        if(ri == cend()) throw out_of_range("entry::value");
+        if(ri == cend()) throw out_of_range("entry::attribute()");
         return *ri;
     }
 
