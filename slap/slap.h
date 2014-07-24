@@ -146,6 +146,7 @@ public:
     size_type size() const { return _M_values.size(); }
     void clear() { _M_values.clear(); }
 
+    ////////////////////
     reference value(size_type n=0)
     {
         try { return _M_values.at(n); }
@@ -157,7 +158,6 @@ public:
         catch(std::out_of_range& e) { throw out_of_range(e); }
     }
 
-    ////////////////////
     reference operator[](size_type n) { return value(n); }
     const_reference operator[](size_type n) const { return value(n); }
 
@@ -312,6 +312,7 @@ public:
     size_type size() const { return _M_attributes.size(); }
     void clear() { _M_attributes.clear(); }
 
+    ////////////////////
     reference attribute(const std::string& name)
     {
         iterator ri= find(name);
@@ -325,9 +326,17 @@ public:
         return *ri;
     }
 
-    ////////////////////
     reference operator[](const std::string& name) { return attribute(name); }
     const_reference operator[](const std::string& name) const { return attribute(name); }
+
+    slap::attribute::reference attribute_value(const std::string& name, slap::attribute::size_type n=0)
+    {
+        return attribute(name).value(n);
+    }
+    slap::attribute::const_reference attribute_value(const std::string& name, slap::attribute::size_type n=0) const
+    {
+        return attribute(name).value(n);
+    }
 
     ////////////////////
     template<typename ToType>
