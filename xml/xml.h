@@ -39,10 +39,11 @@ public:
         _M_name(std::move(name)), _M_value(std::move(value))
     { }
 
-    const std::string&  name() const { return _M_name; }
-    const std::string& value() const { return _M_value; }
+    std::string& name() { return _M_name; }
+    const std::string& name() const { return _M_name; }
 
-    const std::string& operator*() const { return _M_value; }
+    std::string& value() { return _M_value; }
+    const std::string& value() const { return _M_value; }
 
     bool empty() const { return _M_name.empty() && _M_value.empty(); }
 
@@ -107,8 +108,21 @@ public:
     void clear() { _M_attributes.clear(); }
 
     ////////////////////
-    reference operator[](const std::string& name) { return const_cast<reference>(*find(name)); } // o.O
-    const_reference operator[](const std::string& name) const { return *find(name); }
+    reference attribute(const std::string& name)
+    {
+        iterator ri= find(name);
+        if(ri == end()) throw out_of_range("tag::attribute()");
+        return const_cast<reference>(*ri); // o.O
+    }
+    const_reference attribute(const std::string& name) const
+    {
+        const_iterator ri= find(name);
+        if(ri == cend()) throw out_of_range("tag::attribute()");
+        return *ri;
+    }
+
+    reference operator[](const std::string& name) { return attribute(name); }
+    const_reference operator[](const std::string& name) const { return attribute(name); }
 
     ////////////////////
     std::pair<iterator,bool> insert(const value_type& x) { return _M_attributes.insert(x); }

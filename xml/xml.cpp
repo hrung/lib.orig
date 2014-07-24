@@ -155,7 +155,7 @@ void tag::_M_parse(std::string& source, tag_type type, bool& empty)
 
     if(type!=end_tag) while(true)
     {
-        attribute x;
+        xml::attribute x;
         x._M_parse(source);
 
         if(x.empty()) break;
