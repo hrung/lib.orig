@@ -117,14 +117,14 @@ inline std::string decorate(const std::string& value, bool nice, int ix)
 std::string tag::_M_write(tag_type type, bool nice, int ix) const
 {
     std::string value("<");
-        if(type==end_tag) value+= "/";
+        if(type==tag_end) value+= "/";
     value+= _M_name;
 
-    if(type==start_tag || type==empty_tag)
+    if(type==tag_start || type==tag_empty)
         for(auto ri= _M_attributes.begin(); ri != _M_attributes.end(); ++ri)
     value+= ri->_M_write();
 
-    if(type==empty_tag) value+= "/";
+    if(type==tag_empty) value+= "/";
     value+= ">";
 
     return decorate(value, nice, ix);
@@ -136,7 +136,7 @@ void tag::_M_parse(std::string& source, tag_type type, bool& empty)
     if(source[0] != '<') throw xml_error(errc::invalid_token);
     chop(source);
 
-    if(type==end_tag)
+    if(type==tag_end)
     {
         if(source[0] != '/') throw xml_error(errc::invalid_token);
         chop(source);
@@ -145,7 +145,7 @@ void tag::_M_parse(std::string& source, tag_type type, bool& empty)
     std::string name;
     if(!parse_name(source, name)) throw xml_error(errc::syntax);
 
-    if(type==end_tag)
+    if(type==tag_end)
     {
         if(name!=_M_name) throw xml_error(errc::tag_mismatch);
     }
@@ -153,12 +153,12 @@ void tag::_M_parse(std::string& source, tag_type type, bool& empty)
 
     parse_space(source);
 
-    if(type!=end_tag) while(true)
+    if(type!=tag_end) while(true)
     {
         xml::attribute x;
         x._M_parse(source);
 
-        if(x.empty()) break;
+        if(x.empty_attribute()) break;
 
         if(count(x.name())) throw xml_error(errc::duplicate_attribute);
         insert(std::move(x));
@@ -166,7 +166,7 @@ void tag::_M_parse(std::string& source, tag_type type, bool& empty)
 
     if(source[0] == '/')
     {
-        if(type==end_tag) throw xml_error(errc::invalid_token);
+        if(type==tag_end) throw xml_error(errc::invalid_token);
 
         chop(source);
         empty= true;
@@ -191,7 +191,7 @@ std::string element::value() const
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 bool element::make_simple()
 {
-    if(_M_tag.empty() && _M_children.size()==1)
+    if(_M_tag.empty_tag() && _M_children.size()==1)
     {
         element e= std::move(_M_children[0]);
 
@@ -232,18 +232,18 @@ void element::insert(element&& x)
 std::string element::_M_write(bool nice, int ix) const
 {
     if(_M_value.empty() && _M_children.empty())
-        return _M_tag.empty()?
-    std::string(): _M_tag._M_write(tag::empty_tag, nice, ix++);
+        return _M_tag.empty_tag()?
+    std::string(): _M_tag._M_write(tag::tag_empty, nice, ix++);
 
     std::string value;
-    if(!_M_tag.empty()) value+= _M_tag._M_write(tag::start_tag, nice, ix++);
+    if(!_M_tag.empty_tag()) value+= _M_tag._M_write(tag::tag_start, nice, ix++);
 
     if(complex())
         for(auto ri= _M_children.begin(); ri != _M_children.end(); ++ri)
             value+= ri->_M_write(nice, ix);
     else value+= decorate(_M_value, nice, ix);
 
-    if(!_M_tag.empty()) value+= _M_tag._M_write(tag::end_tag, nice, --ix);
+    if(!_M_tag.empty_tag()) value+= _M_tag._M_write(tag::tag_end, nice, --ix);
     return value;
 }
 
@@ -261,7 +261,7 @@ void element::_M_parse(std::string& source)
         else if(source[1]=='/') // end tag
         {
             bool empty;
-            _M_tag._M_parse(source, tag::end_tag, empty);
+            _M_tag._M_parse(source, tag::tag_end, empty);
 
             break;
         }
@@ -270,7 +270,7 @@ void element::_M_parse(std::string& source)
             element e;
 
             bool empty= false;
-            e.tag()._M_parse(source, tag::start_tag, empty);
+            e.tag()._M_parse(source, tag::tag_start, empty);
 
             if(!empty) e._M_parse(source);
 

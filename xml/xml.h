@@ -45,7 +45,7 @@ public:
     std::string& value() { return _M_value; }
     const std::string& value() const { return _M_value; }
 
-    bool empty() const { return _M_name.empty() && _M_value.empty(); }
+    bool empty_attribute() const { return _M_name.empty() && _M_value.empty(); }
 
     void validate() const
     {
@@ -102,6 +102,7 @@ public:
 
     ////////////////////
     const std::string name() const { return _M_name; }
+    bool empty_tag() const { return _M_name.empty() && _M_attributes.empty(); }
 
     bool empty() const { return _M_attributes.empty(); }
     size_type size() const { return _M_attributes.size(); }
@@ -175,7 +176,7 @@ private:
     std::string _M_name;
     xml::attributes _M_attributes;
 
-    enum tag_type { start_tag, end_tag, empty_tag };
+    enum tag_type { tag_start, tag_end, tag_empty };
 
     std::string _M_write(tag_type type, bool nice= false, int ix=0) const;
     void _M_parse(std::string& source, tag_type type, bool& empty);
@@ -220,7 +221,7 @@ public:
     xml::elements& children() { return _M_children; }
     const xml::elements& children() const { return _M_children; }
 
-    bool empty() const { return _M_tag.empty() && _M_children.empty() && _M_value.empty(); }
+    bool empty_element() const { return _M_tag.empty_tag() && _M_children.empty() && _M_value.empty(); }
     bool complex() const { return !_M_children.empty(); }
 
     bool make_simple();
