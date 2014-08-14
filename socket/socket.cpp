@@ -175,6 +175,18 @@ void socket::set_multicast_ttl(unsigned char value)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+void socket::set_multicast_all(bool value)
+{
+    unsigned char opt= (value? 1: 0);
+    if(setsockopt(_M_fd,
+        IPPROTO_IP,
+        IP_MULTICAST_ALL,
+        &opt,
+        sizeof(opt)))
+    throw system_error();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 void socket::add_membership(net::address group)
 {
     ip_mreq imr;

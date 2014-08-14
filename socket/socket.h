@@ -103,6 +103,7 @@ public:
 
     void set_multicast_loop(bool);
     void set_multicast_ttl(unsigned char);
+    void set_multicast_all(bool);
 
     void add_membership(net::address group);
     void drop_membership(net::address group);
