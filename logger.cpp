@@ -11,7 +11,35 @@ protected:
     static constexpr level reset= level::info;
     std::streamsize xsputn(const char* message, std::streamsize n) override
     {
-        syslog(static_cast<int>(current), "%s", message);
+        int pri;
+        switch(current)
+        {
+        case level::emergency:
+            pri= LOG_EMERG;
+            break;
+        case level::alert:
+            pri= LOG_ALERT;
+            break;
+        case level::critical:
+            pri= LOG_CRIT;
+            break;
+        case level::error:
+            pri= LOG_ERR;
+            break;
+        case level::warning:
+            pri= LOG_WARNING;
+            break;
+        case level::notice:
+            pri= LOG_NOTICE;
+            break;
+        case level::info:
+            pri= LOG_INFO;
+            break;
+        case level::debug:
+            pri= LOG_DEBUG;
+            break;
+        }
+        syslog(pri, "%s", message);
 
         current= reset;
         return n;
