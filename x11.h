@@ -29,9 +29,16 @@ public:
 
     ////////////////////
     const QString& name() const { return _M_name; }
+    bool set_name(const QString&);
+
     const QString& path() const { return _M_path; }
+    bool set_path(const QString&);
+
     const QString& auth() const { return _M_auth; }
+    bool set_auth(const QString&);
+
     const QStringList& args() const { return _M_args; }
+    bool set_args(const QStringList&);
 
     ////////////////////
     bool wait_for_started(int msec);

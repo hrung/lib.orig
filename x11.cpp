@@ -12,19 +12,49 @@ namespace X11
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-Server::Server(QString name, QObject* parent):
-    QObject(parent)
-{
-    _M_name= name;
-    _M_path= "/usr/bin/X";
-    _M_auth= "/run/camel.auth";
-    _M_args << "-br" <<  "-novtswitch" << "-nolisten" << "tcp" << "-quiet";
-}
+Server::Server(QString name, QObject* parent): QObject(parent),
+    _M_name(name),
+    _M_path("/usr/bin/X"),
+    _M_auth("/run/camel.auth"),
+    _M_args(QStringList() << "-br" <<  "-novtswitch" << "-nolisten" << "tcp" << "-quiet")
+{ }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 Server::~Server()
 {
     stop();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+bool Server::set_name(const QString& x)
+{
+    if(running()) return false;
+    _M_name=x;
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+bool Server::set_path(const QString& x)
+{
+    if(running()) return false;
+    _M_path=x;
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+bool Server::set_auth(const QString& x)
+{
+    if(running()) return false;
+    _M_auth=x;
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+bool Server::set_args(const QStringList& x)
+{
+    if(running()) return false;
+    _M_args= x;
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
