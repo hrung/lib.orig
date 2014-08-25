@@ -47,6 +47,8 @@ public:
     bool running() { return wait_for_started(0); }
     bool ready() const { return _M_display; }
 
+    Display* display() const { return _M_display; }
+
 public slots:
     bool start();
     bool stop();
