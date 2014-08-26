@@ -1,6 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "logger.h"
-#include <syslog.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace sys
@@ -9,35 +8,7 @@ namespace sys
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 std::streamsize streambuf::xsputn(const char* message, std::streamsize n)
 {
-    int pri;
-    switch(current)
-    {
-    case emergency:
-        pri= LOG_EMERG;
-        break;
-    case alert:
-        pri= LOG_ALERT;
-        break;
-    case critical:
-        pri= LOG_CRIT;
-        break;
-    case error:
-        pri= LOG_ERR;
-        break;
-    case warning:
-        pri= LOG_WARNING;
-        break;
-    case notice:
-        pri= LOG_NOTICE;
-        break;
-    case info:
-        pri= LOG_INFO;
-        break;
-    case debug:
-        pri= LOG_DEBUG;
-        break;
-    }
-    ::syslog(pri, "%s", message);
+    ::syslog(current, "%s", message);
 
     current= default_level;
     return n;
