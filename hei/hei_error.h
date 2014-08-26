@@ -10,7 +10,7 @@
 #define HEI_ERROR_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "except.h"
+#include <system_error>
 #include <hei.h>
 
 #undef min
@@ -151,14 +151,14 @@ namespace std
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class hei_error: public system_error
+class hei_error: public std::system_error
 {
 public:
-    hei_error(int code): system_error(std::error_code(code, hei::hei_category())) { }
-    hei_error(int code, const std::string& message): system_error(std::error_code(code, hei::hei_category()), message) { }
+    hei_error(int code): std::system_error(std::error_code(code, hei::hei_category())) { }
+    hei_error(int code, const std::string& message): std::system_error(std::error_code(code, hei::hei_category()), message) { }
 
-    hei_error(hei::errc code): system_error(std::error_code(static_cast<int>(code), hei::hei_category())) { }
-    hei_error(hei::errc code, const std::string& message): system_error(std::error_code(static_cast<int>(code), hei::hei_category()), message) { }
+    hei_error(hei::errc code): std::system_error(std::error_code(static_cast<int>(code), hei::hei_category())) { }
+    hei_error(hei::errc code, const std::string& message): std::system_error(std::error_code(static_cast<int>(code), hei::hei_category()), message) { }
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
