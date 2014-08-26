@@ -77,16 +77,16 @@ void options::parse(int argc, char* argv[], int& index)
             if(c==-1) break;
 
             if(c=='?')
-                throw invalid_argument("Invalid option");
+                throw std::invalid_argument("Invalid option");
             else if(c==':')
-                throw invalid_argument("Missing argument");
+                throw std::invalid_argument("Missing argument");
 
             auto ri= map.find(c);
-                if(ri==map.end()) throw invalid_argument("Unexpected option");
+                if(ri==map.end()) throw std::invalid_argument("Unexpected option");
             pointer option= ri->second;
 
             ++option->_M_count;
-            if(option->once() && option->count()>1) throw invalid_argument("Extraneous option");
+            if(option->once() && option->count()>1) throw std::invalid_argument("Extraneous option");
 
             if(option->arg() != false && optarg) option->_M_assign(optarg);
         }
@@ -100,7 +100,7 @@ void options::parse(int argc, char* argv[], int& index)
             if(optopt && optopt < unique_code_min) message+= char(optopt); else message+= argv[--index];
         message+= "'";
 
-        throw invalid_argument(message);
+        throw std::invalid_argument(message);
     }
 
     index= optind;

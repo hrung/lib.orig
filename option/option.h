@@ -10,10 +10,10 @@
 #define OPTION_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "except.h"
 #include "convert.h"
 #include "tern.h"
 
+#include <stdexcept>
 #include <functional>
 #include <initializer_list>
 #include <vector>
@@ -182,37 +182,37 @@ public:
     reference operator[](size_type n)
     {
         try { return _M_options.at(n); }
-        catch(std::out_of_range& e) { throw out_of_range(e); }
+        catch(std::out_of_range& e) { throw std::out_of_range(e); }
     }
     const_reference operator[](size_type n) const
     {
         try { return _M_options.at(n); }
-        catch(std::out_of_range& e) { throw out_of_range(e); }
+        catch(std::out_of_range& e) { throw std::out_of_range(e); }
     }
 
     reference operator[](const std::string& longname)
     {
         iterator ri= find(longname);
-        if(ri == end()) throw out_of_range("option::operator[]");
+        if(ri == end()) throw std::out_of_range("option::operator[]");
         return *ri;
     }
     const_reference operator[](const std::string& longname) const
     {
         const_iterator ri= find(longname);
-        if(ri == end()) throw out_of_range("option::operator[]");
+        if(ri == end()) throw std::out_of_range("option::operator[]");
         return *ri;
     }
 
     reference operator[](const char name)
     {
         iterator ri= find(name);
-        if(ri == end()) throw out_of_range("option::operator[]");
+        if(ri == end()) throw std::out_of_range("option::operator[]");
         return *ri;
     }
     const_reference operator[](const char name) const
     {
         const_iterator ri= find(name);
-        if(ri == end()) throw out_of_range("option::operator[]");
+        if(ri == end()) throw std::out_of_range("option::operator[]");
         return *ri;
     }
 
