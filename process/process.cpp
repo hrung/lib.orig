@@ -26,7 +26,7 @@ bool process(const std::string& command, int* return_val)
     if(!return_val) return_val= &x;
 
     *return_val= std::system(command.data());
-    if( *return_val == -1 ) throw runtime_error("system() call failed");
+    if( *return_val == -1 ) throw std::runtime_error("system() call failed");
 
     else if(WIFEXITED(*return_val))
         return !WEXITSTATUS(*return_val);
