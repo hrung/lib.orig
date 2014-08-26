@@ -10,7 +10,7 @@
 #define XML_ERROR_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "except.h"
+#include <system_error>
 #include <expat.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -99,14 +99,14 @@ namespace std
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class xml_error: public system_error
+class xml_error: public std::system_error
 {
 public:
-    xml_error(int code): system_error(std::error_code(code, xml::xml_category())) { }
-    xml_error(int code, const std::string& message): system_error(std::error_code(code, xml::xml_category()), message) { }
+    xml_error(int code): std::system_error(std::error_code(code, xml::xml_category())) { }
+    xml_error(int code, const std::string& message): std::system_error(std::error_code(code, xml::xml_category()), message) { }
 
-    xml_error(xml::errc code): system_error(std::error_code(int(code), xml::xml_category())) { }
-    xml_error(xml::errc code, const std::string& message): system_error(std::error_code(static_cast<int>(code), xml::xml_category()), message) { }
+    xml_error(xml::errc code): std::system_error(std::error_code(int(code), xml::xml_category())) { }
+    xml_error(xml::errc code, const std::string& message): std::system_error(std::error_code(static_cast<int>(code), xml::xml_category()), message) { }
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
