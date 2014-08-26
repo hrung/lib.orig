@@ -10,7 +10,7 @@
 #define SLAP_ERROR_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "except.h"
+#include <system_error>
 #include <ldap.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -153,14 +153,14 @@ namespace std
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class slap_error: public system_error
+class slap_error: public std::system_error
 {
 public:
-    slap_error(int code): system_error(std::error_code(code, slap::slap_category())) { }
-    slap_error(int code, const std::string& message): system_error(std::error_code(code, slap::slap_category()), message) { }
+    slap_error(int code): std::system_error(std::error_code(code, slap::slap_category())) { }
+    slap_error(int code, const std::string& message): std::system_error(std::error_code(code, slap::slap_category()), message) { }
 
-    slap_error(slap::errc code): system_error(std::error_code(static_cast<int>(code), slap::slap_category())) { }
-    slap_error(slap::errc code, const std::string& message): system_error(std::error_code(static_cast<int>(code), slap::slap_category()), message) { }
+    slap_error(slap::errc code): std::system_error(std::error_code(static_cast<int>(code), slap::slap_category())) { }
+    slap_error(slap::errc code, const std::string& message): std::system_error(std::error_code(static_cast<int>(code), slap::slap_category()), message) { }
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

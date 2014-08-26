@@ -150,12 +150,12 @@ public:
     reference value(size_type n=0)
     {
         try { return _M_values.at(n); }
-        catch(std::out_of_range& e) { throw out_of_range(e); }
+        catch(std::out_of_range& e) { throw std::out_of_range(e); }
     }
     const_reference value(size_type n=0) const
     {
         try { return _M_values.at(n); }
-        catch(std::out_of_range& e) { throw out_of_range(e); }
+        catch(std::out_of_range& e) { throw std::out_of_range(e); }
     }
 
     reference operator[](size_type n) { return value(n); }
@@ -316,13 +316,13 @@ public:
     reference attribute(const std::string& name)
     {
         iterator ri= find(name);
-        if(ri == end()) throw out_of_range("entry::attribute()");
+        if(ri == end()) throw std::out_of_range("entry::attribute()");
         return const_cast<reference>(*ri); // o.O
     }
     const_reference attribute(const std::string& name) const
     {
         const_iterator ri= find(name);
-        if(ri == cend()) throw out_of_range("entry::attribute()");
+        if(ri == cend()) throw std::out_of_range("entry::attribute()");
         return *ri;
     }
 
