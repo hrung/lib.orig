@@ -10,8 +10,7 @@
 #define CONVERT_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "except.h"
-
+#include <stdexcept>
 #include <type_traits>
 #include <sstream>
 #include <iomanip>
@@ -35,7 +34,7 @@ struct _M_convert
 
         if((stream << source) && (stream >> value) && stream.eof())
             return value;
-        else throw invalid_argument("Conversion failed");
+        else throw std::invalid_argument("Conversion failed");
     }
 };
 
@@ -56,7 +55,7 @@ struct _M_convert<ToType, FromType, enable_if_integer<ToType>>
 
         if((stream << source) && (stream >> std::ws >> value) && (stream >> std::ws).eof())
             return value;
-        else throw invalid_argument("Conversion failed");
+        else throw std::invalid_argument("Conversion failed");
     }
 };
 
@@ -73,7 +72,7 @@ struct _M_convert<bool, FromType, void>
 
         if((stream << source) && (stream >> std::ws >> value) && (stream >> std::ws).eof())
             return value;
-        else throw invalid_argument("Conversion failed");
+        else throw std::invalid_argument("Conversion failed");
     }
 };
 
@@ -87,7 +86,7 @@ struct _M_convert<std::string, FromType, void>
 
         if(stream << source)
             return stream.str();
-        else throw invalid_argument("Conversion failed");
+        else throw std::invalid_argument("Conversion failed");
     }
 };
 
@@ -182,7 +181,7 @@ std::string to_oct(const FromType& source)
 
     if(stream << std::oct << to<ViaType>(source))
         return stream.str();
-    else throw invalid_argument("Conversion failed");
+    else throw std::invalid_argument("Conversion failed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -200,7 +199,7 @@ std::string to_hex(const FromType& source)
 
     if(stream << std::hex << to<ViaType>(source))
         return stream.str();
-    else throw invalid_argument("Conversion failed");
+    else throw std::invalid_argument("Conversion failed");
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
