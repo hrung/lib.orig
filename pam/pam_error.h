@@ -75,7 +75,69 @@ inline std::error_condition make_error_condition(pam::errc e)
 { return std::error_condition(int(e), pam_category()); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+class pam_error: public std::system_error
+{
+public:
+    pam_error(int code): std::system_error(std::error_code(code, pam_category())) { }
+    pam_error(int code, const std::string& message): std::system_error(std::error_code(code, pam_category()), message) { }
+
+    pam_error(errc code): std::system_error(std::error_code(static_cast<int>(code), pam_category())) { }
+    pam_error(errc code, const std::string& message): std::system_error(std::error_code(static_cast<int>(code), pam_category()), message) { }
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 typedef pam_handle* handle;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class pamh_error: public pam_error
+{
+public:
+    pamh_error(pam::handle pamh, int code): pam_error(code), _M_pamh(pamh) { }
+    pamh_error(pam::handle pamh, int code, const std::string& message): pam_error(code, message), _M_pamh(pamh) { }
+
+    pamh_error(pam::handle pamh, errc code): pam_error(code), _M_pamh(pamh) { }
+    pamh_error(pam::handle pamh, errc code, const std::string& message): pam_error(code, message), _M_pamh(pamh) { }
+
+    pam::handle handle() const { return _M_pamh; }
+
+private:
+    pam::handle _M_pamh;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class item_error: public pamh_error
+{
+public:
+    using pamh_error::pamh_error;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class auth_error: public pamh_error
+{
+public:
+    using pamh_error::pamh_error;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class account_error: public pamh_error
+{
+public:
+    using pamh_error::pamh_error;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class cred_error: public pamh_error
+{
+public:
+    using pamh_error::pamh_error;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class session_error: public pamh_error
+{
+public:
+    using pamh_error::pamh_error;
+};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
@@ -87,69 +149,6 @@ namespace std
     template<>
     struct is_error_code_enum<pam::errc>: public true_type { };
 }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-class pam_error: public std::system_error
-{
-public:
-    pam_error(int code): std::system_error(std::error_code(code, pam::pam_category())) { }
-    pam_error(int code, const std::string& message): std::system_error(std::error_code(code, pam::pam_category()), message) { }
-
-    pam_error(pam::errc code): std::system_error(std::error_code(static_cast<int>(code), pam::pam_category())) { }
-    pam_error(pam::errc code, const std::string& message): std::system_error(std::error_code(static_cast<int>(code), pam::pam_category()), message) { }
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-class pam_handle_error: public pam_error
-{
-public:
-    pam_handle_error(pam::handle handle, int code): pam_error(code), _M_handle(handle) { }
-    pam_handle_error(pam::handle handle, int code, const std::string& message): pam_error(code, message), _M_handle(handle) { }
-
-    pam_handle_error(pam::handle handle, pam::errc code): pam_error(code), _M_handle(handle) { }
-    pam_handle_error(pam::handle handle, pam::errc code, const std::string& message): pam_error(code, message), _M_handle(handle) { }
-
-    pam::handle handle() const { return _M_handle; }
-
-protected:
-    pam::handle _M_handle;
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-class item_error: public pam_handle_error
-{
-public:
-    using pam_handle_error::pam_handle_error;
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-class auth_error: public pam_handle_error
-{
-public:
-    using pam_handle_error::pam_handle_error;
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-class account_error: public pam_handle_error
-{
-public:
-    using pam_handle_error::pam_handle_error;
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-class cred_error: public pam_handle_error
-{
-public:
-    using pam_handle_error::pam_handle_error;
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-class session_error: public pam_handle_error
-{
-public:
-    using pam_handle_error::pam_handle_error;
-};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #endif // PAM_ERROR_H
