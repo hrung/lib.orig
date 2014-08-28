@@ -48,6 +48,7 @@ public:
 
     void set_item(item, const std::string& value);
     std::string get_item(item);
+    void reset_item(item);
 
     void set_user_func(user_func x) { _M_user=x; }
     void set_pass_func(pass_func x) { _M_pass=x; }

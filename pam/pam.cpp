@@ -137,6 +137,15 @@ std::string context::get_item(item x)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+void context::reset_item(item x)
+{
+    if(x == item::conv || x == item::fail_delay) throw item_error(_M_pamh, errc::bad_item);
+
+    _M_code= pam_set_item(_M_pamh, static_cast<int>(x), nullptr);
+    if(errc(_M_code) != errc::success) throw item_error(_M_pamh, _M_code);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 void context::authenticate()
 {
     _M_code= pam_authenticate(_M_pamh, 0);
