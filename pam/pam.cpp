@@ -122,7 +122,7 @@ void context::set_item(item x, const std::string& value)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-std::string context::get_item(item x)
+std::string context::get_item(item x, bool* found)
 {
     if(x == item::conv || x == item::fail_delay) throw item_error(_M_pamh, errc::bad_item);
 
@@ -132,6 +132,8 @@ std::string context::get_item(item x)
 
     std::string value;
     if(data) value= static_cast<const char*>(data);
+
+    if(found) (*found)= data;
 
     return value;
 }

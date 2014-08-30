@@ -47,7 +47,7 @@ public:
     bool valid() const { return _M_pamh; }
 
     void set_item(item, const std::string& value);
-    std::string get_item(item);
+    std::string get_item(item, bool* found= nullptr);
     void reset_item(item);
 
     void set_user_func(user_func x) { _M_user=x; }
