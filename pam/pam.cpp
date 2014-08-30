@@ -113,6 +113,7 @@ context::~context()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
 void context::set_item(item x, const std::string& value)
 {
     if(x == item::conv || x == item::fail_delay) throw item_error(_M_pamh, errc::bad_item);
@@ -147,6 +148,57 @@ void context::reset_item(item x)
     if(errc(_M_code) != errc::success) throw item_error(_M_pamh, _M_code);
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void context::set_env(const std::string& name, const std::string& value)
+{
+    _M_code= pam_putenv(_M_pamh, clone(name+ "="+ value).get());
+    if(errc(_M_code) != errc::success) throw env_error(_M_pamh, _M_code);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+std::string context::get_env(const std::string& name, bool* found)
+{
+    const char* buffer= pam_getenv(_M_pamh, clone(name).get());
+
+    std::string value;
+    if(buffer) value= buffer;
+
+    if(found) (*found)= buffer;
+
+    return value;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void context::reset_env(const std::string& name)
+{
+    _M_code= pam_putenv(_M_pamh, clone(name).get());
+    if(errc(_M_code) != errc::success) throw env_error(_M_pamh, _M_code);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+std::map<std::string, std::string> context::get_envs()
+{
+    auto env= pam_getenvlist(_M_pamh);
+
+    std::map<std::string, std::string> envs;
+    if(env)
+    {
+        for(auto ri= env; (*ri); ++ri)
+        {
+            std::string value= (*ri);
+            auto pos= value.find_first_of('=');
+
+            if(pos != std::string::npos) envs[value.substr(0, pos)]= value.substr(pos+1);
+            free(*ri);
+        }
+        free(env);
+    }
+
+    return envs;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void context::authenticate()
 {

@@ -13,6 +13,7 @@
 #include "pam_type.h"
 
 #include <functional>
+#include <map>
 #include <memory>
 #include <string>
 
@@ -54,6 +55,11 @@ public:
     void set_pass_func(pass_func x) { _M_pass=x; }
     void set_info_func(info_func x) { _M_info=x; }
     void set_error_func(error_func x) { _M_error=x; }
+
+    void set_env(const std::string& name, const std::string& value);
+    std::string get_env(const std::string& name, bool* found= nullptr);
+    void reset_env(const std::string& name);
+    std::map<std::string, std::string> get_envs();
 
     void authenticate();
 
