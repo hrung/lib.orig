@@ -45,7 +45,6 @@ public:
     bool wait_for_stopped(int msec);
 
     bool running() { return wait_for_started(0); }
-    bool ready() const { return _M_display; }
 
     Display* display() const { return _M_display; }
 

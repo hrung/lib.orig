@@ -103,7 +103,7 @@ bool Server::stop()
 {
     if(running())
     {
-        if(ready())
+        if(_M_display)
         {
             XCloseDisplay(_M_display);
             _M_display= nullptr;
