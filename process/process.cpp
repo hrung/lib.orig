@@ -90,10 +90,10 @@ void replace(const std::string& path, std::initializer_list<std::string> args)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void replace(const std::string& path, const app::environment& e, std::initializer_list<std::string> args)
+void replace(const app::environment& e, const std::string& path, std::initializer_list<std::string> args)
 {
-    aren_ptr arg= create_arg(path, args);
     aren_ptr env= create_env(e);
+    aren_ptr arg= create_arg(path, args);
 
     if(execve(arg[0], arg.get(), env.get())) throw errno_error();
 }

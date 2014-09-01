@@ -93,7 +93,7 @@ process::id parent_id() noexcept;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void replace(const std::string& path, std::initializer_list<std::string> args= {});
-void replace(const std::string& path, const environment&, std::initializer_list<std::string> args= {});
+void replace(const environment&, const std::string& path, std::initializer_list<std::string> args= {});
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class execute_error: public std::runtime_error
