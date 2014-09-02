@@ -56,7 +56,7 @@ public:
     process(process&) = delete;
     process(const process&) = delete;
 
-    process(process&& x) noexcept { swap(x); }
+    process(process&& x) noexcept = default;
 
     template<typename Callable, typename... Args>
     explicit process(Callable&& func, Args&&... args)
@@ -65,17 +65,7 @@ public:
     }
 
     process& operator=(const process&) = delete;
-
-    process& operator=(process&& x) noexcept
-    {
-        swap(x);
-        return (*this);
-    }
-
-    void swap(process& x) noexcept
-    {
-        std::swap(_M_id, x._M_id);
-    }
+    process& operator=(process&& x) noexcept = default;
 
     process::id get_id() const noexcept { return _M_id; }
 
