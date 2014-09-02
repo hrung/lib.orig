@@ -29,38 +29,86 @@ void process::_M_process(std::function<int()> func)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool process::running(bool group)
+void process::update()
 {
-    int code;
-    id x= waitpid(group? -_M_id: _M_id, &code, WNOHANG);
-    if(x == -1) throw errno_error();
+    if(_M_id == 0 || !_M_code.is_none()) return;
 
-    if(x == 0)
-        return false;
-    else if(x == _M_id)
+    int code;
+    id x= waitpid(_M_group? -_M_id: _M_id, &code, WNOHANG);
+    if(x == -1)
+    {
+        if(std::errc(errno) == std::errc::no_child_process)
+        {
+            _M_code._M_code= app::exit_code::gone;
+            return;
+        }
+        else throw errno_error();
+    }
+
+    if(x == _M_id)
     {
         if(WIFEXITED(code))
-            _M_code= WEXITSTATUS(code);
-        else
-        {
-            _M_code= -1;
-            if(WIFSIGNALED(code)) _M_signal= static_cast<app::signal>(WTERMSIG(code));
-        }
+            _M_code._M_code= WEXITSTATUS(code);
+        else if(WIFSIGNALED(code))
+            _M_code._M_term= static_cast<app::signal>(WTERMSIG(code));
+        else _M_code._M_code= app::exit_code::gone;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+bool process::signal(app::signal x)
+{
+    if(!running()) return false;
+
+    int code= ::kill(_M_group? -_M_id: _M_id, int(x));
+    if(code == -1)
+    {
+        if(std::errc(errno) == std::errc::no_such_process && !running()) return false;
+        throw errno_error();
     }
     return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool process::signal(app::signal x, bool group)
+static void handler(int)
 {
-    int code= ::kill(group? -_M_id: _M_id, int(x));
-    if(code == -1)
+    return;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+bool process::_M_wait_for(std::chrono::seconds s, std::chrono::nanoseconds ns)
+{
+    if(!running()) return false;
+
+    struct timespec x=
     {
-        if(std::errc(errno) == std::errc::no_such_process)
-            return false;
+        static_cast<std::time_t>(s.count()),
+        static_cast<long>(ns.count())
+    };
+
+    struct sigaction sa_old, sa_new;
+    sa_new.sa_handler= handler;
+    sigemptyset(&sa_new.sa_mask);
+    sa_new.sa_flags=0;
+
+    if(sigaction(int(app::signal::child), &sa_new, &sa_old)) throw errno_error();
+
+    bool value= false;
+    while(nanosleep(&x, &x) == -1)
+    {
+        if(std::errc(errno) == std::errc::interrupted)
+        {
+            if(!running())
+            {
+                value= true;
+                break;
+            }
+        }
         else throw errno_error();
     }
-    return true;
+
+    if(sigaction(int(app::signal::child), &sa_old, nullptr)) throw errno_error();
+    return value;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

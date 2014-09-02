@@ -25,6 +25,7 @@ typedef std::vector<std::string> arguments;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum class signal
 {
+    none      = 0,
     hangup    = SIGHUP,
     interrupt = SIGINT,
     quit      = SIGQUIT,
@@ -44,6 +45,27 @@ enum class signal
     term_stop = SIGTSTP,
     term_in   = SIGTTIN,
     term_out  = SIGTTOU
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct exit_code
+{
+    static constexpr int none= -1;
+    static constexpr int gone= -2;
+
+    int code() const noexcept { return _M_code; }
+    signal term() const noexcept { return _M_term; }
+
+    bool is_none() const noexcept { return _M_code == none && _M_term == app::signal::none; }
+    bool is_term() const noexcept { return _M_code == none && _M_term != app::signal::none; }
+
+    bool is_gone() const noexcept { return _M_code == gone; }
+
+private:
+    int _M_code= none;
+    signal _M_term= signal::none;
+
+    friend class process;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,23 +91,39 @@ public:
 
     process::id get_id() const noexcept { return _M_id; }
 
-    bool running(bool group= false);
+    bool running()
+    {
+        update();
+        return _M_code.is_none();
+    }
+    const app::exit_code& exit_code() const noexcept { return _M_code; }
 
-    int exit_code() const noexcept { return _M_code; }
-    app::signal exit_signal() const noexcept { return _M_signal; }
+    bool signal(app::signal);
+    bool terminate() { return signal(app::signal::terminate); }
+    bool kill() { return signal(app::signal::kill); }
 
-    bool signal(app::signal, bool group= false);
+    void detach() noexcept { _M_id=0; }
+    void detach_children() noexcept { _M_group= false; }
 
-    bool terminate(bool group= false) { return signal(app::signal::terminate, group); }
-    bool kill(bool group= false) { return signal(app::signal::kill, group); }
+    template<typename Rep, typename Period>
+    bool wait_for(const std::chrono::duration<Rep, Period>& t)
+    {
+        std::chrono::seconds s= std::chrono::duration_cast<std::chrono::seconds>(t);
+        std::chrono::nanoseconds ns= std::chrono::duration_cast<std::chrono::nanoseconds>(t - s);
+
+        return _M_wait_for(s, ns);
+    }
 
 private:
     id _M_id=0;
+    bool _M_group= true;
 
-    int _M_code=0;
-    app::signal _M_signal;
+    app::exit_code _M_code;
 
     void _M_process(std::function<int()>);
+    bool _M_wait_for(std::chrono::seconds, std::chrono::nanoseconds);
+
+    void update();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
