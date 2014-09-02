@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <cstdlib>
+#include <ctime>
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -55,7 +56,7 @@ struct aren_deleter
 typedef std::unique_ptr<char*[], aren_deleter> aren_ptr;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-static aren_ptr create_arg(const std::string& path, std::initializer_list<std::string> args)
+static aren_ptr create_arg(const std::string& path, const arguments& args)
 {
     aren_ptr value(new char*[args.size()+2]);
 
@@ -82,20 +83,22 @@ static aren_ptr create_env(const app::environment& env)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void replace(const std::string& path, std::initializer_list<std::string> args)
+int replace(const std::string& path, const arguments& args)
 {
     aren_ptr arg= create_arg(path, args);
 
     if(execv(arg[0], arg.get())) throw errno_error();
+    return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void replace(const app::environment& e, const std::string& path, std::initializer_list<std::string> args)
+int replace_e(const app::environment& e, const std::string& path, const arguments& args)
 {
     aren_ptr env= create_env(e);
     aren_ptr arg= create_arg(path, args);
 
     if(execve(arg[0], arg.get(), env.get())) throw errno_error();
+    return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -114,6 +117,18 @@ int execute(const std::string& command, app::signal* signal)
             *signal= static_cast<app::signal>(WTERMSIG(code));
         return -1;
     }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void _M_sleep_for(std::chrono::seconds s, std::chrono::nanoseconds ns)
+{
+    timespec ts=
+    {
+        static_cast<std::time_t>(s.count()),
+        static_cast<long>(ns.count())
+    };
+
+    nanosleep(&ts, 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

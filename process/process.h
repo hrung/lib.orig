@@ -4,10 +4,11 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include <functional>
-#include <initializer_list>
+#include <vector>
 #include <map>
 #include <stdexcept>
 #include <string>
+#include <chrono>
 
 #include <signal.h>
 #include <sys/types.h>
@@ -15,6 +16,11 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace app
 {
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+typedef std::map<std::string, std::string> environment;
+
+typedef std::vector<std::string> arguments;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum class signal
@@ -80,9 +86,6 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-typedef std::map<std::string, std::string> environment;
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace this_process
 {
@@ -92,8 +95,8 @@ process::id get_id() noexcept;
 process::id parent_id() noexcept;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void replace(const std::string& path, std::initializer_list<std::string> args= {});
-void replace(const environment&, const std::string& path, std::initializer_list<std::string> args= {});
+int replace(const std::string& path, const arguments& args= {});
+int replace_e(const environment&, const std::string& path, const arguments& args= {});
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class execute_error: public std::runtime_error
@@ -102,6 +105,21 @@ class execute_error: public std::runtime_error
 };
 
 int execute(const std::string& command, app::signal* = nullptr);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void _M_sleep_for(std::chrono::seconds, std::chrono::nanoseconds);
+
+template<typename Rep, typename Period>
+inline void sleep_for(const std::chrono::duration<Rep, Period>& t)
+{
+    std::chrono::seconds s= std::chrono::duration_cast<std::chrono::seconds>(t);
+    std::chrono::nanoseconds ns= std::chrono::duration_cast<std::chrono::nanoseconds>(t - s);
+
+    _M_sleep_for(s, ns);
+  }
+
+template<typename Clock, typename Duration>
+inline void sleep_until(const std::chrono::time_point<Clock, Duration>& t) { sleep_for(t - Clock::now()); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
