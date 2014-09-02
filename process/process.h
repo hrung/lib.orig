@@ -151,7 +151,7 @@ class execute_error: public std::runtime_error
     using std::runtime_error::runtime_error;
 };
 
-int execute(const std::string& command, app::signal* = nullptr);
+exit_code execute(const std::string& command);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void _M_sleep_for(std::chrono::seconds, std::chrono::nanoseconds);

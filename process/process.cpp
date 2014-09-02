@@ -228,7 +228,7 @@ int replace_e(const app::environment& e, const std::string& path, const argument
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-int execute(const std::string& command, app::signal* signal)
+exit_code execute(const std::string& command)
 {
     int code= system(command.data());
     switch(code)
@@ -237,11 +237,11 @@ int execute(const std::string& command, app::signal* signal)
     case 127: throw execute_error("Could not execute shell in the child process");
 
     default:
-        if(WIFEXITED(code)) return WEXITSTATUS(code);
-
-        if(WIFSIGNALED(code) && signal)
-            *signal= static_cast<app::signal>(WTERMSIG(code));
-        return -1;
+        if(WIFEXITED(code))
+            return exit_code(WEXITSTATUS(code));
+        else if(WIFSIGNALED(code))
+            return exit_code(static_cast<app::signal>(WTERMSIG(code)));
+        else return exit_code();
     }
 }
 
