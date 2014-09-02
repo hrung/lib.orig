@@ -101,7 +101,6 @@ public:
     bool kill() { return signal(app::signal::kill); }
 
     void detach() noexcept { _M_id=0; }
-    void detach_children() noexcept { _M_group= false; }
 
     template<typename Rep, typename Period>
     bool wait_for(const std::chrono::duration<Rep, Period>& t)
@@ -115,9 +114,11 @@ public:
     bool joinable() const noexcept { return _M_id && _M_code.is_none(); }
     void join();
 
+    void set_group();
+
 private:
     id _M_id=0;
-    bool _M_group= true;
+    bool _M_group= false;
 
     app::exit_code _M_code;
 
