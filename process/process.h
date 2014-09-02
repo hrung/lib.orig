@@ -79,8 +79,16 @@ public:
 
     process::id get_id() const noexcept { return _M_id; }
 
+    bool running(bool group= false);
+
+    int exit_code() const noexcept { return _M_code; }
+    app::signal exit_signal() const noexcept { return _M_signal; }
+
 private:
     id _M_id=0;
+
+    int _M_code=0;
+    app::signal _M_signal;
 
     void _M_process(std::function<int()>);
 };

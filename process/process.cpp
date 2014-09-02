@@ -6,8 +6,9 @@
 #include <cstdlib>
 #include <ctime>
 
-#include <sys/types.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace app
@@ -24,6 +25,28 @@ void process::_M_process(std::function<int()> func)
         int code= func();
         exit(code);
     }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+bool process::running(bool group)
+{
+    int code;
+    id x= waitpid(group? -_M_id: _M_id, &code, WNOHANG);
+    if(x == -1) throw errno_error();
+
+    if(x == 0)
+        return false;
+    else if(x == _M_id)
+    {
+        if(WIFEXITED(code))
+            _M_code= WEXITSTATUS(code);
+        else
+        {
+            _M_code= -1;
+            if(WIFSIGNALED(code)) _M_signal= static_cast<app::signal>(WTERMSIG(code));
+        }
+    }
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
