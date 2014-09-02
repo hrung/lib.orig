@@ -72,7 +72,7 @@ public:
         return (*this);
     }
 
-    void swap(process& x)
+    void swap(process& x) noexcept
     {
         std::swap(_M_id, x._M_id);
     }
