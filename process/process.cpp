@@ -158,13 +158,13 @@ int execute(const std::string& command, app::signal* signal)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void _M_sleep_for(std::chrono::seconds s, std::chrono::nanoseconds ns)
 {
-    timespec ts=
+    struct timespec x=
     {
         static_cast<std::time_t>(s.count()),
         static_cast<long>(ns.count())
     };
 
-    nanosleep(&ts, 0);
+    nanosleep(&x, nullptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
