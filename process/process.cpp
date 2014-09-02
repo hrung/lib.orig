@@ -7,6 +7,7 @@
 #include <ctime>
 
 #include <unistd.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -45,6 +46,19 @@ bool process::running(bool group)
             _M_code= -1;
             if(WIFSIGNALED(code)) _M_signal= static_cast<app::signal>(WTERMSIG(code));
         }
+    }
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+bool process::signal(app::signal x, bool group)
+{
+    int code= ::kill(group? -_M_id: _M_id, int(x));
+    if(code == -1)
+    {
+        if(std::errc(errno) == std::errc::no_such_process)
+            return false;
+        else throw errno_error();
     }
     return true;
 }

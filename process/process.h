@@ -84,6 +84,11 @@ public:
     int exit_code() const noexcept { return _M_code; }
     app::signal exit_signal() const noexcept { return _M_signal; }
 
+    bool signal(app::signal, bool group= false);
+
+    bool terminate(bool group= false) { return signal(app::signal::terminate, group); }
+    bool kill(bool group= false) { return signal(app::signal::kill, group); }
+
 private:
     id _M_id=0;
 
