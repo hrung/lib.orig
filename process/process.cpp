@@ -70,9 +70,9 @@ bool process::running()
 void process::set_code(int code)
 {
     if(WIFEXITED(code))
-        _M_code._M_code= WEXITSTATUS(code);
+        _M_code= app::exit_code(WEXITSTATUS(code));
     else if(WIFSIGNALED(code))
-        _M_code._M_term= static_cast<app::signal>(WTERMSIG(code));
+        _M_code= app::exit_code(static_cast<app::signal>(WTERMSIG(code)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

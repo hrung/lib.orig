@@ -52,6 +52,10 @@ struct exit_code
 {
     static constexpr int none= -1;
 
+    exit_code() noexcept = default;
+    exit_code(int code): _M_code(code) { }
+    exit_code(app::signal term): _M_term(term) { }
+
     int code() const noexcept { return _M_code; }
     signal term() const noexcept { return _M_term; }
 
@@ -62,8 +66,6 @@ struct exit_code
 private:
     int _M_code= none;
     signal _M_term= signal::none;
-
-    friend class process;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
