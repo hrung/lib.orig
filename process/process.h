@@ -119,7 +119,7 @@ inline void sleep_for(const std::chrono::duration<Rep, Period>& t)
     std::chrono::nanoseconds ns= std::chrono::duration_cast<std::chrono::nanoseconds>(t - s);
 
     _M_sleep_for(s, ns);
-  }
+}
 
 template<typename Clock, typename Duration>
 inline void sleep_until(const std::chrono::time_point<Clock, Duration>& t) { sleep_for(t - Clock::now()); }
