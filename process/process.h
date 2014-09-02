@@ -86,6 +86,8 @@ public:
         _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...));
     }
 
+    ~process();
+
     process& operator=(const process&) = delete;
     process& operator=(process&& x) noexcept = default;
 
