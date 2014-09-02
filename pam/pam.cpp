@@ -181,11 +181,11 @@ void context::reset_env(const std::string& name)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-std::map<std::string, std::string> context::get_envs()
+app::environment context::environment()
 {
     auto env= pam_getenvlist(_M_pamh);
 
-    std::map<std::string, std::string> envs;
+    app::environment x;
     if(env)
     {
         for(auto ri= env; (*ri); ++ri)
@@ -193,13 +193,13 @@ std::map<std::string, std::string> context::get_envs()
             std::string value= (*ri);
             auto pos= value.find_first_of('=');
 
-            if(pos != std::string::npos) envs[value.substr(0, pos)]= value.substr(pos+1);
+            if(pos != std::string::npos) x[value.substr(0, pos)]= value.substr(pos+1);
             free(*ri);
         }
         free(env);
     }
 
-    return envs;
+    return x;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

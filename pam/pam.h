@@ -28,6 +28,9 @@ namespace app
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+typedef std::map<std::string, std::string> environment;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace pam
 {
 
@@ -45,25 +48,35 @@ typedef std::function<bool(const std::string&)> error_func;
 class context
 {
 public:
+    context() = default;
+    context(context&) = delete;
+    context(const context&) = delete;
+
+    context(context&& x) = default;
+
     context(const std::string& service, const std::string& username= std::string());
     ~context();
 
-    pam::handle handle() const { return _M_pamh; }
-    bool valid() const { return _M_pamh; }
+    context& operator=(const context&) = delete;
+    context& operator=(context&& x) = default;
+
+    ////////////////////
+    pam::handle handle() const noexcept { return _M_pamh; }
+    bool valid() const noexcept { return _M_pamh; }
 
     void set_item(item, const std::string& value);
     std::string get_item(item, bool* found= nullptr);
     void reset_item(item);
 
-    void set_user_func(user_func x) { _M_user=x; }
-    void set_pass_func(pass_func x) { _M_pass=x; }
-    void set_info_func(info_func x) { _M_info=x; }
-    void set_error_func(error_func x) { _M_error=x; }
+    void set_user_func(user_func x)   noexcept { _M_user=x; }
+    void set_pass_func(pass_func x)   noexcept { _M_pass=x; }
+    void set_info_func(info_func x)   noexcept { _M_info=x; }
+    void set_error_func(error_func x) noexcept { _M_error=x; }
 
     void set_env(const std::string& name, const std::string& value);
     std::string get_env(const std::string& name, bool* found= nullptr);
     void reset_env(const std::string& name);
-    std::map<std::string, std::string> get_envs();
+    app::environment environment();
 
     void authenticate();
 
