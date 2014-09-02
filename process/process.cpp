@@ -39,44 +39,52 @@ void process::_M_process(std::function<int()> func)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void process::update()
+bool process::running()
 {
-    if(_M_id == 0 || !_M_code.is_none()) return;
-
-    int code;
-    id x= waitpid(_M_group? -_M_id: _M_id, &code, WNOHANG);
-    if(x == -1)
+    if(joinable())
     {
-        if(std::errc(errno) == std::errc::no_child_process)
+        int code;
+        id x= waitpid(_M_group? -_M_id: _M_id, &code, WNOHANG);
+        if(x == -1)
         {
-            _M_code._M_code= app::exit_code::gone;
-            return;
+            if(std::errc(errno) == std::errc::no_child_process)
+            {
+                _M_code._M_code= app::exit_code::gone;
+                return false;
+            }
+            else throw errno_error();
         }
-        else throw errno_error();
-    }
+        else if(x == _M_id) set_code(code);
 
-    if(x == _M_id)
-    {
-        if(WIFEXITED(code))
-            _M_code._M_code= WEXITSTATUS(code);
-        else if(WIFSIGNALED(code))
-            _M_code._M_term= static_cast<app::signal>(WTERMSIG(code));
-        else _M_code._M_code= app::exit_code::gone;
+        return _M_code.is_none();
     }
+    return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void process::set_code(int code)
+{
+    if(WIFEXITED(code))
+        _M_code._M_code= WEXITSTATUS(code);
+    else if(WIFSIGNALED(code))
+        _M_code._M_term= static_cast<app::signal>(WTERMSIG(code));
+    else _M_code._M_code= app::exit_code::gone;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 bool process::signal(app::signal x)
 {
-    if(!running()) return false;
-
-    int code= ::kill(_M_group? -_M_id: _M_id, int(x));
-    if(code == -1)
+    if(joinable())
     {
-        if(std::errc(errno) == std::errc::no_such_process && !running()) return false;
-        throw errno_error();
+        int code= ::kill(_M_group? -_M_id: _M_id, int(x));
+        if(code == -1)
+        {
+            if(std::errc(errno) == std::errc::no_such_process && !running()) return false;
+            throw errno_error();
+        }
+        return true;
     }
-    return true;
+    return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -88,37 +96,57 @@ static void handler(int)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 bool process::_M_wait_for(std::chrono::seconds s, std::chrono::nanoseconds ns)
 {
-    if(!running()) return false;
-
-    struct timespec x=
-    {
-        static_cast<std::time_t>(s.count()),
-        static_cast<long>(ns.count())
-    };
-
-    struct sigaction sa_old, sa_new;
-    sa_new.sa_handler= handler;
-    sigemptyset(&sa_new.sa_mask);
-    sa_new.sa_flags=0;
-
-    if(sigaction(int(app::signal::child), &sa_new, &sa_old)) throw errno_error();
-
     bool value= false;
-    while(nanosleep(&x, &x) == -1)
+    if(running())
     {
-        if(std::errc(errno) == std::errc::interrupted)
+        struct timespec x=
         {
-            if(!running())
-            {
-                value= true;
-                break;
-            }
-        }
-        else throw errno_error();
-    }
+            static_cast<std::time_t>(s.count()),
+            static_cast<long>(ns.count())
+        };
 
-    if(sigaction(int(app::signal::child), &sa_old, nullptr)) throw errno_error();
+        struct sigaction sa_old, sa_new;
+        sa_new.sa_handler= handler;
+        sigemptyset(&sa_new.sa_mask);
+        sa_new.sa_flags=0;
+
+        if(sigaction(int(app::signal::child), &sa_new, &sa_old)) throw errno_error();
+
+        while(nanosleep(&x, &x) == -1)
+        {
+            if(std::errc(errno) == std::errc::interrupted)
+            {
+                if(!running())
+                {
+                    value= true;
+                    break;
+                }
+            }
+            else throw errno_error();
+        }
+
+        if(sigaction(int(app::signal::child), &sa_old, nullptr)) throw errno_error();
+    }
     return value;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void process::join()
+{
+    if(joinable())
+    {
+        int code;
+        if(waitpid(_M_id, &code, 0) == -1)
+        {
+            if(std::errc(errno) == std::errc::no_child_process)
+            {
+                _M_code._M_code= app::exit_code::gone;
+                return;
+            }
+            else throw errno_error();
+        }
+        set_code(code);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

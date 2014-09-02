@@ -93,11 +93,7 @@ public:
 
     process::id get_id() const noexcept { return _M_id; }
 
-    bool running()
-    {
-        update();
-        return _M_code.is_none();
-    }
+    bool running();
     const app::exit_code& exit_code() const noexcept { return _M_code; }
 
     bool signal(app::signal);
@@ -116,6 +112,9 @@ public:
         return _M_wait_for(s, ns);
     }
 
+    bool joinable() const noexcept { return _M_id && _M_code.is_none(); }
+    void join();
+
 private:
     id _M_id=0;
     bool _M_group= true;
@@ -125,7 +124,7 @@ private:
     void _M_process(std::function<int()>);
     bool _M_wait_for(std::chrono::seconds, std::chrono::nanoseconds);
 
-    void update();
+    void set_code(int code);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
