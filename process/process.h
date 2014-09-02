@@ -51,15 +51,13 @@ enum class signal
 struct exit_code
 {
     static constexpr int none= -1;
-    static constexpr int gone= -2;
 
     int code() const noexcept { return _M_code; }
     signal term() const noexcept { return _M_term; }
 
     bool is_none() const noexcept { return _M_code == none && _M_term == app::signal::none; }
+    bool is_exit() const noexcept { return _M_code != none; }
     bool is_term() const noexcept { return _M_code == none && _M_term != app::signal::none; }
-
-    bool is_gone() const noexcept { return _M_code == gone; }
 
 private:
     int _M_code= none;
@@ -83,7 +81,13 @@ public:
     template<typename Callable, typename... Args>
     explicit process(Callable&& func, Args&&... args)
     {
-        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...));
+        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), false);
+    }
+
+    template<typename Callable, typename... Args>
+    explicit process(bool group, Callable&& func, Args&&... args)
+    {
+        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), group);
     }
 
     ~process();
@@ -100,7 +104,7 @@ public:
     bool terminate() { return signal(app::signal::terminate); }
     bool kill() { return signal(app::signal::kill); }
 
-    void detach() noexcept { _M_id=0; }
+    void detach() noexcept { _M_active= false; }
 
     template<typename Rep, typename Period>
     bool wait_for(const std::chrono::duration<Rep, Period>& t)
@@ -110,19 +114,17 @@ public:
 
         return _M_wait_for(s, ns);
     }
-
-    bool joinable() const noexcept { return _M_id && _M_code.is_none(); }
     void join();
-
-    void set_group();
 
 private:
     id _M_id=0;
+    bool _M_active= false;
+
     bool _M_group= false;
 
     app::exit_code _M_code;
 
-    void _M_process(std::function<int()>);
+    void _M_process(std::function<int()>, bool group);
     bool _M_wait_for(std::chrono::seconds, std::chrono::nanoseconds);
 
     void set_code(int code);
