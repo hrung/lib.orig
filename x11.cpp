@@ -1,107 +1,55 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "x11.h"
+
+#include <algorithm>
+#include <utility>
+#include <stdexcept>
+
 #include <X11/Xlib.h>
 
-#include <sys/types.h>
-#include <unistd.h>
-
-#include <signal.h>
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-namespace X11
+namespace app
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-Server::Server(QString name, QObject* parent): QObject(parent),
-    _M_name(name),
-    _M_path("/usr/bin/X"),
-    _M_auth("/run/camel.auth"),
-    _M_args(QStringList() << "-br" <<  "-novtswitch" << "-nolisten" << "tcp" << "-quiet")
-{ }
+namespace x11
+{
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-Server::~Server()
-{
-    stop();
-}
+const std::string server::default_name= ":0.0";
+const std::string server::default_path= "/usr/bin/X";
+const arguments server::default_args= { "-br", "-novtswitch", "-nolisten", "tcp", "-quiet" };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool Server::set_name(const QString& x)
+server::server(const std::string& auth, const std::string& name, const std::string& path, const arguments& args):
+    _M_name(name), _M_auth(auth)
 {
-    if(running()) return false;
-    _M_name=x;
-    return true;
-}
+    arguments full;
+    full.push_back(_M_name);
+    std::copy(args.begin(), args.end(), std::back_inserter(full));
+    full.push_back("-auth");
+    full.push_back(_M_auth);
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-bool Server::set_path(const QString& x)
-{
-    if(running()) return false;
-    _M_path=x;
-    return true;
-}
+    process proc(true, this_process::replace, path, full);
+    std::swap(proc, _M_process);
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-bool Server::set_auth(const QString& x)
-{
-    if(running()) return false;
-    _M_auth=x;
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-bool Server::set_args(const QStringList& x)
-{
-    if(running()) return false;
-    _M_args= x;
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-bool Server::wait_for_started(int msec)
-{
-    if(_M_process.state() == QProcess::NotRunning)
-        return false;
-    else return _M_process.waitForStarted(msec);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-bool Server::wait_for_stopped(int msec)
-{
-    if(_M_process.state() == QProcess::NotRunning)
-        return true;
-    else return _M_process.waitForFinished(msec);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-bool Server::start()
-{
-    if(stop())
+    for(int ri=0; ri<10; ++ri)
     {
-        QStringList args(_M_name);
-        args << _M_args << "-auth" << _M_auth;
+        this_process::sleep_for(std::chrono::seconds(1));
 
-        _M_process.start(_M_path, args);
-        wait_for_started(3000);
-        wait_for_stopped(2000);
+        if(!_M_process.running()) throw std::runtime_error("X server failed to start");
 
-        for(int i=0; i<10; ++i)
-        {
-            if(!running()) break;
-
-            _M_display= XOpenDisplay(_M_name.toAscii());
-            if(_M_display) return true;
-
-            sleep(1);
-        }
+        _M_display= XOpenDisplay(_M_name.data());
+        if(_M_display) break;
     }
-    return false;
+
+    if(!_M_display) throw std::runtime_error("X server failed to initialize");
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool Server::stop()
+server::~server()
 {
-    if(running())
+    if(_M_process.running())
     {
         if(_M_display)
         {
@@ -109,21 +57,11 @@ bool Server::stop()
             _M_display= nullptr;
         }
 
-        signal(SIGHUP, SIG_IGN);
-        killpg(getpid(), SIGHUP);
-
-        killpg(_M_process.pid(), SIGTERM);
-        bool stopped= wait_for_stopped(3000);
-
-        if(!stopped)
-        {
-            killpg(_M_process.pid(), SIGKILL);
-            stopped= wait_for_stopped(2000);
-        }
-
-        return stopped;
+        _M_process.signal(signal::hangup);
     }
-    else return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -3,65 +3,63 @@
 #define X11_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include <QProcess>
-#include <QObject>
+#include "process/process.h"
 
-#include <QStringList>
-#include <QString>
+#include <vector>
+#include <string>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct _XDisplay;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-namespace X11
+namespace app
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-typedef _XDisplay Display;
+namespace x11
+{
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class Server: public QObject
+typedef _XDisplay* display;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class server
 {
-    Q_OBJECT
 public:
-    Server(QString name= ":0.0", QObject* parent= nullptr);
-    ~Server();
+    static const std::string default_name;
+    static const std::string default_path;
+    static const arguments default_args;
+
+    server() = default;
+    server(server&) = delete;
+    server(const server&) = delete;
+
+    server(server&& x) = default;
+
+    explicit server(const std::string& auth, const std::string& name= default_name, const std::string& path= default_path, const arguments& args= default_args);
+    ~server();
+
+    server& operator=(const server&) = delete;
+    server& operator=(server&& x) = default;
 
     ////////////////////
-    const QString& name() const { return _M_name; }
-    bool set_name(const QString&);
+    const std::string& name() const { return _M_name; }
+    const std::string& auth() const { return _M_auth; }
 
-    const QString& path() const { return _M_path; }
-    bool set_path(const QString&);
+    bool running() { return _M_process.running(); }
 
-    const QString& auth() const { return _M_auth; }
-    bool set_auth(const QString&);
-
-    const QStringList& args() const { return _M_args; }
-    bool set_args(const QStringList&);
-
-    ////////////////////
-    bool wait_for_started(int msec);
-    bool wait_for_stopped(int msec);
-
-    bool running() { return wait_for_started(0); }
-    bool stopped() { return wait_for_stopped(0); }
-
-    Display* display() const { return _M_display; }
-
-public slots:
-    bool start();
-    bool stop();
+    x11::display display() const { return _M_display; }
 
 private:
-    QString _M_name;
-    QString _M_path;
-    QString _M_auth;
-    QStringList _M_args;
+    std::string _M_name;
+    std::string _M_auth;
 
-    QProcess _M_process;
-    Display* _M_display= nullptr;
+    process _M_process;
+    x11::display _M_display= nullptr;
 };
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
