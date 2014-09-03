@@ -36,7 +36,10 @@ public:
 
     server(server&& x) = default;
 
-    explicit server(const std::string& auth, const std::string& name= default_name, const std::string& path= default_path, const arguments& args= default_args);
+    explicit server(const std::string& auth,
+                    const std::string& name= std::string(),
+                    const std::string& path= std::string(),
+                    const arguments& args= arguments());
     ~server();
 
     server& operator=(const server&) = delete;
@@ -51,8 +54,8 @@ public:
     x11::display display() const { return _M_display; }
 
 private:
-    std::string _M_name;
     std::string _M_auth;
+    std::string _M_name;
 
     process _M_process;
     x11::display _M_display= nullptr;

@@ -22,15 +22,21 @@ const arguments server::default_args= { "-br", "-novtswitch", "-nolisten", "tcp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 server::server(const std::string& auth, const std::string& name, const std::string& path, const arguments& args):
-    _M_name(name), _M_auth(auth)
+    _M_auth(auth),
+    _M_name(name.size()? name: default_name)
 {
     arguments full;
     full.push_back(_M_name);
-    std::copy(args.begin(), args.end(), std::back_inserter(full));
+
+    if(args.size())
+        std::copy(args.begin(), args.end(), std::back_inserter(full));
+    else
+        std::copy(default_args.begin(), default_args.end(), std::back_inserter(full));
+
     full.push_back("-auth");
     full.push_back(_M_auth);
 
-    process proc(true, this_process::replace, path, full);
+    process proc(true, this_process::replace, path.size()? path: default_path, full);
     std::swap(proc, _M_process);
 
     for(int ri=0; ri<10; ++ri)
