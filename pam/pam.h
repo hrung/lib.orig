@@ -80,18 +80,19 @@ public:
     pam::handle handle() const noexcept { return _M_pamh; }
     bool valid() const noexcept { return _M_pamh; }
 
-    void set_item(pam::item, const std::string& value);
-    std::string item(pam::item, bool* found= nullptr);
     void reset(pam::item);
+    void set(pam::item, const std::string& value);
+    std::string item(pam::item, bool* found= nullptr);
 
     void set_user_func(user_func x)   noexcept { _M_user=x; }
     void set_pass_func(pass_func x)   noexcept { _M_pass=x; }
     void set_info_func(info_func x)   noexcept { _M_info=x; }
     void set_error_func(error_func x) noexcept { _M_error=x; }
 
-    void set_environ(const std::string& name, const std::string& value);
-    std::string environ(const std::string& name, bool* found= nullptr);
     void reset(const std::string& name);
+    void set(const std::string& name, const std::string& value);
+    std::string env(const std::string& name, bool* found= nullptr);
+
     app::environment environment();
 
     void authenticate();
