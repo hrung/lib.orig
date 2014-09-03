@@ -118,18 +118,18 @@ context::~context()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void context::set_item(item x, const std::string& value)
+void context::set_item(pam::item x, const std::string& value)
 {
-    if(x == item::conv || x == item::fail_delay) throw item_error(_M_pamh, errc::bad_item);
+    if(x == pam::item::conv || x == pam::item::fail_delay) throw item_error(_M_pamh, errc::bad_item);
 
     _M_code= pam_set_item(_M_pamh, static_cast<int>(x), clone(value).get());
     if(errc(_M_code) != errc::success) throw item_error(_M_pamh, _M_code);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-std::string context::get_item(item x, bool* found)
+std::string context::item(pam::item x, bool* found)
 {
-    if(x == item::conv || x == item::fail_delay) throw item_error(_M_pamh, errc::bad_item);
+    if(x == pam::item::conv || x == pam::item::fail_delay) throw item_error(_M_pamh, errc::bad_item);
 
     const void* data= nullptr;
     _M_code= pam_get_item(_M_pamh, static_cast<int>(x), &data);
@@ -144,9 +144,9 @@ std::string context::get_item(item x, bool* found)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void context::reset_item(item x)
+void context::reset(pam::item x)
 {
-    if(x == item::conv || x == item::fail_delay) throw item_error(_M_pamh, errc::bad_item);
+    if(x == pam::item::conv || x == pam::item::fail_delay) throw item_error(_M_pamh, errc::bad_item);
 
     _M_code= pam_set_item(_M_pamh, static_cast<int>(x), nullptr);
     if(errc(_M_code) != errc::success) throw item_error(_M_pamh, _M_code);
@@ -154,14 +154,14 @@ void context::reset_item(item x)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void context::set_env(const std::string& name, const std::string& value)
+void context::set_environ(const std::string& name, const std::string& value)
 {
     _M_code= pam_putenv(_M_pamh, clone(name+ "="+ value).get());
     if(errc(_M_code) != errc::success) throw env_error(_M_pamh, _M_code);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-std::string context::get_env(const std::string& name, bool* found)
+std::string context::environ(const std::string& name, bool* found)
 {
     const char* buffer= pam_getenv(_M_pamh, clone(name).get());
 
@@ -174,7 +174,7 @@ std::string context::get_env(const std::string& name, bool* found)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void context::reset_env(const std::string& name)
+void context::reset(const std::string& name)
 {
     _M_code= pam_putenv(_M_pamh, clone(name).get());
     if(errc(_M_code) != errc::success) throw env_error(_M_pamh, _M_code);
@@ -185,7 +185,7 @@ app::environment context::environment()
 {
     auto env= pam_getenvlist(_M_pamh);
 
-    app::environment x;
+    app::environment e;
     if(env)
     {
         for(auto ri= env; (*ri); ++ri)
@@ -193,13 +193,13 @@ app::environment context::environment()
             std::string value= (*ri);
             auto pos= value.find_first_of('=');
 
-            if(pos != std::string::npos) x[value.substr(0, pos)]= value.substr(pos+1);
+            if(pos != std::string::npos) e[value.substr(0, pos)]= value.substr(pos+1);
             free(*ri);
         }
         free(env);
     }
 
-    return x;
+    return e;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

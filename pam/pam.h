@@ -52,30 +52,46 @@ public:
     context(context&) = delete;
     context(const context&) = delete;
 
-    context(context&& x) = default;
+    context(context&& x) { swap(x); }
 
     context(const std::string& service, const std::string& username= std::string());
     ~context();
 
     context& operator=(const context&) = delete;
-    context& operator=(context&& x) = default;
+    context& operator=(context&& x)
+    {
+        swap(x);
+        return (*this);
+    }
+
+    void swap(context& x)
+    {
+        std::swap(_M_pamh, x._M_pamh );
+        std::swap(_M_conv, x._M_conv );
+        std::swap(_M_user, x._M_user );
+        std::swap(_M_pass, x._M_pass );
+        std::swap(_M_info, x._M_info );
+        std::swap(_M_error,x._M_error);
+        std::swap(_M_cred, x._M_cred );
+        std::swap(_M_code, x._M_code );
+    }
 
     ////////////////////
     pam::handle handle() const noexcept { return _M_pamh; }
     bool valid() const noexcept { return _M_pamh; }
 
-    void set_item(item, const std::string& value);
-    std::string get_item(item, bool* found= nullptr);
-    void reset_item(item);
+    void set_item(pam::item, const std::string& value);
+    std::string item(pam::item, bool* found= nullptr);
+    void reset(pam::item);
 
     void set_user_func(user_func x)   noexcept { _M_user=x; }
     void set_pass_func(pass_func x)   noexcept { _M_pass=x; }
     void set_info_func(info_func x)   noexcept { _M_info=x; }
     void set_error_func(error_func x) noexcept { _M_error=x; }
 
-    void set_env(const std::string& name, const std::string& value);
-    std::string get_env(const std::string& name, bool* found= nullptr);
-    void reset_env(const std::string& name);
+    void set_environ(const std::string& name, const std::string& value);
+    std::string environ(const std::string& name, bool* found= nullptr);
+    void reset(const std::string& name);
     app::environment environment();
 
     void authenticate();
