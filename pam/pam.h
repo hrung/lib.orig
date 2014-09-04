@@ -82,7 +82,7 @@ public:
 
     void reset(pam::item);
     void set(pam::item, const std::string& value);
-    std::string item(pam::item, bool* found= nullptr);
+    std::string get(pam::item, bool* found= nullptr);
 
     void set_user_func(user_func x)   noexcept { _M_user=x; }
     void set_pass_func(pass_func x)   noexcept { _M_pass=x; }
@@ -91,7 +91,7 @@ public:
 
     void reset(const std::string& name);
     void set(const std::string& name, const std::string& value);
-    std::string env(const std::string& name, bool* found= nullptr);
+    std::string get(const std::string& name, bool* found= nullptr);
 
     app::environment environment();
 

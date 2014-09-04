@@ -136,7 +136,7 @@ void context::set(pam::item x, const std::string& value)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-std::string context::item(pam::item x, bool* found)
+std::string context::get(pam::item x, bool* found)
 {
     if(x == pam::item::conv || x == pam::item::fail_delay) throw item_error(_M_pamh, errc::bad_item);
 
@@ -168,7 +168,7 @@ void context::set(const std::string& name, const std::string& value)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-std::string context::env(const std::string& name, bool* found)
+std::string context::get(const std::string& name, bool* found)
 {
     const char* data= pam_getenv(_M_pamh, clone(name).get());
 
