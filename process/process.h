@@ -167,7 +167,7 @@ int replace_e(const environment&, const std::string& path, const arguments& args
 exit_code execute(const std::string& command);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void _M_sleep_for(std::chrono::seconds, std::chrono::nanoseconds);
+namespace internal { void sleep_for(std::chrono::seconds, std::chrono::nanoseconds); }
 
 template<typename Rep, typename Period>
 inline void sleep_for(const std::chrono::duration<Rep, Period>& t)
@@ -175,7 +175,7 @@ inline void sleep_for(const std::chrono::duration<Rep, Period>& t)
     std::chrono::seconds s= std::chrono::duration_cast<std::chrono::seconds>(t);
     std::chrono::nanoseconds ns= std::chrono::duration_cast<std::chrono::nanoseconds>(t - s);
 
-    _M_sleep_for(s, ns);
+    internal::sleep_for(s, ns);
 }
 
 template<typename Clock, typename Duration>

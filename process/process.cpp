@@ -246,7 +246,7 @@ exit_code execute(const std::string& command)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void _M_sleep_for(std::chrono::seconds s, std::chrono::nanoseconds ns)
+void internal::sleep_for(std::chrono::seconds s, std::chrono::nanoseconds ns)
 {
     struct timespec x=
     {
