@@ -58,14 +58,12 @@ public:
 
     ////////////////////
     const std::string& name() const { return _M_name; }
-    const std::string& auth() const { return _M_auth; }
 
     bool running() { return _M_process.running(); }
 
     x11::display display() const { return _M_display; }
 
 private:
-    std::string _M_auth;
     std::string _M_name;
 
     process _M_process;
