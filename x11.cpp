@@ -3,6 +3,8 @@
 
 #include <algorithm>
 #include <utility>
+#include <chrono>
+#include <random>
 #include <stdexcept>
 
 #include <X11/Xlib.h>
@@ -14,6 +16,30 @@ namespace app
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace x11
 {
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+cookie::cookie()
+{
+    using namespace std::chrono;
+
+    std::default_random_engine dre(system_clock::now().time_since_epoch().count());
+    std::uniform_int_distribution<char> uni;
+
+    for(size_t ri=0; ri < sizeof(_M_value); ++ri) _M_value[ri]= uni(dre);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+std::string cookie::value() const noexcept
+{
+    std::string value;
+    for(size_t ri=0; ri < sizeof(_M_value); ++ri)
+    {
+        char lo= _M_value[ri] & 0xf, hi= (_M_value[ri] >> 4) & 0xf;
+        value+= hi+ (hi < 10? '0': 'a' - 10);
+        value+= lo+ (lo < 10? '0': 'a' - 10);
+    }
+    return value;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 const std::string server::default_name= ":0.0";
