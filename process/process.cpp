@@ -5,6 +5,7 @@
 #include <memory>
 #include <cstdlib>
 #include <ctime>
+#include <cstring>
 
 #include <unistd.h>
 #include <signal.h>
