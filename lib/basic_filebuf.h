@@ -68,6 +68,7 @@ protected:
     bool _M_owns_ib;
     bool _M_always_noconv;
 
+    const char* _M_get_mode(std::ios_base::openmode mode);
     bool _M_read_mode();
     void _M_write_mode();
 };
@@ -291,67 +292,61 @@ basic_filebuf<CharT, Traits>::is_open() const
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <class CharT, class Traits>
+const char* basic_filebuf<CharT, Traits>::_M_get_mode(std::ios_base::openmode mode)
+{
+    switch ((mode & ~std::ios_base::ate) | 0)
+    {
+    case std::ios_base::out:
+    case std::ios_base::out | std::ios_base::trunc:
+        return "w";
+    case std::ios_base::out | std::ios_base::app:
+    case std::ios_base::app:
+        return "a";
+        break;
+    case std::ios_base::in:
+        return "r";
+    case std::ios_base::in  | std::ios_base::out:
+        return "r+";
+    case std::ios_base::in  | std::ios_base::out | std::ios_base::trunc:
+        return "w+";
+    case std::ios_base::in  | std::ios_base::out | std::ios_base::app:
+    case std::ios_base::in  | std::ios_base::app:
+        return "a+";
+    case std::ios_base::out | std::ios_base::binary:
+    case std::ios_base::out | std::ios_base::trunc | std::ios_base::binary:
+        return "wb";
+    case std::ios_base::out | std::ios_base::app | std::ios_base::binary:
+    case std::ios_base::app | std::ios_base::binary:
+        return "ab";
+    case std::ios_base::in  | std::ios_base::binary:
+        return "rb";
+    case std::ios_base::in  | std::ios_base::out | std::ios_base::binary:
+        return "r+b";
+    case std::ios_base::in  | std::ios_base::out | std::ios_base::trunc | std::ios_base::binary:
+        return "w+b";
+    case std::ios_base::in  | std::ios_base::out | std::ios_base::app | std::ios_base::binary:
+    case std::ios_base::in  | std::ios_base::app | std::ios_base::binary:
+        return "a+b";
+    default:
+        return nullptr;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+template <class CharT, class Traits>
 basic_filebuf<CharT, Traits>*
 basic_filebuf<CharT, Traits>::open(const char* s, std::ios_base::openmode mode)
 {
     basic_filebuf<CharT, Traits>* rt = nullptr;
     if (_M_file == nullptr)
     {
-        rt = this;
-        const char* mdstr;
-        switch ((mode & ~std::ios_base::ate) | 0)
+        const char* md= _M_get_mode(mode);
+        if (md)
         {
-        case std::ios_base::out:
-        case std::ios_base::out | std::ios_base::trunc:
-            mdstr = "w";
-            break;
-        case std::ios_base::out | std::ios_base::app:
-        case std::ios_base::app:
-            mdstr = "a";
-            break;
-        case std::ios_base::in:
-            mdstr = "r";
-            break;
-        case std::ios_base::in | std::ios_base::out:
-            mdstr = "r+";
-            break;
-        case std::ios_base::in | std::ios_base::out | std::ios_base::trunc:
-            mdstr = "w+";
-            break;
-        case std::ios_base::in | std::ios_base::out | std::ios_base::app:
-        case std::ios_base::in | std::ios_base::app:
-            mdstr = "a+";
-            break;
-        case std::ios_base::out | std::ios_base::binary:
-        case std::ios_base::out | std::ios_base::trunc | std::ios_base::binary:
-            mdstr = "wb";
-            break;
-        case std::ios_base::out | std::ios_base::app | std::ios_base::binary:
-        case std::ios_base::app | std::ios_base::binary:
-            mdstr = "ab";
-            break;
-        case std::ios_base::in | std::ios_base::binary:
-            mdstr = "rb";
-            break;
-        case std::ios_base::in | std::ios_base::out | std::ios_base::binary:
-            mdstr = "r+b";
-            break;
-        case std::ios_base::in | std::ios_base::out | std::ios_base::trunc | std::ios_base::binary:
-            mdstr = "w+b";
-            break;
-        case std::ios_base::in | std::ios_base::out | std::ios_base::app | std::ios_base::binary:
-        case std::ios_base::in | std::ios_base::app | std::ios_base::binary:
-            mdstr = "a+b";
-            break;
-        default:
-            rt = nullptr;
-            break;
-        }
-        if (rt)
-        {
-            _M_file = fopen(s, mdstr);
+            _M_file = fopen(s, md);
             if (_M_file)
             {
+                rt = this;
                 _M_om = mode;
                 if (mode & std::ios_base::ate)
                 {
@@ -363,8 +358,6 @@ basic_filebuf<CharT, Traits>::open(const char* s, std::ios_base::openmode mode)
                     }
                 }
             }
-            else
-                rt = nullptr;
         }
     }
     return rt;
