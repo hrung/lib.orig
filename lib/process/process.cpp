@@ -37,6 +37,12 @@ static inline void discard(int fd)
     }
 }
 
+static inline void discard(int fd[2])
+{
+    discard(fd[0]);
+    discard(fd[1]);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 static void pipe_if(bool cond, int fd[2])
 {
@@ -102,14 +108,9 @@ void process::_M_process(std::function<int()> func, bool group, redir_flags flag
     }
     catch(...)
     {
-        discard(out_fd[0]);
-        discard(out_fd[1]);
-
-        discard(in_fd [0]);
-        discard(in_fd [1]);
-
-        discard(err_fd[0]);
-        discard(err_fd[1]);
+        discard(out_fd);
+        discard(in_fd);
+        discard(err_fd);
 
         throw;
     }
