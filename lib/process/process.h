@@ -96,18 +96,27 @@ public:
 
     process(process&& x) noexcept { swap(x); }
 
+    ////////////////////
     template<typename Callable, typename... Args>
-    explicit process(Callable&& func, Args&&... args)
+    explicit process(group_t, redir_flags flags, Callable&& func, Args&&... args)
     {
-        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), false, redir::none);
+        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), true, flags);
     }
 
+    template<typename Callable, typename... Args>
+    explicit process(group_t, redir flags, Callable&& func, Args&&... args)
+    {
+        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), true, flags);
+    }
+
+    ////////////////////
     template<typename Callable, typename... Args>
     explicit process(group_t, Callable&& func, Args&&... args)
     {
         _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), true, redir::none);
     }
 
+    ////////////////////
     template<typename Callable, typename... Args>
     explicit process(redir_flags flags, Callable&& func, Args&&... args)
     {
@@ -115,9 +124,16 @@ public:
     }
 
     template<typename Callable, typename... Args>
-    explicit process(group_t, redir_flags flags, Callable&& func, Args&&... args)
+    explicit process(redir flags, Callable&& func, Args&&... args)
     {
-        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), true, flags);
+        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), false, flags);
+    }
+
+    ////////////////////
+    template<typename Callable, typename... Args>
+    explicit process(Callable&& func, Args&&... args)
+    {
+        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), false, redir::none);
     }
 
     ~process();
