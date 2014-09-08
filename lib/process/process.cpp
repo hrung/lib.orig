@@ -46,7 +46,7 @@ static inline void discard(int fd[2])
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 static void pipe_if(bool cond, int fd[2])
 {
-    if(cond && pipe2(fd, O_NONBLOCK)) throw errno_error();
+    if(cond && pipe(fd)) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -64,6 +64,12 @@ static void open_if(bool cond,
 {
     if(cond)
     {
+        int f= fcntl(fd[idx], F_GETFL);
+        if(f == -1) throw errno_error();
+
+        f= fcntl(fd[idx], F_SETFL, f | O_NONBLOCK);
+        if(f == -1) throw errno_error();
+
         if(!buf.open(fd[idx], mode)) throw errno_error();
         stream.rdbuf(&buf);
     }
