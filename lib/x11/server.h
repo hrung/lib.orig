@@ -37,20 +37,13 @@ private:
 class server
 {
 public:
-    static const std::string default_name;
-    static const std::string default_path;
-    static const arguments default_args;
-
     server() = default;
     server(server&) = delete;
     server(const server&) = delete;
 
     server(server&& x) = default;
 
-    explicit server(const std::string& auth,
-                    const std::string& name= std::string(),
-                    const std::string& path= std::string(),
-                    const arguments& args= arguments());
+    explicit server(const std::string& auth, const std::string& name= std::string());
     ~server();
 
     server& operator=(const server&) = delete;

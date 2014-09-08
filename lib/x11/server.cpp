@@ -42,26 +42,22 @@ std::string cookie::value() const noexcept
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-const std::string server::default_name= ":0.0";
-const std::string server::default_path= "/usr/bin/X";
-const arguments server::default_args= { "-br", "-novtswitch", "-nolisten", "tcp", "-quiet" };
+const std::string xorg_path= "/usr/bin/X";
+const arguments xorg_args= { "-br", "-novtswitch", "-nolisten", "tcp", "-quiet" };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-server::server(const std::string& auth, const std::string& name, const std::string& path, const arguments& args):
-    _M_name(name.size()? name: default_name)
+server::server(const std::string& auth, const std::string& name):
+    _M_name(name.size()? name: ":0.0")
 {
-    arguments full;
-    full.push_back(_M_name);
+    arguments args;
+    args.push_back(_M_name);
 
-    if(args.size())
-        std::copy(args.begin(), args.end(), std::back_inserter(full));
-    else
-        std::copy(default_args.begin(), default_args.end(), std::back_inserter(full));
+    std::copy(xorg_args.begin(), xorg_args.end(), std::back_inserter(args));
 
-    full.push_back("-auth");
-    full.push_back(auth);
+    args.push_back("-auth");
+    args.push_back(auth);
 
-    process proc(process::group, this_process::replace, path.size()? path: default_path, full);
+    process proc(process::group, this_process::replace, xorg_path, args);
     std::swap(proc, _M_process);
 
     for(int ri=0; ri<10; ++ri)
