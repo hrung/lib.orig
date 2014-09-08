@@ -3,6 +3,10 @@
 #define PROCESS_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+#include "stdio_filebuf.h"
+#include "flags.h"
+
+#include <fstream>
 #include <functional>
 #include <vector>
 #include <map>
@@ -69,12 +73,24 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+enum class redir
+{
+    none=0,
+    out=1,
+    in=2,
+    err=4,
+    all= out | in | err
+};
+DECLARE_FLAGS(redir)
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 class process
 {
 public:
     typedef pid_t id;
+    enum group_t { group };
 
-    process() noexcept = default;
+    process() = default;
     process(process&) = delete;
     process(const process&) = delete;
 
@@ -83,13 +99,25 @@ public:
     template<typename Callable, typename... Args>
     explicit process(Callable&& func, Args&&... args)
     {
-        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), false);
+        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), false, redir::none);
     }
 
     template<typename Callable, typename... Args>
-    explicit process(bool group, Callable&& func, Args&&... args)
+    explicit process(group_t, Callable&& func, Args&&... args)
     {
-        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), group);
+        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), true, redir::none);
+    }
+
+    template<typename Callable, typename... Args>
+    explicit process(redir_flags flags, Callable&& func, Args&&... args)
+    {
+        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), false, flags);
+    }
+
+    template<typename Callable, typename... Args>
+    explicit process(group_t, redir_flags flags, Callable&& func, Args&&... args)
+    {
+        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), true, flags);
     }
 
     ~process();
@@ -107,6 +135,15 @@ public:
         std::swap(_M_active, x._M_active);
         std::swap(_M_group, x._M_group);
         std::swap(_M_code, x._M_code);
+
+        std::swap(cin, x.cin);
+        std::swap(_M_cin, x._M_cin);
+
+        std::swap(cout, x.cout);
+        std::swap(_M_cout, x._M_cout);
+
+        std::swap(cerr, x.cerr);
+        std::swap(_M_cerr, x._M_cerr);
     }
 
     process::id get_id() const noexcept { return _M_id; }
@@ -130,7 +167,10 @@ public:
     }
     void join();
 
-private:
+    std::ofstream cin;
+    std::ifstream cout, cerr;
+
+protected:
     id _M_id=0;
     bool _M_active= false;
 
@@ -138,7 +178,9 @@ private:
 
     app::exit_code _M_code;
 
-    void _M_process(std::function<int()>, bool group);
+    stdio_filebuf<char> _M_cin, _M_cout, _M_cerr;
+
+    void _M_process(std::function<int()>, bool group, redir_flags flags);
     bool _M_wait_for(std::chrono::seconds, std::chrono::nanoseconds);
 
     void set_code(int code);
