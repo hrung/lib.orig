@@ -76,10 +76,10 @@ private:
 enum class redir
 {
     none=0,
-    out=1,
-    in=2,
-    err=4,
-    all= out | in | err
+    cout=1,
+    cin=2,
+    cerr=4,
+    all= cout | cin | cerr
 };
 DECLARE_FLAGS(redir)
 

@@ -79,26 +79,26 @@ void process::_M_process(std::function<int()> func, bool group, redir_flags flag
 
     try
     {
-        pipe_if(flags & redir::out, out_fd);
-        pipe_if(flags & redir::in, in_fd);
-        pipe_if(flags & redir::err, err_fd);
+        pipe_if(flags & redir::cout, out_fd);
+        pipe_if(flags & redir::cin, in_fd);
+        pipe_if(flags & redir::cerr, err_fd);
 
         _M_id= fork();
         if(_M_id == -1) throw errno_error();
 
         if(_M_id == 0)
         {
-            dup_if(flags & redir::out, STDOUT_FILENO, out_fd, 1);
-            dup_if(flags & redir::in, STDIN_FILENO, in_fd, 0);
-            dup_if(flags & redir::err, STDERR_FILENO, err_fd, 1);
+            dup_if(flags & redir::cout, STDOUT_FILENO, out_fd, 1);
+            dup_if(flags & redir::cin, STDIN_FILENO, in_fd, 0);
+            dup_if(flags & redir::cerr, STDERR_FILENO, err_fd, 1);
 
             int code= func();
             exit(code);
         }
 
-        open_if(flags & redir::out, cout, _M_cout, std::ios_base::in, out_fd, 0);
-        open_if(flags & redir::in, cin, _M_cin, std::ios_base::out, in_fd, 1);
-        open_if(flags & redir::err, cerr, _M_cerr, std::ios_base::in, err_fd, 0);
+        open_if(flags & redir::cout, cout, _M_cout, std::ios_base::in, out_fd, 0);
+        open_if(flags & redir::cin, cin, _M_cin, std::ios_base::out, in_fd, 1);
+        open_if(flags & redir::cerr, cerr, _M_cerr, std::ios_base::in, err_fd, 0);
 
         if(group)
         {
