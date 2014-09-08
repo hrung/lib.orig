@@ -61,7 +61,7 @@ server::server(const std::string& auth, const std::string& name, const std::stri
     full.push_back("-auth");
     full.push_back(auth);
 
-    process proc(true, this_process::replace, path.size()? path: default_path, full);
+    process proc(process::group, this_process::replace, path.size()? path: default_path, full);
     std::swap(proc, _M_process);
 
     for(int ri=0; ri<10; ++ri)
