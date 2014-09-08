@@ -28,10 +28,13 @@ process::~process()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-static inline void close2(int fd[2])
+static inline void discard(int fd)
 {
-    if(fd[0] != -1) close(fd[0]);
-    if(fd[1] != -1) close(fd[1]);
+    if(fd != -1)
+    {
+        close(fd);
+        fd= -1;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,8 +47,8 @@ static void pipe_if(bool cond, int fd[2])
 static void dup_if(bool cond, int fd_io, int fd_rep, int fd_x)
 {
     if(cond && dup2(fd_rep, fd_io) == -1) throw errno_error();
-    close(fd_rep);
-    close(fd_x);
+    discard(fd_rep);
+    discard(fd_x);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -56,9 +59,9 @@ static void open_if(bool cond, std::basic_ios<char>& stream, stdio_filebuf<char>
         if(!buf.open(fd_con, mode)) throw errno_error();
         stream.rdbuf(&buf);
     }
-    else close(fd_con);
+    else discard(fd_con);
 
-    close(fd_x);
+    discard(fd_x);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -99,9 +102,15 @@ void process::_M_process(std::function<int()> func, bool group, redir_flags flag
     }
     catch(...)
     {
-        close2(out_fd);
-        close2(in_fd);
-        close2(err_fd);
+        discard(out_fd[0]);
+        discard(out_fd[1]);
+
+        discard(in_fd [0]);
+        discard(in_fd [1]);
+
+        discard(err_fd[0]);
+        discard(err_fd[1]);
+
         throw;
     }
 }
