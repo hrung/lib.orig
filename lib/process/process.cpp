@@ -50,24 +50,26 @@ static void pipe_if(bool cond, int fd[2])
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-static void dup_if(bool cond, int fd_io, int fd_rep, int fd_x)
+static void dup_if(bool cond, int fd_io, int fd[2], int idx)
 {
-    if(cond && dup2(fd_rep, fd_io) == -1) throw errno_error();
-    discard(fd_rep);
-    discard(fd_x);
+    if(cond && dup2(fd[idx], fd_io) == -1) throw errno_error();
+    discard(fd);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-static void open_if(bool cond, std::basic_ios<char>& stream, stdio_filebuf<char>& buf, std::ios_base::openmode mode, int fd_con, int fd_x)
+static void open_if(bool cond,
+                    std::basic_ios<char>& stream,
+                    stdio_filebuf<char>& buf, std::ios_base::openmode mode,
+                    int fd[2], int idx)
 {
     if(cond)
     {
-        if(!buf.open(fd_con, mode)) throw errno_error();
+        if(!buf.open(fd[idx], mode)) throw errno_error();
         stream.rdbuf(&buf);
     }
-    else discard(fd_con);
+    else discard(fd[idx]);
 
-    discard(fd_x);
+    discard(fd[1-idx]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -86,17 +88,17 @@ void process::_M_process(std::function<int()> func, bool group, redir_flags flag
 
         if(_M_id == 0)
         {
-            dup_if(flags & redir::out, STDOUT_FILENO, out_fd[1], out_fd[0]);
-            dup_if(flags & redir::in, STDIN_FILENO, in_fd[0], in_fd[1]);
-            dup_if(flags & redir::err, STDERR_FILENO, err_fd[1], err_fd[0]);
+            dup_if(flags & redir::out, STDOUT_FILENO, out_fd, 1);
+            dup_if(flags & redir::in, STDIN_FILENO, in_fd, 0);
+            dup_if(flags & redir::err, STDERR_FILENO, err_fd, 1);
 
             int code= func();
             exit(code);
         }
 
-        open_if(flags & redir::out, cout, _M_cout, std::ios_base::in, out_fd[0], out_fd[1]);
-        open_if(flags & redir::in, cin, _M_cin, std::ios_base::out, in_fd[1], in_fd[0]);
-        open_if(flags & redir::err, cerr, _M_cerr, std::ios_base::in, err_fd[0], err_fd[1]);
+        open_if(flags & redir::out, cout, _M_cout, std::ios_base::in, out_fd, 0);
+        open_if(flags & redir::in, cin, _M_cin, std::ios_base::out, in_fd, 1);
+        open_if(flags & redir::err, cerr, _M_cerr, std::ios_base::in, err_fd, 0);
 
         if(group)
         {
