@@ -19,7 +19,7 @@ charpp_ptr environ::to_charpp() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-environ environ::from_charpp(char* args[])
+environ environ::from_charpp(char* args[], bool free)
 {
     environ e;
     if(args)
@@ -30,9 +30,9 @@ environ environ::from_charpp(char* args[])
             auto pos= x.find_first_of('=');
 
             if(pos != std::string::npos) e.set(x.substr(0, pos), x.substr(pos+1));
-            free(*ri);
+            if(free) ::free(*ri);
         }
-        free(args);
+        if(free) ::free(args);
     }
     return e;
 }

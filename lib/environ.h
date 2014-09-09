@@ -84,9 +84,7 @@ public:
 
     ////////////////////
     charpp_ptr to_charpp() const;
-
-    static environ from_charpp(char*[]);
-    static environ from_charpp(charpp_ptr x) { return from_charpp(x.get()); }
+    static environ from_charpp(char*[], bool free= false);
 
 private:
     container_type _M_c;
