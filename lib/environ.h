@@ -182,7 +182,7 @@ inline size_type size() noexcept { return end()._M_p - begin()._M_p; }
 
 size_type count(const name_type& name) noexcept;
 
-app::environ environ();
+inline app::environ environ() { return app::environ::from_charpp(::environ); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
