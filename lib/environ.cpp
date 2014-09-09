@@ -68,7 +68,6 @@ name_type name(char* v, bool* found)
         n=v;
         n.erase(n.find_first_of('='));
     }
-
     if(found) *found= v;
     return n;
 }
@@ -82,9 +81,17 @@ value_type value(char* x, bool* found)
         v=x;
         v.erase(0, v.find_first_of('=')+1);
     }
-
     if(found) *found= x;
     return v;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+app::environ environ()
+{
+    app::environ e;
+    for(iterator ri= begin(), ri_end= end(); ri != ri_end; ++ri)
+        e.set(ri.name(), ri.value());
+    return e;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
