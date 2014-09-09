@@ -4,6 +4,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "errno_error.h"
+#include "utility.h"
 
 #include <string>
 #include <map>
@@ -82,7 +83,10 @@ public:
     const_reverse_iterator crend() const noexcept { return _M_c.rend(); }
 
     ////////////////////
+    charpp_ptr to_charpp() const;
+
     static environ from_charpp(char*[]);
+    static environ from_charpp(charpp_ptr x) { return from_charpp(x.get()); }
 
 private:
     container_type _M_c;
