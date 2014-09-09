@@ -9,6 +9,25 @@ namespace app
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+environ environ::from_charpp(char* args[])
+{
+    environ e;
+    if(args)
+    {
+        for(char** ri= args; *ri; ++ri)
+        {
+            std::string x= *ri;
+            auto pos= x.find_first_of('=');
+
+            if(pos != std::string::npos) e.set(x.substr(0, pos), x.substr(pos+1));
+            free(*ri);
+        }
+        free(args);
+    }
+    return e;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace this_environ
 {
 

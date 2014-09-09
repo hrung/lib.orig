@@ -81,6 +81,9 @@ public:
     const_reverse_iterator crbegin() const noexcept { return _M_c.rbegin(); }
     const_reverse_iterator crend() const noexcept { return _M_c.rend(); }
 
+    ////////////////////
+    static environ from_charpp(char*[]);
+
 private:
     container_type _M_c;
 };
