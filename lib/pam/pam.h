@@ -11,11 +11,11 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "pam_type.h"
+#include "environ.h"
 
 #include <functional>
-#include <map>
-#include <memory>
 #include <string>
+#include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct pam_handle;
@@ -26,9 +26,6 @@ struct pam_response;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace app
 {
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-typedef std::map<std::string, std::string> environment;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace pam
@@ -80,20 +77,20 @@ public:
     pam::handle handle() const noexcept { return _M_pamh; }
     bool valid() const noexcept { return _M_pamh; }
 
-    void reset(pam::item);
-    void set(pam::item, const std::string& value);
     std::string get(pam::item, bool* found= nullptr);
+    void set(pam::item, const std::string& value);
+    void reset(pam::item);
 
     void set_user_func(user_func x)   noexcept { _M_user=x; }
     void set_pass_func(pass_func x)   noexcept { _M_pass=x; }
     void set_info_func(info_func x)   noexcept { _M_info=x; }
     void set_error_func(error_func x) noexcept { _M_error=x; }
 
-    void reset(const std::string& name);
-    void set(const std::string& name, const std::string& value);
     std::string get(const std::string& name, bool* found= nullptr);
+    void set(const std::string& name, const std::string& value);
+    void reset(const std::string& name);
 
-    app::environment environment();
+    app::environ environ();
 
     void authenticate();
 
