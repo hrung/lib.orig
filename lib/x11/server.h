@@ -44,8 +44,8 @@ public:
 
     server(server&& x) = default;
 
-    server(const std::string& name, const std::string& server_auth);
-    explicit server(const std::string& server_auth): server(default_name, server_auth) { }
+    server(const std::string& name, const std::string& server_auth, const arguments& args= {});
+    explicit server(const std::string& server_auth, const arguments& args= {}): server(default_name, server_auth, args) { }
     ~server();
 
     server& operator=(const server&) = delete;

@@ -45,23 +45,21 @@ std::string cookie::value() const noexcept
 const std::string server::default_name= ":0.0";
 
 const std::string xorg_path= "/usr/bin/X";
-const arguments xorg_args= { "-br", "-novtswitch", "-nolisten", "tcp", "-quiet" };
-
 const std::string xauth_path= "/usr/bin/xauth";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-server::server(const std::string& name, const std::string& server_auth):
+server::server(const std::string& name, const std::string& server_auth, const arguments& args):
     _M_name(name)
 {
     set_cookie(server_auth);
     this_environ::set("XAUTHORITY", server_auth);
 
-    arguments args;
-    args.push_back(_M_name);
-    args.push_back(xorg_args);
-    args.push_back({ "-auth", server_auth });
+    arguments xorg_args;
+    xorg_args.push_back(name);
+    xorg_args.push_back(args);
+    xorg_args.push_back({ "-auth", server_auth });
 
-    process proc(process::group, this_process::replace, xorg_path, args);
+    process proc(process::group, this_process::replace, xorg_path, xorg_args);
     std::swap(proc, _M_process);
 
     for(int ri=0; ri<10; ++ri)
