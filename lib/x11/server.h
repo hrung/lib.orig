@@ -4,8 +4,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "process/process.h"
-
-#include <vector>
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -56,8 +54,11 @@ public:
 
     x11::display display() const { return _M_display; }
 
+    void update_auth(const std::string& path);
+
 private:
     std::string _M_name;
+    x11::cookie _M_cookie;
 
     process _M_process;
     x11::display _M_display= nullptr;

@@ -45,17 +45,19 @@ std::string cookie::value() const noexcept
 const std::string xorg_path= "/usr/bin/X";
 const arguments xorg_args= { "-br", "-novtswitch", "-nolisten", "tcp", "-quiet" };
 
+const std::string xauth_path= "/usr/bin/xauth";
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 server::server(const std::string& auth, const std::string& name):
     _M_name(name.size()? name: ":0.0")
 {
+    update_auth(auth);
+    this_environ::set("XAUTHORITY", auth);
+
     arguments args;
     args.push_back(_M_name);
-
-    std::copy(xorg_args.begin(), xorg_args.end(), std::back_inserter(args));
-
-    args.push_back("-auth");
-    args.push_back(auth);
+    args.push_back(xorg_args);
+    args.push_back({ "-auth", auth });
 
     process proc(process::group, this_process::replace, xorg_path, args);
     std::swap(proc, _M_process);
@@ -86,6 +88,16 @@ server::~server()
 
         _M_process.signal(signal::hangup);
     }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void server::update_auth(const std::string& path)
+{
+    process xauth(redir::all, this_process::replace, xauth_path, arguments { "-f", path });
+    xauth.cin << "remove " << name() << std::endl;
+    xauth.cin << "add " << name() << " . " << _M_cookie.value() << std::endl;
+    xauth.cin << "exit" << std::endl;
+    xauth.wait_for(std::chrono::seconds(1));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
