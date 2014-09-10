@@ -19,11 +19,20 @@ class arguments: public wrapper< std::vector<std::string> >
 {
 public:
     arguments() = default;
-    arguments(std::initializer_list<value_type> x){ _M_c=x; }
+    arguments(std::initializer_list<value_type> x) { _M_c=x; }
 
     ////////////////////
     void push_back(const value_type& x) { _M_c.push_back(x); }
     void push_back(value_type&& x) { _M_c.push_back(std::move(x)); }
+
+    void push_back(const arguments& x)
+    {
+        _M_c.insert(end(), x.begin(), x.end());
+    }
+    void push_back(std::initializer_list<value_type> x)
+    {
+        _M_c.insert(end(), x);
+    }
 
     ////////////////////
     charpp_ptr to_charpp() const;
