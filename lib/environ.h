@@ -9,7 +9,7 @@
 
 #include <string>
 #include <map>
-#include <memory>
+#include <utility>
 #include <iterator>
 
 #include <unistd.h>
@@ -20,7 +20,7 @@ namespace app
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class environ: public container_wrapper< std::map<std::string, std::string> >
+class environ: public wrapper< std::map<std::string, std::string> >
 {
 public:
     typedef typename container_type::key_type name_type;
