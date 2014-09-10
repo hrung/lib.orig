@@ -44,8 +44,8 @@ public:
 
     server(server&& x) = default;
 
-    server(const std::string& name, const std::string& auth);
-    explicit server(const std::string& auth): server(default_name, auth) { }
+    server(const std::string& name, const std::string& server_auth);
+    explicit server(const std::string& server_auth): server(default_name, server_auth) { }
     ~server();
 
     server& operator=(const server&) = delete;
@@ -58,7 +58,7 @@ public:
 
     x11::display display() const { return _M_display; }
 
-    void update_auth(const std::string& path);
+    void set_cookie(const std::string& path);
 
 private:
     std::string _M_name;

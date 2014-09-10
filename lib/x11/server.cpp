@@ -50,16 +50,16 @@ const arguments xorg_args= { "-br", "-novtswitch", "-nolisten", "tcp", "-quiet" 
 const std::string xauth_path= "/usr/bin/xauth";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-server::server(const std::string& name, const std::string& auth):
+server::server(const std::string& name, const std::string& server_auth):
     _M_name(name)
 {
-    update_auth(auth);
-    this_environ::set("XAUTHORITY", auth);
+    set_cookie(server_auth);
+    this_environ::set("XAUTHORITY", server_auth);
 
     arguments args;
     args.push_back(_M_name);
     args.push_back(xorg_args);
-    args.push_back({ "-auth", auth });
+    args.push_back({ "-auth", server_auth });
 
     process proc(process::group, this_process::replace, xorg_path, args);
     std::swap(proc, _M_process);
@@ -93,13 +93,16 @@ server::~server()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void server::update_auth(const std::string& path)
+void server::set_cookie(const std::string& path)
 {
-    process xauth(redir::all, this_process::replace, xauth_path, arguments { "-f", path });
+    process xauth(redir::cin, this_process::replace, xauth_path, arguments { "-f", path });
+
     xauth.cin << "remove " << name() << std::endl;
     xauth.cin << "add " << name() << " . " << _M_cookie.value() << std::endl;
     xauth.cin << "exit" << std::endl;
-    xauth.wait_for(std::chrono::seconds(1));
+    xauth.join();
+
+    if(xauth.exit_code().code()) throw std::runtime_error("Could not set server auth");
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
