@@ -33,6 +33,9 @@ public:
     void clear() { _M_c.clear(); }
 
     ////////////////////
+    void swap(container_wrapper& x) { _M_c.swap(x._M_c); }
+
+    ////////////////////
     iterator begin() noexcept { return _M_c.begin(); }
     const_iterator begin() const noexcept { return _M_c.begin(); }
 
@@ -51,9 +54,22 @@ public:
     const_reverse_iterator crbegin() const noexcept { return _M_c.rbegin(); }
     const_reverse_iterator crend() const noexcept { return _M_c.rend(); }
 
+    ////////////////////
+    template<typename T>
+    friend bool operator==(const container_wrapper<T>& x, const container_wrapper<T>& y)
+    { return x._M_c == y._M_c; }
+
+    template<typename T>
+    friend bool operator!=(const container_wrapper<T>& x, const container_wrapper<T>& y)
+    { return x._M_c != y._M_c; }
+
 protected:
     container_type _M_c;
 };
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+template<typename T>
+inline void swap(container_wrapper<T>& x, container_wrapper<T>& y) { x.swap(y); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
