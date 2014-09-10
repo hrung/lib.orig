@@ -8,7 +8,7 @@ namespace app
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename Container>
-class container_wrapper
+class wrapper
 {
 public:
     typedef Container                                   container_type;
@@ -33,7 +33,7 @@ public:
     void clear() { _M_c.clear(); }
 
     ////////////////////
-    void swap(container_wrapper& x) { _M_c.swap(x._M_c); }
+    void swap(wrapper& x) { _M_c.swap(x._M_c); }
 
     ////////////////////
     iterator begin() noexcept { return _M_c.begin(); }
@@ -56,11 +56,11 @@ public:
 
     ////////////////////
     template<typename T>
-    friend bool operator==(const container_wrapper<T>& x, const container_wrapper<T>& y)
+    friend bool operator==(const wrapper<T>& x, const wrapper<T>& y)
     { return x._M_c == y._M_c; }
 
     template<typename T>
-    friend bool operator!=(const container_wrapper<T>& x, const container_wrapper<T>& y)
+    friend bool operator!=(const wrapper<T>& x, const wrapper<T>& y)
     { return x._M_c != y._M_c; }
 
 protected:
@@ -69,7 +69,7 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T>
-inline void swap(container_wrapper<T>& x, container_wrapper<T>& y) { x.swap(y); }
+inline void swap(wrapper<T>& x, wrapper<T>& y) { x.swap(y); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
