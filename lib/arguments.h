@@ -4,6 +4,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "wrapper.h"
+#include "utility.h"
 
 #include <initializer_list>
 #include <string>
@@ -19,6 +20,10 @@ class arguments: public wrapper< std::vector<std::string> >
 public:
     arguments() = default;
     arguments(std::initializer_list<value_type> x){ _M_c=x; }
+
+    ////////////////////
+    void push_back(const value_type& x) { _M_c.push_back(x); }
+    void push_back(value_type&& x) { _M_c.push_back(std::move(x)); }
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
