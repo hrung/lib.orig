@@ -42,14 +42,16 @@ std::string cookie::value() const noexcept
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+const std::string server::default_name= ":0.0";
+
 const std::string xorg_path= "/usr/bin/X";
 const arguments xorg_args= { "-br", "-novtswitch", "-nolisten", "tcp", "-quiet" };
 
 const std::string xauth_path= "/usr/bin/xauth";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-server::server(const std::string& auth, const std::string& name):
-    _M_name(name.size()? name: ":0.0")
+server::server(const std::string& name, const std::string& auth):
+    _M_name(name)
 {
     update_auth(auth);
     this_environ::set("XAUTHORITY", auth);

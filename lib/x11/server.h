@@ -35,13 +35,17 @@ private:
 class server
 {
 public:
+    static const std::string default_name;
+
+public:
     server() = default;
     server(server&) = delete;
     server(const server&) = delete;
 
     server(server&& x) = default;
 
-    explicit server(const std::string& auth, const std::string& name= std::string());
+    server(const std::string& name, const std::string& auth);
+    explicit server(const std::string& auth): server(default_name, auth) { }
     ~server();
 
     server& operator=(const server&) = delete;
