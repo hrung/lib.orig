@@ -17,6 +17,7 @@ charpp_ptr environ::to_charpp() const
     charpp_ptr x(rp);
     for(auto ri= cbegin(); ri != cend(); ++ri, ++rp) *rp= strdup((ri->first+ "="+ ri->second).data());
 
+    *rp= nullptr;
     return x;
 }
 
