@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "process.h"
 #include "errno_error.h"
+#include "utility.h"
 
-#include <memory>
 #include <cstdlib>
 #include <ctime>
 #include <cstring>
@@ -59,7 +59,7 @@ static void dup_if(bool cond, int fd_io, int fd[2], int idx)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 static void open_if(bool cond,
                     std::basic_ios<char>& stream,
-                    stdio_filebuf<char>& buf, std::ios_base::openmode mode,
+                    process::filebuf& buf, std::ios_base::openmode mode,
                     int fd[2], int idx)
 {
     if(cond)
@@ -249,59 +249,21 @@ process::id parent_id() noexcept
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct aren_deleter
-{
-    void operator()(char* args[])
-    {
-        for(char* arg= args[0]; arg; ++arg) free(arg);
-        delete[] args;
-    }
-};
-
-typedef std::unique_ptr<char*[], aren_deleter> aren_ptr;
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-static aren_ptr create_arg(const std::string& path, const arguments& args)
-{
-    aren_ptr value(new char*[args.size()+2]);
-
-    int ri=0;
-    value[ri++]= strdup(path.data());
-
-    for(const std::string& x: args) value[ri++]= strdup(x.data());
-    value[ri]= nullptr;
-
-    return value;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-static aren_ptr create_env(const app::environment& env)
-{
-    aren_ptr value(new char*[env.size()+1]);
-
-    int ri=0;
-    for(auto& x: env) value[ri++]= strdup((x.first+ "="+ x.second).data());
-    value[ri]= nullptr;
-
-    return value;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 int replace(const std::string& path, const arguments& args)
 {
-    aren_ptr arg= create_arg(path, args);
+    charpp_ptr x= args.to_charpp(path);
 
-    if(execv(arg[0], arg.get())) throw errno_error();
+    if(execv(x[0], x.get())) throw errno_error();
     return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-int replace_e(const app::environment& e, const std::string& path, const arguments& args)
+int replace_e(const environ& e, const std::string& path, const arguments& args)
 {
-    aren_ptr env= create_env(e);
-    aren_ptr arg= create_arg(path, args);
+    charpp_ptr x= e.to_charpp();
+    charpp_ptr y= args.to_charpp(path);
 
-    if(execve(arg[0], arg.get(), env.get())) throw errno_error();
+    if(execve(y[0], y.get(), x.get())) throw errno_error();
     return 0;
 }
 

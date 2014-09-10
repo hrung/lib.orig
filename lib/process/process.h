@@ -3,13 +3,13 @@
 #define PROCESS_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "stdio_filebuf.h"
+#include "environ.h"
+#include "arguments.h"
+#include "basic_filebuf.h"
 #include "flags.h"
 
 #include <fstream>
 #include <functional>
-#include <vector>
-#include <map>
 #include <stdexcept>
 #include <string>
 #include <chrono>
@@ -20,11 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace app
 {
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-typedef std::map<std::string, std::string> environment;
-
-typedef std::vector<std::string> arguments;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum class signal
@@ -90,6 +85,9 @@ public:
     typedef pid_t id;
     enum group_t { group };
 
+    typedef basic_filebuf<char> filebuf;
+
+public:
     process() = default;
     process(process&) = delete;
     process(const process&) = delete;
@@ -194,7 +192,7 @@ protected:
 
     app::exit_code _M_code;
 
-    stdio_filebuf<char> _M_cin, _M_cout, _M_cerr;
+    filebuf _M_cin, _M_cout, _M_cerr;
 
     void _M_process(std::function<int()>, bool group, redir_flags flags);
     bool _M_wait_for(std::chrono::seconds, std::chrono::nanoseconds);
@@ -219,7 +217,7 @@ process::id parent_id() noexcept;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int replace(const std::string& path, const arguments& args= {});
-int replace_e(const environment&, const std::string& path, const arguments& args= {});
+int replace_e(const environ&, const std::string& path, const arguments& args= {});
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 exit_code execute(const std::string& command);
