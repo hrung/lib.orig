@@ -177,7 +177,7 @@ static void handler(int)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool process::_M_wait_for(std::chrono::seconds s, std::chrono::nanoseconds ns)
+bool process::wait_for(std::chrono::seconds s, std::chrono::nanoseconds ns)
 {
     if(running())
     {

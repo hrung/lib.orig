@@ -177,7 +177,7 @@ public:
         std::chrono::seconds s= std::chrono::duration_cast<std::chrono::seconds>(t);
         std::chrono::nanoseconds ns= std::chrono::duration_cast<std::chrono::nanoseconds>(t - s);
 
-        return _M_wait_for(s, ns);
+        return wait_for(s, ns);
     }
     void join();
 
@@ -187,16 +187,14 @@ public:
 protected:
     id _M_id=0;
     bool _M_active= false;
-
     bool _M_group= false;
 
     app::exit_code _M_code;
-
     filebuf _M_cin, _M_cout, _M_cerr;
 
     void _M_process(std::function<int()>, bool group, redir_flags flags);
-    bool _M_wait_for(std::chrono::seconds, std::chrono::nanoseconds);
 
+    bool wait_for(std::chrono::seconds, std::chrono::nanoseconds);
     void set_code(int code);
 };
 
