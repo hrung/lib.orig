@@ -260,10 +260,10 @@ int replace(const std::string& path, const arguments& args)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int replace_e(const environ& e, const std::string& path, const arguments& args)
 {
-    charpp_ptr x= e.to_charpp();
-    charpp_ptr y= args.to_charpp(path);
+    charpp_ptr x= args.to_charpp(path);
+    charpp_ptr y= e.to_charpp();
 
-    if(execve(y[0], y.get(), x.get())) throw errno_error();
+    if(execve(x[0], x.get(), y.get())) throw errno_error();
     return 0;
 }
 
