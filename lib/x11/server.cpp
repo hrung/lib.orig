@@ -95,7 +95,7 @@ server::~server()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void server::set_cookie(const std::string& path)
 {
-    process xauth(redir::cin, this_process::replace, xauth_path, arguments { "-f", path });
+    process xauth(redir::cin, this_process::replace, xauth_path, arguments { "-q", "-f", path });
 
     xauth.cin << "remove " << name() << std::endl;
     xauth.cin << "add " << name() << " . " << _M_cookie.value() << std::endl;
