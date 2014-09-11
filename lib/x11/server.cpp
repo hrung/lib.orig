@@ -42,7 +42,7 @@ std::string cookie::value() const noexcept
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-const std::string server::default_name= ":0.0";
+const std::string server::default_name= ":0";
 
 const std::string xorg_path= "/usr/bin/X";
 const std::string xauth_path= "/usr/bin/xauth";
