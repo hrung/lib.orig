@@ -66,8 +66,7 @@ server::server(const std::string& name, const std::string& server_auth, const ar
     xorg_args.push_back(args);
     xorg_args.push_back({ "-auth", server_auth });
 
-    process proc(process::group, this_process::replace, xorg_path, xorg_args);
-    std::swap(proc, _M_process);
+    _M_process= process(process::group, this_process::replace, xorg_path, xorg_args);
 
     for(int ri=0; ri<10; ++ri)
     {
