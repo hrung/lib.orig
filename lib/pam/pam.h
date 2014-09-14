@@ -19,7 +19,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct pam_handle;
-struct pam_conv;
 struct pam_message;
 struct pam_response;
 
@@ -64,13 +63,15 @@ public:
     void swap(context& x)
     {
         std::swap(_M_pamh, x._M_pamh );
-        std::swap(_M_conv, x._M_conv );
         std::swap(_M_user, x._M_user );
         std::swap(_M_pass, x._M_pass );
         std::swap(_M_info, x._M_info );
         std::swap(_M_error,x._M_error);
         std::swap(_M_cred, x._M_cred );
         std::swap(_M_code, x._M_code );
+
+        set_conv();
+        x.set_conv();
     }
 
     ////////////////////
@@ -99,13 +100,14 @@ public:
 
 private:
     pam::handle _M_pamh= nullptr;
-    std::unique_ptr<pam_conv> _M_conv;
 
     user_func _M_user;
     pass_func _M_pass;
     info_func _M_info;
     error_func _M_error;
     static int despatch(int, const pam_message**, pam_response**, void*);
+
+    void set_conv();
 
     bool _M_cred= false;
     int setcred();

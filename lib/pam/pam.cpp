@@ -87,21 +87,29 @@ int context::despatch(int num, const pam_message** msg, pam_response** resp, voi
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 context::context(const std::string& service, const std::string& username)
 {
-    _M_conv= std::unique_ptr<pam_conv>(new pam_conv);
-    _M_conv->conv= despatch;
-    _M_conv->appdata_ptr= this;
-
     auto s= clone(service), u= username.size()? clone(username): nullptr;
+    pam_conv conv= { despatch, this };
 
-    _M_code= pam_start(s.get(), u.get(), _M_conv.get(), &_M_pamh);
+    _M_code= pam_start(s.get(), u.get(), &conv, &_M_pamh);
     if(errc(_M_code) != errc::success) throw pam_error(_M_code);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void context::set_conv()
+{
+    if(_M_pamh)
+    {
+        pam_conv conv= { despatch, this };
+
+        _M_code= pam_set_item(_M_pamh, static_cast<int>(item::conv), &conv);
+        if(errc(_M_code) != errc::success) throw item_error(_M_pamh, _M_code);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 context::~context()
 {
-    pam_end(_M_pamh, _M_code);
-    _M_pamh= nullptr;
+    if(_M_pamh) pam_end(_M_pamh, _M_code);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
