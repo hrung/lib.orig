@@ -49,14 +49,14 @@ int context::despatch(int num, const pam_message** msg, pam_response** resp, voi
             if(instance->_M_user)
             {
                 std::string value;
-                if( (success= instance->_M_user(value)) ) (*resp)[idx].resp= strdup(value.data());
+                if( (success= instance->_M_user(msg[idx]->msg, value)) ) (*resp)[idx].resp= strdup(value.data());
             }
             break;
         case conv::prompt_echo_off:
             if(instance->_M_pass)
             {
                 std::string value;
-                if( (success= instance->_M_pass(value)) ) (*resp)[idx].resp= strdup(value.data());
+                if( (success= instance->_M_pass(msg[idx]->msg, value)) ) (*resp)[idx].resp= strdup(value.data());
             }
             break;
         case conv::error_msg:
@@ -231,6 +231,13 @@ void context::close_session()
 
     _M_code= rmcred();
     if(errc(_M_code) != errc::success) throw cred_error(_M_pamh, _M_code);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void context::change_pass()
+{
+    _M_code= pam_chauthtok(_M_pamh, 0);
+    if(errc(_M_code) != errc::success) throw pass_error(_M_pamh, _M_code);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

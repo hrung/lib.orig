@@ -34,8 +34,8 @@ namespace pam
 typedef pam_handle* handle;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-typedef std::function<bool(std::string&)> user_func;
-typedef std::function<bool(std::string&)> pass_func;
+typedef std::function<bool(const std::string&, std::string&)> user_func;
+typedef std::function<bool(const std::string&, std::string&)> pass_func;
 
 typedef std::function<bool(const std::string&)> info_func;
 typedef std::function<bool(const std::string&)> error_func;
@@ -97,6 +97,8 @@ public:
 
     void open_session();
     void close_session();
+
+    void change_pass();
 
 private:
     pam::handle _M_pamh= nullptr;
