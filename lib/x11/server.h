@@ -49,14 +49,27 @@ public:
     server(server&) = delete;
     server(const server&) = delete;
 
-    server(server&& x) = default;
+    server(server&& x) noexcept { swap(x); }
 
     server(const std::string& name, const std::string& server_auth, const arguments& args= {});
     explicit server(const std::string& server_auth, const arguments& args= {}): server(default_name, server_auth, args) { }
     ~server();
 
     server& operator=(const server&) = delete;
-    server& operator=(server&& x) = default;
+    server& operator=(server&& x) noexcept
+    {
+        swap(x);
+        return (*this);
+    }
+
+    void swap(server& x) noexcept
+    {
+        std::swap(_M_name, x._M_name);
+        std::swap(_M_cookie, x._M_cookie);
+
+        std::swap(_M_process, x._M_process);
+        std::swap(_M_display, x._M_display);
+    }
 
     ////////////////////
     const std::string& name() const { return _M_name; }
