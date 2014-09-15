@@ -26,19 +26,6 @@ static passwd* get_pwd(const std::string& name, app::uid uid)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-static std::string get_shell(const std::string& name, app::uid uid)
-{
-    std::string x= get_pwd(name, uid)->pw_shell;
-    if(x.empty())
-    {
-        setusershell();
-        x= getusershell();
-        endusershell();
-    }
-    return x;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 std::string credentials::username() const { return get_pwd(_M_name, _M_uid)->pw_name; }
 std::string credentials::fullname() const { return get_pwd(_M_name, _M_uid)->pw_gecos; }
 std::string credentials::password() const { return get_pwd(_M_name, _M_uid)->pw_passwd; }
@@ -47,7 +34,17 @@ app::uid credentials::uid() const { return get_pwd(_M_name, _M_uid)->pw_uid; }
 app::uid credentials::gid() const { return get_pwd(_M_name, _M_uid)->pw_gid; }
 
 std::string credentials::home() const { return get_pwd(_M_name, _M_uid)->pw_dir; }
-std::string credentials::shell() const { return get_shell(_M_name, _M_uid); }
+std::string credentials::shell() const
+{
+    std::string x= get_pwd(_M_name, _M_uid)->pw_shell;
+    if(x.empty())
+    {
+        setusershell();
+        x= getusershell();
+        endusershell();
+    }
+    return x;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 app::groups credentials::groups() const
@@ -116,12 +113,12 @@ app::gid saved_gid() noexcept
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-std::string username() { return get_pwd(std::string(), uid())->pw_name; }
-std::string fullname() { return get_pwd(std::string(), uid())->pw_gecos; }
-std::string password() { return get_pwd(std::string(), uid())->pw_passwd; }
+std::string username() { return credentials(uid()).username(); }
+std::string fullname() { return credentials(uid()).fullname(); }
+std::string password() { return credentials(uid()).password(); }
 
-std::string home() { return get_pwd(std::string(), uid())->pw_dir; }
-std::string shell() { return get_shell(std::string(), uid()); }
+std::string home() { return credentials(uid()).home(); }
+std::string shell() { return credentials(uid()).shell(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 app::groups groups()
