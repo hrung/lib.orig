@@ -50,6 +50,8 @@ public:
     void morph_into();
 
 private:
+    credentials(passwd*);
+
     std::string _M_username;
     std::string _M_fullname;
     std::string _M_password;
@@ -61,9 +63,37 @@ private:
     std::string _M_shell;
 
     app::groups _M_groups;
-
-    void get(passwd*);
 };
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+namespace this_user
+{
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+app::uid real_uid() noexcept;
+app::gid real_gid() noexcept;
+
+app::uid effective_uid() noexcept;
+app::gid effective_gid() noexcept;
+
+app::uid saved_uid() noexcept;
+app::gid saved_gid() noexcept;
+
+inline app::uid uid() noexcept { return real_uid(); }
+inline app::gid gid() noexcept { return real_gid(); }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+std::string username();
+std::string fullname();
+std::string password();
+
+std::string home();
+std::string shell();
+
+app::groups groups();
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
