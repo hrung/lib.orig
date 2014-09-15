@@ -83,6 +83,9 @@ std::string home();
 std::string shell();
 app::groups groups();
 
+void morph_into(app::uid, bool permanent= true);
+void morph_into(app::uid, app::gid, bool permanent= true);
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
