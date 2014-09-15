@@ -80,11 +80,27 @@ namespace this_user
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-app::uid real_uid() noexcept { return getuid(); }
-app::gid real_gid() noexcept { return getgid(); }
+app::uid real_uid() noexcept
+{
+    app::uid ruid, euid, suid;
+    return getresuid(&ruid, &euid, &suid)? invalid_uid: ruid;
+}
+app::gid real_gid() noexcept
+{
+    app::gid rgid, egid, sgid;
+    return getresgid(&rgid, &egid, &sgid)? invalid_gid: rgid;
+}
 
-app::uid effective_uid() noexcept { return geteuid(); }
-app::gid effective_gid() noexcept { return getegid(); }
+app::uid effective_uid() noexcept
+{
+    app::uid ruid, euid, suid;
+    return getresuid(&ruid, &euid, &suid)? invalid_uid: euid;
+}
+app::gid effective_gid() noexcept
+{
+    app::gid rgid, egid, sgid;
+    return getresgid(&rgid, &egid, &sgid)? invalid_gid: egid;
+}
 
 app::uid saved_uid() noexcept
 {
