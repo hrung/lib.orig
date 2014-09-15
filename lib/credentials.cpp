@@ -70,9 +70,11 @@ void credentials::morph_into() const
 {
     passwd* pwd= get_pwd(_M_name, _M_uid);
 
-    if(initgroups(pwd->pw_name, pwd->pw_gid)) throw errno_error();
-    if(setgid(pwd->pw_gid)) throw errno_error();
-    if(setuid(pwd->pw_uid)) throw errno_error();
+    if(initgroups(pwd->pw_name, pwd->pw_gid))
+        throw errno_error();
+    else if(setgid(pwd->pw_gid))
+        throw errno_error();
+    else if(setuid(pwd->pw_uid)) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -125,7 +127,6 @@ std::string shell() { return get_shell(std::string(), uid()); }
 app::groups groups()
 {
     app::groups x;
-
     if(int num= getgroups(0, nullptr))
     {
         std::unique_ptr<app::gid[]> buffer(new app::gid[num]);

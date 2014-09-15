@@ -64,12 +64,11 @@ namespace this_user
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 app::uid real_uid() noexcept;
-app::gid real_gid() noexcept;
-
 app::uid effective_uid() noexcept;
-app::gid effective_gid() noexcept;
-
 app::uid saved_uid() noexcept;
+
+app::gid real_gid() noexcept;
+app::gid effective_gid() noexcept;
 app::gid saved_gid() noexcept;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
