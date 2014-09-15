@@ -22,6 +22,9 @@ typedef std::set<gid> groups;
 constexpr uid invalid_uid= -1;
 constexpr gid invalid_gid= -1;
 
+constexpr uid root_uid= 0;
+constexpr gid root_gid= 0;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class credentials
 {
