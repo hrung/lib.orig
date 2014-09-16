@@ -2,8 +2,6 @@
 #include "credentials.h"
 #include "errno_error.h"
 
-#include <memory>
-
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
@@ -37,6 +35,19 @@ static passwd* get_pwd(const std::string& name)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+static std::string get_shell(passwd* pwd)
+{
+    std::string x= pwd->pw_shell;
+    if(x.empty())
+    {
+        setusershell();
+        x= getusershell();
+        endusershell();
+    }
+    return x;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 credentials::credentials(app::uid x):
     credentials(get_pwd(x))
 { }
@@ -57,35 +68,30 @@ credentials::credentials(passwd* pwd)
     _M_gid= pwd->pw_gid;
 
     _M_home= pwd->pw_dir;
-    _M_shell= pwd->pw_shell;
-    if(_M_shell.empty())
-    {
-        setusershell();
-        _M_shell= getusershell();
-        endusershell();
-    }
+    _M_shell= get_shell(pwd);
 
-    int num=0;
-    getgrouplist(pwd->pw_name, pwd->pw_gid, nullptr, &num);
+    _M_num=0;
+    getgrouplist(pwd->pw_name, pwd->pw_gid, nullptr, &_M_num);
 
-    std::unique_ptr<app::gid[]> buffer(new app::gid[num]);
-    getgrouplist(pwd->pw_name, pwd->pw_gid, buffer.get(), &num);
+    _M_group.reset(new app::gid[_M_num]);
+    getgrouplist(pwd->pw_name, pwd->pw_gid, _M_group.get(), &_M_num);
+}
 
-    for(app::gid* gi= buffer.get(); num; ++gi, --num) _M_groups.insert(*gi);
+///////////////////////////////////////////////////////////////////////////////////////////////////
+app::groups credentials::groups() const
+{
+    app::groups x;
+
+    int num= _M_num;
+    for(app::gid* gi= _M_group.get(); num; --num, ++gi) x.insert(*gi);
+
+    return x;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void credentials::morph_into()
 {
-    if(_M_groups.size())
-    {
-        std::unique_ptr<app::gid[]> buffer(new app::gid[_M_groups.size()]);
-
-        app::gid* gi= buffer.get();
-        for(app::gid gid: _M_groups) *gi++= gid;
-
-        if(setgroups(_M_groups.size(), buffer.get())) throw errno_error();
-    }
+    if(setgroups(_M_num, _M_group.get())) throw errno_error();
     if(setgid(_M_gid)) throw errno_error();
     if(setuid(_M_uid)) throw errno_error();
 }
@@ -134,18 +140,7 @@ std::string fullname() { return get_pwd(uid())->pw_gecos; }
 std::string password() { return get_pwd(uid())->pw_passwd; }
 
 std::string home() { return get_pwd(uid())->pw_dir; }
-
-std::string shell()
-{
-    std::string x= get_pwd(uid())->pw_shell;
-    if(x.empty())
-    {
-        setusershell();
-        x= getusershell();
-        endusershell();
-    }
-    return x;
-}
+std::string shell() { return get_shell(get_pwd(uid())); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 app::groups groups()
@@ -156,21 +151,21 @@ app::groups groups()
         std::unique_ptr<app::gid[]> buffer(new app::gid[num]);
         if(getgroups(num, buffer.get()) == -1) throw errno_error();
 
-        for(app::gid* gi= buffer.get(); num; ++gi, --num) x.insert(*gi);
+        for(app::gid* gi= buffer.get(); num; --num, ++gi) x.insert(*gi);
     }
     return x;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void morph_into(app::uid uid, bool permanent)
+void morph_into(app::uid uid, bool perm)
 {
-    if(setresuid(uid, uid, permanent? uid: invalid_uid)) throw errno_error();
+    if(setresuid(uid, perm? uid: invalid_uid, perm? uid: invalid_uid)) throw errno_error();
 }
 
-void morph_into(app::uid uid, app::gid gid, bool permanent)
+void morph_into(app::uid uid, app::gid gid, bool perm)
 {
-    if(setresgid(gid, gid, permanent? gid: invalid_gid)) throw errno_error();
-    if(setresuid(uid, uid, permanent? uid: invalid_uid)) throw errno_error();
+    if(setresgid(gid, perm? gid: invalid_gid, perm? gid: invalid_gid)) throw errno_error();
+    morph_into(uid, perm);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

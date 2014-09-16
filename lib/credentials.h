@@ -5,6 +5,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include <string>
 #include <set>
+#include <memory>
 #include <sys/types.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -48,7 +49,8 @@ public:
 
     const std::string& home() const noexcept { return _M_home; }
     const std::string& shell() const noexcept { return _M_shell; }
-    const app::groups& groups() const noexcept { return _M_groups; }
+
+    app::groups groups() const;
 
     void morph_into();
 
@@ -65,7 +67,8 @@ private:
     std::string _M_home;
     std::string _M_shell;
 
-    app::groups _M_groups;
+    std::unique_ptr<app::gid[]> _M_group;
+    int _M_num;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,8 +97,8 @@ std::string shell();
 
 app::groups groups();
 
-void morph_into(app::uid, bool permanent= true);
-void morph_into(app::uid, app::gid, bool permanent= true);
+void morph_into(app::uid, bool perm= true);
+void morph_into(app::uid, app::gid, bool perm= true);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
