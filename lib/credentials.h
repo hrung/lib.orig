@@ -36,29 +36,36 @@ public:
     credentials& operator=(const credentials&) = default;
     credentials& operator=(credentials&&) = default;
 
-    explicit credentials(app::uid uid):
-        _M_uid(uid)
-    { }
-    explicit credentials(const std::string& name):
-        _M_name(name)
-    { }
+    explicit credentials(app::uid);
+    explicit credentials(const std::string& name);
 
-    std::string username() const;
-    std::string fullname() const;
-    std::string password() const;
+    const std::string& username() const noexcept { return _M_username; }
+    const std::string& fullname() const noexcept { return _M_fullname; }
+    const std::string& password() const noexcept { return _M_password; }
 
-    app::uid uid() const;
-    app::uid gid() const;
+    app::uid uid() const noexcept { return _M_uid; }
+    app::uid gid() const noexcept { return _M_uid; }
 
-    std::string home() const;
-    std::string shell() const;
-    app::groups groups() const;
+    const std::string& home() const noexcept { return _M_home; }
+    const std::string& shell() const noexcept { return _M_shell; }
+    const app::groups& groups() const noexcept { return _M_groups; }
 
-    void morph_into() const;
+    void morph_into();
 
 private:
-    std::string _M_name;
-    app::uid _M_uid;
+    credentials(passwd*);
+
+    std::string _M_username;
+    std::string _M_fullname;
+    std::string _M_password;
+
+    app::uid _M_uid= invalid_uid;
+    app::gid _M_gid= invalid_gid;
+
+    std::string _M_home;
+    std::string _M_shell;
+
+    app::groups _M_groups;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -74,16 +81,17 @@ app::gid real_gid() noexcept;
 app::gid effective_gid() noexcept;
 app::gid saved_gid() noexcept;
 
+inline app::uid uid() noexcept { return real_uid(); }
+inline app::gid gid() noexcept { return real_gid(); }
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 std::string username();
 std::string fullname();
 std::string password();
 
-inline app::uid uid() noexcept { return real_uid(); }
-inline app::gid gid() noexcept { return real_gid(); }
-
 std::string home();
 std::string shell();
+
 app::groups groups();
 
 void morph_into(app::uid, bool permanent= true);

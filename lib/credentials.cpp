@@ -14,43 +14,56 @@ namespace app
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-static passwd* get_pwd(const std::string& name, app::uid uid)
+static passwd* get_pwd(app::uid x)
 {
     errno=0;
-    passwd* pwd= name.size()? getpwnam(name.data()): getpwuid(uid);
+    passwd* pwd= getpwuid(x);
     if(pwd) return pwd;
 
     if(errno==0)
-        throw std::runtime_error("get_pwd: entry not found");
+        throw std::runtime_error("getpwuid(): entry not found");
+    else throw errno_error();
+}
+
+static passwd* get_pwd(const std::string& name)
+{
+    errno=0;
+    passwd* pwd= getpwnam(name.data());
+    if(pwd) return pwd;
+
+    if(errno==0)
+        throw std::runtime_error("getpwnam(): entry not found");
     else throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-std::string credentials::username() const { return get_pwd(_M_name, _M_uid)->pw_name; }
-std::string credentials::fullname() const { return get_pwd(_M_name, _M_uid)->pw_gecos; }
-std::string credentials::password() const { return get_pwd(_M_name, _M_uid)->pw_passwd; }
-
-app::uid credentials::uid() const { return get_pwd(_M_name, _M_uid)->pw_uid; }
-app::uid credentials::gid() const { return get_pwd(_M_name, _M_uid)->pw_gid; }
-
-std::string credentials::home() const { return get_pwd(_M_name, _M_uid)->pw_dir; }
-std::string credentials::shell() const
-{
-    std::string x= get_pwd(_M_name, _M_uid)->pw_shell;
-    if(x.empty())
-    {
-        setusershell();
-        x= getusershell();
-        endusershell();
-    }
-    return x;
-}
+credentials::credentials(app::uid x):
+    credentials(get_pwd(x))
+{ }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-app::groups credentials::groups() const
+credentials::credentials(const std::string& name):
+    credentials(get_pwd(name))
+{ }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+credentials::credentials(passwd* pwd)
 {
-    app::groups x;
-    passwd* pwd= get_pwd(_M_name, _M_uid);
+    _M_username= pwd->pw_name;
+    _M_fullname= pwd->pw_gecos;
+    _M_password= pwd->pw_passwd;
+
+    _M_uid= pwd->pw_uid;
+    _M_gid= pwd->pw_gid;
+
+    _M_home= pwd->pw_dir;
+    _M_shell= pwd->pw_shell;
+    if(_M_shell.empty())
+    {
+        setusershell();
+        _M_shell= getusershell();
+        endusershell();
+    }
 
     int num=0;
     getgrouplist(pwd->pw_name, pwd->pw_gid, nullptr, &num);
@@ -58,20 +71,23 @@ app::groups credentials::groups() const
     std::unique_ptr<app::gid[]> buffer(new app::gid[num]);
     getgrouplist(pwd->pw_name, pwd->pw_gid, buffer.get(), &num);
 
-    for(app::gid* gi= buffer.get(); num; ++gi, --num) x.insert(*gi);
-    return x;
+    for(app::gid* gi= buffer.get(); num; ++gi, --num) _M_groups.insert(*gi);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void credentials::morph_into() const
+void credentials::morph_into()
 {
-    passwd* pwd= get_pwd(_M_name, _M_uid);
+    if(_M_groups.size())
+    {
+        std::unique_ptr<app::gid[]> buffer(new app::gid[_M_groups.size()]);
 
-    if(initgroups(pwd->pw_name, pwd->pw_gid))
-        throw errno_error();
-    else if(setgid(pwd->pw_gid))
-        throw errno_error();
-    else if(setuid(pwd->pw_uid)) throw errno_error();
+        app::gid* gi= buffer.get();
+        for(app::gid gid: _M_groups) *gi++= gid;
+
+        if(setgroups(_M_groups.size(), buffer.get())) throw errno_error();
+    }
+    if(setgid(_M_gid)) throw errno_error();
+    if(setuid(_M_uid)) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,12 +129,23 @@ app::gid saved_gid() noexcept
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-std::string username() { return credentials(uid()).username(); }
-std::string fullname() { return credentials(uid()).fullname(); }
-std::string password() { return credentials(uid()).password(); }
+std::string username() { return get_pwd(uid())->pw_name; }
+std::string fullname() { return get_pwd(uid())->pw_gecos; }
+std::string password() { return get_pwd(uid())->pw_passwd; }
 
-std::string home() { return credentials(uid()).home(); }
-std::string shell() { return credentials(uid()).shell(); }
+std::string home() { return get_pwd(uid())->pw_dir; }
+
+std::string shell()
+{
+    std::string x= get_pwd(uid())->pw_shell;
+    if(x.empty())
+    {
+        setusershell();
+        x= getusershell();
+        endusershell();
+    }
+    return x;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 app::groups groups()
