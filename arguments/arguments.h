@@ -22,21 +22,21 @@ namespace app
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class arguments: public container< std::vector<std::string> >
+class arguments: public container<std::vector<std::string>>
 {
 public:
     arguments() = default;
     arguments(std::initializer_list<value_type> x) { _M_c=x; }
 
     ////////////////////
-    void push_back(const value_type& x) { _M_c.push_back(x); }
-    void push_back(value_type&& x) { _M_c.push_back(std::move(x)); }
+    void insert(const value_type& x) { _M_c.push_back(x); }
+    void insert(value_type&& x) { _M_c.push_back(std::move(x)); }
 
-    void push_back(const arguments& x)
+    void insert(const arguments& x)
     {
         _M_c.insert(end(), x.begin(), x.end());
     }
-    void push_back(std::initializer_list<value_type> x)
+    void insert(std::initializer_list<value_type> x)
     {
         _M_c.insert(end(), x);
     }
