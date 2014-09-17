@@ -36,7 +36,12 @@ public:
     bool is_open() const;
     basic_filebuf* open(const char* s, std::ios_base::openmode mode);
     basic_filebuf* open(const std::string& s, std::ios_base::openmode mode);
+    basic_filebuf* open(int fd, std::ios_base::openmode mode);
+    basic_filebuf* open(FILE* f, std::ios_base::openmode mode);
     basic_filebuf* close();
+
+    FILE* file() { return this->_M_file; }
+    int fd() { return fileno(this->_M_file); }
 
 protected:
     int_type underflow() override;
@@ -370,6 +375,31 @@ basic_filebuf<CharT, Traits>*
 basic_filebuf<CharT, Traits>::open(const std::string& s, std::ios_base::openmode mode)
 {
     return open(s.c_str(), mode);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+template <class CharT, class Traits>
+basic_filebuf<CharT, Traits>*
+basic_filebuf<CharT, Traits>::open(int fd, std::ios_base::openmode mode)
+{
+    const char* md= this->_M_get_mode(mode);
+    if (md)
+    {
+        this->_M_file= fdopen(fd, md);
+        this->_M_om = mode;
+        return this;
+    }
+    else return nullptr;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+template <class CharT, class Traits>
+basic_filebuf<CharT, Traits>*
+basic_filebuf<CharT, Traits>::open(FILE* f, std::ios_base::openmode mode)
+{
+    this->_M_file = f;
+    this->_M_om = mode;
+    return this;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
