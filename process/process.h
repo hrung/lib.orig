@@ -1,0 +1,113 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+#ifndef PROCESS_H
+#define PROCESS_H
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+#include <functional>
+#include <initializer_list>
+#include <map>
+#include <stdexcept>
+#include <string>
+
+#include <signal.h>
+#include <sys/types.h>
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+namespace app
+{
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+enum class signal
+{
+    hangup    = SIGHUP,
+    interrupt = SIGINT,
+    quit      = SIGQUIT,
+    illegal   = SIGILL,
+    abort     = SIGABRT,
+    fpe       = SIGFPE,
+    kill      = SIGKILL,
+    segment   = SIGSEGV,
+    pipe      = SIGPIPE,
+    alarm     = SIGALRM,
+    terminate = SIGTERM,
+    user1     = SIGUSR1,
+    user2     = SIGUSR2,
+    child     = SIGCHLD,
+    cont      = SIGCONT,
+    stop      = SIGSTOP,
+    term_stop = SIGTSTP,
+    term_in   = SIGTTIN,
+    term_out  = SIGTTOU
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class process
+{
+public:
+    typedef pid_t id;
+
+    process() noexcept = default;
+    process(process&) = delete;
+    process(const process&) = delete;
+
+    process(process&& x) noexcept { swap(x); }
+
+    template<typename Callable, typename... Args>
+    explicit process(Callable&& func, Args&&... args)
+    {
+        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...));
+    }
+
+    process& operator=(const process&) = delete;
+
+    process& operator=(process&& x) noexcept
+    {
+        swap(x);
+        return (*this);
+    }
+
+    void swap(process& x)
+    {
+        std::swap(_M_id, x._M_id);
+    }
+
+    process::id get_id() const noexcept { return _M_id; }
+
+private:
+    id _M_id=0;
+
+    void _M_process(std::function<int()>);
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+typedef std::map<std::string, std::string> environment;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+namespace this_process
+{
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+process::id get_id() noexcept;
+process::id parent_id() noexcept;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void replace(const std::string& path, std::initializer_list<std::string> args= {});
+void replace(const std::string& path, const environment&, std::initializer_list<std::string> args= {});
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class execute_error: public std::runtime_error
+{
+    using std::runtime_error::runtime_error;
+};
+
+int execute(const std::string& command, app::signal* = nullptr);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+#endif // PROCESS_H
