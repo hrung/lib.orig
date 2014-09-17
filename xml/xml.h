@@ -73,7 +73,7 @@ private:
 inline bool operator<(const attribute& x, const attribute& y) { return x.name() < y.name(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class tag: public container< std::set<xml::attribute> >
+class tag: public container<std::set<xml::attribute>>
 {
 public:
     typedef container_type attributes;
@@ -93,11 +93,11 @@ public:
         _M_name(std::move(name))
     { }
 
-    tag(const std::string& name, std::initializer_list<attribute> x):
-        _M_name(name), _M_c(x)
+    tag(const std::string& name, std::initializer_list<value_type> attributes):
+        _M_name(name), _M_c(attributes)
     { }
-    tag(std::string&& name, std::initializer_list<attribute> x):
-        _M_name(std::move(name)), _M_c(x)
+    tag(std::string&& name, std::initializer_list<value_type> attributes):
+        _M_name(std::move(name)), _M_c(attributes)
     { }
 
     ////////////////////
@@ -127,7 +127,7 @@ public:
     void insert(std::initializer_list<value_type> x) { _M_c.insert(x); }
 
     size_type remove(const value_type& value) { return _M_c.erase(value); }
-    size_type remove(const std::string& name) { return _M_c.erase(xml::attribute(name)); }
+    size_type remove(const std::string& name) { return _M_c.erase(value_type(name)); }
 
     iterator remove(const_iterator ri_0, iterator ri_1) { return _M_c.erase(ri_0, ri_1); }
     iterator remove(iterator ri) { return _M_c.erase(ri); }
@@ -136,11 +136,11 @@ public:
     iterator find(const value_type& value) { return _M_c.find(value); }
     const_iterator find(const value_type& value) const { return _M_c.find(value); }
 
-    iterator find(const std::string& name) { return _M_c.find(xml::attribute(name)); }
-    const_iterator find(const std::string& name) const { return _M_c.find(xml::attribute(name)); }
+    iterator find(const std::string& name) { return _M_c.find(value_type(name)); }
+    const_iterator find(const std::string& name) const { return _M_c.find(value_type(name)); }
 
     size_type count(const value_type& value) const { return _M_c.count(value); }
-    size_type count(const std::string& name) const { return _M_c.count(xml::attribute(name)); }
+    size_type count(const std::string& name) const { return _M_c.count(value_type(name)); }
 
     ////////////////////
     void validate() const
@@ -182,12 +182,12 @@ public:
         _M_value(std::move(value))
     { }
 
-    element(const std::string& name, std::initializer_list<attribute> x, const std::string& value= std::string()):
-        _M_tag(name, x),
+    element(const std::string& name, std::initializer_list<attribute> attributes, const std::string& value= std::string()):
+        _M_tag(name, attributes),
         _M_value(value)
     { }
-    element(std::string&& name, std::initializer_list<attribute> x, std::string&& value= std::string()):
-        _M_tag(std::move(name), x),
+    element(std::string&& name, std::initializer_list<attribute> attributes, std::string&& value= std::string()):
+        _M_tag(std::move(name), attributes),
         _M_value(std::move(value))
     { }
 
