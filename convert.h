@@ -40,11 +40,11 @@ struct _M_convert
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T>
-using enable_if_integer = typename std::enable_if< std::is_integral<T>::value &&
-                                                  !std::is_same<T, bool>::value >::type;
+using enable_if_int = typename std::enable_if< std::is_integral<T>::value &&
+                                              !std::is_same<T, bool>::value >::type;
 
 template<typename ToType, typename FromType>
-struct _M_convert<ToType, FromType, enable_if_integer<ToType>>
+struct _M_convert<ToType, FromType, enable_if_int<ToType>>
 {
     static ToType to(const FromType& source, int base=0)
     {
@@ -145,7 +145,9 @@ ToType to(const QString& source)
 ///
 /// Convert source from FromType to integer type.
 ///
-template<typename ToType= int, typename FromType, enable_if_integer<ToType>* = nullptr>
+/// \example        auto n= convert::to<long>("deadbeef", 16);
+///
+template<typename ToType= int, typename FromType, enable_if_int<ToType>* = nullptr>
 ToType to(const FromType& source, int base)
 {
     return _M_convert<ToType, FromType>::to(source, base);
@@ -159,6 +161,8 @@ ToType to(const FromType& source, int base)
 /// \return         value converted to bool
 ///
 /// Convert source from FromType to bool.
+///
+/// \example        bool b= convert::to_bool("false", true);
 ///
 template<typename FromType>
 bool to_bool(const FromType& source, bool text)
@@ -174,7 +178,10 @@ bool to_bool(const FromType& source, bool text)
 ///
 /// Convert source from FromType to its octal representation as std::string.
 ///
-template<typename ViaType= int, typename FromType, enable_if_integer<ViaType>* = nullptr>
+/// \example        std::string o= convert::to_oct<long>(1234567890);
+/// \example        std::string o= convert::to_oct("0x123");
+///
+template<typename ViaType= int, typename FromType, enable_if_int<ViaType>* = nullptr>
 std::string to_oct(const FromType& source)
 {
     std::stringstream stream;
@@ -192,7 +199,10 @@ std::string to_oct(const FromType& source)
 ///
 /// Convert source from FromType to its hexadecimal representation as std::string.
 ///
-template<typename ViaType= int, typename FromType, enable_if_integer<ViaType>* = nullptr>
+/// \example        std::string h= convert::to_hex<long>(1234567890);
+/// \example        std::string h= convert::to_hex("0123");
+///
+template<typename ViaType= int, typename FromType, enable_if_int<ViaType>* = nullptr>
 std::string to_hex(const FromType& source)
 {
     std::stringstream stream;
