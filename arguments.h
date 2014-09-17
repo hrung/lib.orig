@@ -10,7 +10,7 @@
 #define ARGUMENTS_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "wrapper.h"
+#include "container.h"
 #include "utility.h"
 
 #include <initializer_list>
@@ -22,7 +22,7 @@ namespace app
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class arguments: public wrapper< std::vector<std::string> >
+class arguments: public container< std::vector<std::string> >
 {
 public:
     arguments() = default;

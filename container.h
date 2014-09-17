@@ -6,19 +6,15 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef WRAPPER_H
-#define WRAPPER_H
+#ifndef CONTAINER_H
+#define CONTAINER_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-namespace app
-{
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-template<typename Container>
-class wrapper
+template<typename T>
+class container
 {
 public:
-    typedef Container                                   container_type;
+    typedef T                                           container_type;
     typedef typename container_type::value_type         value_type;
     typedef typename container_type::pointer            pointer;
     typedef typename container_type::const_pointer      const_pointer;
@@ -40,7 +36,7 @@ public:
     void clear() { _M_c.clear(); }
 
     ////////////////////
-    void swap(wrapper& x) { _M_c.swap(x._M_c); }
+    void swap(container& x) { _M_c.swap(x._M_c); }
 
     ////////////////////
     iterator begin() noexcept { return _M_c.begin(); }
@@ -62,12 +58,12 @@ public:
     const_reverse_iterator crend() const noexcept { return _M_c.rend(); }
 
     ////////////////////
-    template<typename T>
-    friend bool operator==(const wrapper<T>& x, const wrapper<T>& y)
+    template<typename U>
+    friend bool operator==(const container<U>& x, const container<U>& y)
     { return x._M_c == y._M_c; }
 
-    template<typename T>
-    friend bool operator!=(const wrapper<T>& x, const wrapper<T>& y)
+    template<typename U>
+    friend bool operator!=(const container<U>& x, const container<U>& y)
     { return x._M_c != y._M_c; }
 
 protected:
@@ -76,10 +72,7 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T>
-inline void swap(wrapper<T>& x, wrapper<T>& y) { x.swap(y); }
+inline void swap(container<T>& x, container<T>& y) { x.swap(y); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-#endif // WRAPPER_H
+#endif
