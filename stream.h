@@ -11,9 +11,16 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "convert.h"
+
 #include <string>
+#include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+///
+/// \brief operator<<
+///
+/// stream-like operator<< for std::string with conversion
+///
 template<typename T>
 std::string& operator<<(std::string& stream, const T& value)
 {
@@ -22,11 +29,16 @@ std::string& operator<<(std::string& stream, const T& value)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+///
+/// \brief operator<<
+///
+/// stream-like operator<< for std::string with conversion (rvalue version)
+///
 template<typename T>
-std::string operator<<(std::string&& stream, const T& value)
+std::string&& operator<<(std::string&& stream, const T& value)
 {
     stream+= convert::to<std::string>(value);
-    return stream;
+    return std::move(stream);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
