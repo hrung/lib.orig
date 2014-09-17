@@ -10,8 +10,8 @@
 #define PAM_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+#include "environ/environ.h"
 #include "pam_type.h"
-#include "environ.h"
 
 #include <functional>
 #include <string>
