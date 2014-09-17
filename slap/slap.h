@@ -13,6 +13,7 @@
 #include "slap_error.h"
 #include "optional.h"
 #include "convert.h"
+#include "container.h"
 
 #include <functional>
 #include <initializer_list>
@@ -34,26 +35,13 @@ enum class operation
     replace
 };
 
-typedef std::vector<std::string> values;
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class attribute
+class attribute: public container<std::vector<std::string>>
 {
 public:
-    typedef values container_type;
-    typedef typename container_type::value_type value_type;
+    typedef container_type values;
 
-    typedef typename container_type::reference reference;
-    typedef typename container_type::const_reference const_reference;
-    typedef typename container_type::pointer pointer;
-    typedef typename container_type::const_pointer const_pointer;
-
-    typedef typename container_type::size_type size_type;
-    typedef typename container_type::iterator iterator;
-    typedef typename container_type::const_iterator const_iterator;
-    typedef typename container_type::reverse_iterator reverse_iterator;
-    typedef typename container_type::const_reverse_iterator const_reverse_iterator;
-
+public:
     ////////////////////
     explicit attribute(const std::string& name, slap::operation mod= operation::add):
         _M_name(name), _M_operation(mod)
@@ -64,76 +52,75 @@ public:
 
     ////////////////////
     attribute(const std::string& name, std::initializer_list<value_type> values):
-        _M_name(name), _M_operation(operation::add), _M_values(values)
+        _M_name(name), _M_operation(operation::add), _M_c(values)
     { }
     attribute(std::string&& name, std::initializer_list<value_type> values):
-        _M_name(std::move(name)), _M_operation(operation::add), _M_values(values)
+        _M_name(std::move(name)), _M_operation(operation::add), _M_c(values)
     { }
 
     ////////////////////
     attribute(const std::string& name, slap::operation mod, std::initializer_list<value_type> values):
-        _M_name(name), _M_operation(mod), _M_values(values)
+        _M_name(name), _M_operation(mod), _M_c(values)
     { }
     attribute(std::string&& name, slap::operation mod, std::initializer_list<value_type> values):
-        _M_name(std::move(name)), _M_operation(mod), _M_values(values)
+        _M_name(std::move(name)), _M_operation(mod), _M_c(values)
     { }
 
     ////////////////////
     template<typename T>
     attribute(const std::string& name, T&& value): _M_name(name), _M_operation(operation::add)
     {
-        append(std::forward<T>(value));
+        insert(std::forward<T>(value));
     }
     template<typename T>
     attribute(std::string&& name, T&& value): _M_name(std::move(name)), _M_operation(operation::add)
     {
-        append(std::forward<T>(value));
+        insert(std::forward<T>(value));
     }
 
     ////////////////////
     template<typename T>
     attribute(const std::string& name, slap::operation mod, T&& value): _M_name(name), _M_operation(mod)
     {
-        append(std::forward<T>(value));
+        insert(std::forward<T>(value));
     }
     template<typename T>
     attribute(std::string&& name, slap::operation mod, T&& value): _M_name(std::move(name)), _M_operation(mod)
     {
-        append(std::forward<T>(value));
+        insert(std::forward<T>(value));
     }
 
    ~attribute() { delete_mod(); }
 
     ////////////////////
-    attribute(const attribute& other):
-        _M_name      (other._M_name),
-        _M_operation (other._M_operation),
-        _M_values    (other._M_values)
+    attribute(const attribute& x):
+        _M_name      (x._M_name),
+        _M_operation (x._M_operation),
+        _M_c         (x._M_c)
     { }
-    attribute& operator=(const attribute& other)
-    {
-        _M_name=      other._M_name;
-        _M_operation= other._M_operation;
-        _M_values=    other._M_values;
-        return *this;
-    }
+    attribute(attribute&& x):
+        _M_name      (std::move(x._M_name)),
+        _M_operation (std::move(x._M_operation)),
+        _M_c         (std::move(x._M_c)),
+        _M_mod       (std::move(x._M_mod))
+    { x._M_mod= nullptr; }
 
     ////////////////////
-    attribute(attribute&& other):
-        _M_name      (std::move(other._M_name)),
-        _M_operation (std::move(other._M_operation)),
-        _M_values    (std::move(other._M_values)),
-        _M_mod       (std::move(other._M_mod))
-    { other._M_mod= nullptr; }
-
-    attribute& operator=(attribute&& other)
+    attribute& operator=(const attribute& x)
     {
-        _M_name=      std::move(other._M_name);
-        _M_operation= std::move(other._M_operation);
-        _M_values=    std::move(other._M_values);
+        _M_name=      x._M_name;
+        _M_operation= x._M_operation;
+        _M_c=         x._M_c;
+        return *this;
+    }
+    attribute& operator=(attribute&& x)
+    {
+        _M_name=      std::move(x._M_name);
+        _M_operation= std::move(x._M_operation);
+        _M_c=         std::move(x._M_c);
         delete_mod();
-        _M_mod=       std::move(other._M_mod);
-        other._M_mod= nullptr;
+        _M_mod=       std::move(x._M_mod);
+        x._M_mod= nullptr;
         return *this;
     }
 
@@ -142,77 +129,49 @@ public:
     slap::operation operation() const { return _M_operation; }
 
     ////////////////////
-    bool empty() const { return _M_values.empty(); }
-    size_type size() const { return _M_values.size(); }
-    void clear() { _M_values.clear(); }
+    reference value(size_type n=0) { return _M_c.at(n); }
+    const_reference value(size_type n=0) const { return _M_c.at(n); }
 
-    ////////////////////
-    reference value(size_type n=0)
-    {
-        try { return _M_values.at(n); }
-        catch(std::out_of_range& e) { throw std::out_of_range(e); }
-    }
-    const_reference value(size_type n=0) const
-    {
-        try { return _M_values.at(n); }
-        catch(std::out_of_range& e) { throw std::out_of_range(e); }
-    }
-
-    reference operator[](size_type n) { return value(n); }
-    const_reference operator[](size_type n) const { return value(n); }
+    reference operator[](size_type n) { return _M_c[n]; }
+    const_reference operator[](size_type n) const { return _M_c[n]; }
 
     ////////////////////
     template<typename ToType, typename std::enable_if< !std::is_same<ToType, bool>::value, int >::type=0>
     ToType to(size_type n=0) const
     {
-        return convert::to<ToType>(operator[](n));
+        return convert::to<ToType>(value(n));
     }
     template<typename ToType, typename std::enable_if< std::is_same<ToType, bool>::value, int >::type=0>
     ToType to(size_type n=0) const
     {
-        return (operator[](n)=="TRUE")? true: false;
+        return (value(n)=="TRUE")? true: false;
     }
 
     template<typename ToType>
     void get(ToType& value, size_type n=0) const noexcept
+    try
     {
-        try { value= to<ToType>(n); }
-        catch(...) { /* do nothing */ }
+        value= to<ToType>(n);
+    }
+    catch(std::invalid_argument&)
+    {
+        /* do nothing */
     }
 
     ////////////////////
-    void append(const value_type& value) { _M_values.push_back(value); }
-    void append(value_type&& value) { _M_values.push_back(std::move(value)); }
-    void append(std::initializer_list<value_type> values) { _M_values.insert(_M_values.end(), values); }
+    void insert(const value_type& value) { _M_c.push_back(value); }
+    void insert(value_type&& value) { _M_c.push_back(std::move(value)); }
+    void insert(std::initializer_list<value_type> values) { _M_c.insert(_M_c.end(), values); }
 
-    void append(bool value) { _M_values.push_back(value? "TRUE": "FALSE"); }
+    void insert(bool value) { _M_c.push_back(value? "TRUE": "FALSE"); }
 
     template<typename T>
-    void append(const T& value) { append(convert::to<value_type>(value)); }
+    void insert(const T& value) { insert(convert::to<value_type>(value)); }
 
-    iterator remove(const value_type& value) { return _M_values.erase(find(value)); }
+    iterator erase(const value_type& value) { return _M_c.erase(find(value)); }
 
-    iterator remove(const_iterator ri_0, const_iterator ri_1) { return _M_values.erase(ri_0, ri_1); }
-    iterator remove(const_iterator ri) { return _M_values.erase(ri); }
-
-    ////////////////////
-    iterator begin() { return _M_values.begin(); }
-    const_iterator begin() const { return _M_values.begin(); }
-
-    iterator end() { return _M_values.end(); }
-    const_iterator end() const { return _M_values.end(); }
-
-    reverse_iterator rbegin() { return _M_values.rbegin(); }
-    const_reverse_iterator rbegin() const { return _M_values.rbegin(); }
-
-    reverse_iterator rend() { return _M_values.rend(); }
-    const_reverse_iterator rend() const { return _M_values.rend(); }
-
-    const_iterator cbegin() const { return _M_values.cbegin(); }
-    const_iterator cend() const { return _M_values.cend(); }
-
-    const_reverse_iterator crbegin() const { return _M_values.crbegin(); }
-    const_reverse_iterator crend() const { return _M_values.crend(); }
+    iterator erase(const_iterator ri_0, const_iterator ri_1) { return _M_c.erase(ri_0, ri_1); }
+    iterator erase(const_iterator ri) { return _M_c.erase(ri); }
 
     ////////////////////
     iterator find(const value_type& value)
@@ -229,7 +188,6 @@ public:
 private:
     std::string     _M_name;
     slap::operation _M_operation;
-    slap::values    _M_values;
 
     mutable LDAPMod* _M_mod= nullptr;
 
@@ -243,74 +201,56 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline bool operator<(const attribute& x, const attribute& y) { return x.name() < y.name(); }
 
-typedef std::set<attribute> attributes;
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class entry
+class entry: public container<std::set<slap::attribute>>
 {
 public:
-    typedef attributes container_type;
-    typedef typename container_type::value_type value_type;
+    typedef container_type attributes;
 
-    typedef typename container_type::reference reference;
-    typedef typename container_type::const_reference const_reference;
-    typedef typename container_type::pointer pointer;
-    typedef typename container_type::const_pointer const_pointer;
-
-    typedef typename container_type::size_type size_type;
-    typedef typename container_type::iterator iterator;
-    typedef typename container_type::const_iterator const_iterator;
-    typedef typename container_type::reverse_iterator reverse_iterator;
-    typedef typename container_type::const_reverse_iterator const_reverse_iterator;
-
+public:
     ////////////////////
     explicit entry(const std::string& dn): _M_dn(dn) { }
     explicit entry(std::string&& dn): _M_dn(std::move(dn)) { }
 
-    entry(const std::string& dn, std::initializer_list<slap::attribute> attributes):
-        _M_dn(dn), _M_attributes(attributes)
+    entry(const std::string& dn, std::initializer_list<value_type> attributes):
+        _M_dn(dn), _M_c(attributes)
     { }
-    entry(std::string&& dn, std::initializer_list<slap::attribute> attributes):
-        _M_dn(std::move(dn)), _M_attributes(attributes)
+    entry(std::string&& dn, std::initializer_list<value_type> attributes):
+        _M_dn(std::move(dn)), _M_c(attributes)
     { }
 
    ~entry() { delete_mod(); }
 
     ////////////////////
-    entry(const entry& other):
-        _M_dn         (other._M_dn),
-        _M_attributes (other._M_attributes)
+    entry(const entry& x):
+        _M_dn  (x._M_dn),
+        _M_c   (x._M_c)
     { }
-    entry& operator=(const entry& other)
-    {
-        _M_dn=         other._M_dn;
-        _M_attributes= other._M_attributes;
-        return *this;
-    }
+    entry(entry&& x):
+        _M_dn  (std::move(x._M_dn)),
+        _M_c   (std::move(x._M_c)),
+        _M_mod (std::move(x._M_mod))
+    { x._M_mod= nullptr; }
 
     ////////////////////
-    entry(entry&& other):
-        _M_dn         (std::move(other._M_dn)),
-        _M_attributes (std::move(other._M_attributes)),
-        _M_mod        (std::move(other._M_mod))
-    { other._M_mod= nullptr; }
-
-    entry& operator=(entry&& other)
+    entry& operator=(const entry& x)
     {
-        _M_dn=         std::move(other._M_dn);
-        _M_attributes= std::move(other._M_attributes);
+        _M_dn= x._M_dn;
+        _M_c=  x._M_c;
+        return *this;
+    }
+    entry& operator=(entry&& x)
+    {
+        _M_dn=  std::move(x._M_dn);
+        _M_c=   std::move(x._M_c);
         delete_mod();
-        _M_mod=        std::move(other._M_mod);
-        other._M_mod= nullptr;
+        _M_mod= std::move(x._M_mod);
+        x._M_mod= nullptr;
         return *this;
     }
 
     ////////////////////
     const std::string& dn() const { return _M_dn; }
-
-    bool empty() const { return _M_attributes.empty(); }
-    size_type size() const { return _M_attributes.size(); }
-    void clear() { _M_attributes.clear(); }
 
     ////////////////////
     reference attribute(const std::string& name)
@@ -329,73 +269,56 @@ public:
     reference operator[](const std::string& name) { return attribute(name); }
     const_reference operator[](const std::string& name) const { return attribute(name); }
 
-    slap::attribute::reference attribute_value(const std::string& name, slap::attribute::size_type n=0)
+    value_type::reference attribute_value(const std::string& name, value_type::size_type n=0)
     {
         return attribute(name).value(n);
     }
-    slap::attribute::const_reference attribute_value(const std::string& name, slap::attribute::size_type n=0) const
+    value_type::const_reference attribute_value(const std::string& name, value_type::size_type n=0) const
     {
         return attribute(name).value(n);
     }
 
     ////////////////////
     template<typename ToType>
-    ToType attribute_to(const std::string& name, slap::attribute::size_type n=0) const
+    ToType attribute_to(const std::string& name, value_type::size_type n=0) const
     {
         return _M_to<ToType>::func(*this, name, n);
     }
 
     template<typename ToType>
-    void attribute_get(ToType& value, const std::string& name, slap::attribute::size_type n=0) const noexcept
+    void attribute_get(ToType& value, const std::string& name, value_type::size_type n=0) const noexcept
+    try
     {
-        try { value= attribute_to<ToType>(name, n); }
-        catch(...) { /* do nothing*/ }
+        value= attribute_to<ToType>(name, n);
+    }
+    catch(std::invalid_argument&)
+    {
+        /* do nothing*/
     }
 
     ////////////////////
-    std::pair<iterator,bool> insert(const value_type& x) { return _M_attributes.insert(x); }
-    std::pair<iterator,bool> insert(value_type&& x) { return _M_attributes.insert(std::move(x)); }
-    void insert(std::initializer_list<value_type> x) { _M_attributes.insert(x); }
+    std::pair<iterator,bool> insert(const value_type& x) { return _M_c.insert(x); }
+    std::pair<iterator,bool> insert(value_type&& x) { return _M_c.insert(std::move(x)); }
+    void insert(std::initializer_list<value_type> x) { _M_c.insert(x); }
 
-    size_type remove(const value_type& value) { return _M_attributes.erase(value); }
-    size_type remove(const std::string& name) { return _M_attributes.erase(slap::attribute(name)); }
+    size_type erase(const value_type& value) { return _M_c.erase(value); }
+    size_type erase(const std::string& name) { return _M_c.erase(slap::attribute(name)); }
 
-    iterator remove(const_iterator ri_0, iterator ri_1) { return _M_attributes.erase(ri_0, ri_1); }
-    iterator remove(iterator ri) { return _M_attributes.erase(ri); }
-
-    ////////////////////
-    iterator begin() { return _M_attributes.begin(); }
-    const_iterator begin() const { return _M_attributes.begin(); }
-
-    iterator end() { return _M_attributes.end(); }
-    const_iterator end() const { return _M_attributes.end(); }
-
-    reverse_iterator rbegin() { return _M_attributes.rbegin(); }
-    const_reverse_iterator rbegin() const { return _M_attributes.rbegin(); }
-
-    reverse_iterator rend() { return _M_attributes.rend(); }
-    const_reverse_iterator rend() const { return _M_attributes.rend(); }
-
-    const_iterator cbegin() const { return _M_attributes.cbegin(); }
-    const_iterator cend() const { return _M_attributes.cend(); }
-
-    const_reverse_iterator crbegin() const { return _M_attributes.crbegin(); }
-    const_reverse_iterator crend() const { return _M_attributes.crend(); }
+    iterator erase(const_iterator ri_0, iterator ri_1) { return _M_c.erase(ri_0, ri_1); }
+    iterator erase(iterator ri) { return _M_c.erase(ri); }
 
     ////////////////////
-    iterator find(const value_type& value) { return _M_attributes.find(value); }
-    const_iterator find(const value_type& value) const { return _M_attributes.find(value); }
+    iterator find(const value_type& value) { return _M_c.find(value); }
+    const_iterator find(const value_type& value) const { return _M_c.find(value); }
 
-    iterator find(const std::string& name) { return _M_attributes.find(slap::attribute(name)); }
-    const_iterator find(const std::string& name) const { return _M_attributes.find(slap::attribute(name)); }
+    iterator find(const std::string& name) { return _M_c.find(value_type(name)); }
+    const_iterator find(const std::string& name) const { return _M_c.find(value_type(name)); }
 
-    size_type count(const value_type& value) const { return _M_attributes.count(value); }
-    size_type count(const std::string& name) const { return _M_attributes.count(slap::attribute(name)); }
+    size_type count(const value_type& value) const { return _M_c.count(value); }
+    size_type count(const std::string& name) const { return _M_c.count(value_type(name)); }
 
 private:
     std::string      _M_dn;
-    slap::attributes _M_attributes;
-
     mutable LDAPMod** _M_mod= nullptr;
 
     void create_mod() const;
@@ -407,7 +330,7 @@ private:
     template<typename ToType>
     struct _M_to
     {
-        static ToType func(const slap::entry& e, const std::string& name, slap::attribute::size_type n=0)
+        static ToType func(const slap::entry& e, const std::string& name, value_type::size_type n=0)
         {
             return e.attribute(name).to<ToType>(n);
         }
@@ -416,7 +339,7 @@ private:
     template<typename ToType>
     struct _M_to<optional<ToType>>
     {
-        static optional<ToType> func(const slap::entry& e, const std::string& name, slap::attribute::size_type n=0)
+        static optional<ToType> func(const slap::entry& e, const std::string& name, value_type::size_type n=0)
         {
             const_iterator ri= e.find(name);
             if(ri != e.cend())
