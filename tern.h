@@ -10,14 +10,14 @@
 #define TERN_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-enum uncertain_type { uncertain };
+enum uncertain_t { uncertain };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct tern
 {
     tern(): value(uncertain_value) { }
     tern(bool x): value(x? true_value: false_value) { }
-    tern(uncertain_type): value(uncertain_value) { }
+    tern(uncertain_t): value(uncertain_value) { }
 
     operator bool() const { return value == true_value; }
 
@@ -66,8 +66,8 @@ inline tern operator&&(tern x, tern y)
 inline tern operator&&(tern x, bool y) { return y? x: tern(false); }
 inline tern operator&&(bool x, tern y) { return x? y: tern(false); }
 
-inline tern operator&&(uncertain_type, tern x) { return x.value == tern::false_value? tern(false): tern(uncertain); }
-inline tern operator&&(tern x, uncertain_type) { return x.value == tern::false_value? tern(false): tern(uncertain); }
+inline tern operator&&(uncertain_t, tern x) { return x.value == tern::false_value? tern(false): tern(uncertain); }
+inline tern operator&&(tern x, uncertain_t) { return x.value == tern::false_value? tern(false): tern(uncertain); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /// x           y           x || y
@@ -94,8 +94,8 @@ inline tern operator||(tern x, tern y)
 inline tern operator||(tern x, bool y) { return y? tern(true): x; }
 inline tern operator||(bool x, tern y) { return x? tern(true): y; }
 
-inline tern operator||(uncertain_type, tern x) { return x.value == tern::true_value? tern(true): tern(uncertain); }
-inline tern operator||(tern x, uncertain_type) { return x.value == tern::true_value? tern(true): tern(uncertain); }
+inline tern operator||(uncertain_t, tern x) { return x.value == tern::true_value? tern(true): tern(uncertain); }
+inline tern operator||(tern x, uncertain_t) { return x.value == tern::true_value? tern(true): tern(uncertain); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /// x           y           x == y
@@ -113,8 +113,8 @@ inline tern operator||(tern x, uncertain_type) { return x.value == tern::true_va
 inline bool operator==(tern x, tern y) { return x.value == y.value; }
 inline bool operator==(tern x, bool y) { return x == tern(y); }
 inline bool operator==(bool x, tern y) { return tern(x) == y; }
-inline bool operator==(uncertain_type, tern y) { return y.uncertain(); }
-inline bool operator==(tern x, uncertain_type) { return x.uncertain(); }
+inline bool operator==(uncertain_t, tern y) { return y.uncertain(); }
+inline bool operator==(tern x, uncertain_t) { return x.uncertain(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /// x           y           x != y
@@ -132,8 +132,8 @@ inline bool operator==(tern x, uncertain_type) { return x.uncertain(); }
 inline bool operator!=(tern x, tern y) { return x.value != y.value; }
 inline bool operator!=(tern x, bool y) { return x != tern(y); }
 inline bool operator!=(bool x, tern y) { return tern(x) != y; }
-inline bool operator!=(uncertain_type, tern y) { return !y.uncertain(); }
-inline bool operator!=(tern x, uncertain_type) { return !x.uncertain(); }
+inline bool operator!=(uncertain_t, tern y) { return !y.uncertain(); }
+inline bool operator!=(tern x, uncertain_t) { return !x.uncertain(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #endif // TERN_H
