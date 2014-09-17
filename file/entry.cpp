@@ -7,7 +7,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "entry.h"
-#include "except.h"
 
 #include <cstdlib>
 #include <string.h>
@@ -17,13 +16,12 @@ namespace storage
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-const filter_func filter_all= [] (const entry&) -> bool
-    { return true; };
+const filter_func filter_all= [](const entry&) -> bool { return true; };
 
-const compare_func compare_version= [] (const entry& e1, const entry& e2) -> int
+const compare_func compare_version= [](const entry& e1, const entry& e2) -> int
     { return strverscmp(e1.name.data(), e2.name.data()); };
 
-const compare_func compare_alpha= [] (const entry& e1, const entry& e2) -> int
+const compare_func compare_alpha= [](const entry& e1, const entry& e2) -> int
     { return strcoll(e1.name.data(), e2.name.data()); };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -63,7 +61,7 @@ entries entry::get(const std::string& path, const filter_func& filter, const com
         std::free(names);
 
         errno=e;
-        throw system_error();
+        throw errno_error();
     }
 }
 
