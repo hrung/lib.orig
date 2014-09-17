@@ -32,10 +32,26 @@ struct charpp_deleter
     }
 };
 
+///
+/// \brief charpp_ptr
+///
+/// Smart pointer to a NULL-terminated array of char* pointers.
+/// These pointers are used, for example, by execve to pass arguments
+/// and environment.
+///
+/// app::arguments and app::environ classes can return charpp_ptr through
+/// to_charpp function.
+///
 typedef std::unique_ptr<char*[], charpp_deleter> charpp_ptr;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+///
+/// \brief clone
+///
+/// Returns smart char* pointer with copy of the contents of std::string
+/// for temporary use in functions requiring char*.
+///
 std::unique_ptr<char[]> clone(const std::string& value);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
