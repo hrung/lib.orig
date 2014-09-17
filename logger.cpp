@@ -13,7 +13,7 @@ namespace app
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void log::logbuf_base::putchar(char c)
+void log::logger_base::putchar(char c)
 {
     if(c == endl)
     {
@@ -26,7 +26,7 @@ void log::logbuf_base::putchar(char c)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-log::logbuf_base::~logbuf_base()
+log::logger_base::~logger_base()
 {
     if(_M_buffer.size()) putchar(endl);
 }

@@ -38,13 +38,13 @@ enum level
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class logbuf_base
+class logger_base
 {
 protected:
     void putchar(char c);
     void set_level(level x) noexcept { _M_level= x; }
 
-    ~logbuf_base();
+    ~logger_base();
 
 private:
     static constexpr level default_level= info;
@@ -56,7 +56,7 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template< typename CharT, typename Traits= std::char_traits<CharT> >
-class basic_logbuf: public std::basic_streambuf<CharT, Traits>, public logbuf_base
+class basic_streambuf: public std::basic_streambuf<CharT, Traits>, public logger_base
 {
 public:
     typedef CharT                            char_type;
@@ -91,7 +91,7 @@ public:
     }
 
 protected:
-    basic_logbuf<CharT, Traits> _M_buffer;
+    basic_streambuf<CharT, Traits> _M_buffer;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
