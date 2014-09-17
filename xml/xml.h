@@ -10,6 +10,7 @@
 #define XML_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+#include "container.h"
 #include "xml_error.h"
 
 #include <initializer_list>
@@ -30,7 +31,12 @@ void validate_content(const std::string&);
 class attribute
 {
 public:
-    attribute() { }
+    attribute() = default;
+    attribute(const attribute&) = default;
+    attribute(attribute&&) = default;
+
+    attribute& operator=(const attribute&) = default;
+    attribute& operator=(attribute&&) = default;
 
     explicit attribute(const std::string& name, const std::string& value= std::string()):
         _M_name(name), _M_value(value)
@@ -66,47 +72,37 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline bool operator<(const attribute& x, const attribute& y) { return x.name() < y.name(); }
 
-typedef std::set<attribute> attributes;
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class tag
+class tag: public container< std::set<xml::attribute> >
 {
 public:
-    tag() { }
+    typedef container_type attributes;
 
-    tag(const std::string& name): _M_name(name) { }
-    tag(std::string&& name): _M_name(std::move(name)) { }
+public:
+    tag() = default;
+    tag(const tag&) = default;
+    tag(tag&&) = default;
 
-    tag(const std::string& name, std::initializer_list<attribute> attributes):
-        _M_name(name),
-        _M_attributes(attributes)
+    tag& operator=(const tag&) = default;
+    tag& operator=(tag&&) = default;
+
+    tag(const std::string& name):
+        _M_name(name)
     { }
-    tag(std::string&& name, std::initializer_list<attribute> attributes):
-        _M_name(std::move(name)),
-        _M_attributes(attributes)
+    tag(std::string&& name):
+        _M_name(std::move(name))
     { }
 
-    typedef attributes container_type;
-    typedef typename container_type::value_type value_type;
-
-    typedef typename container_type::reference reference;
-    typedef typename container_type::const_reference const_reference;
-    typedef typename container_type::pointer pointer;
-    typedef typename container_type::const_pointer const_pointer;
-
-    typedef typename container_type::size_type size_type;
-    typedef typename container_type::iterator iterator;
-    typedef typename container_type::const_iterator const_iterator;
-    typedef typename container_type::reverse_iterator reverse_iterator;
-    typedef typename container_type::const_reverse_iterator const_reverse_iterator;
+    tag(const std::string& name, std::initializer_list<attribute> x):
+        _M_name(name), _M_c(x)
+    { }
+    tag(std::string&& name, std::initializer_list<attribute> x):
+        _M_name(std::move(name)), _M_c(x)
+    { }
 
     ////////////////////
     const std::string name() const { return _M_name; }
-    bool empty_tag() const { return _M_name.empty() && _M_attributes.empty(); }
-
-    bool empty() const { return _M_attributes.empty(); }
-    size_type size() const { return _M_attributes.size(); }
-    void clear() { _M_attributes.clear(); }
+    bool empty_tag() const { return _M_name.empty() && _M_c.empty(); }
 
     ////////////////////
     reference attribute(const std::string& name)
@@ -126,56 +122,35 @@ public:
     const_reference operator[](const std::string& name) const { return attribute(name); }
 
     ////////////////////
-    std::pair<iterator,bool> insert(const value_type& x) { return _M_attributes.insert(x); }
-    std::pair<iterator,bool> insert(value_type&& x) { return _M_attributes.insert(std::move(x)); }
-    void insert(std::initializer_list<value_type> x) { _M_attributes.insert(x); }
+    std::pair<iterator,bool> insert(const value_type& x) { return _M_c.insert(x); }
+    std::pair<iterator,bool> insert(value_type&& x) { return _M_c.insert(std::move(x)); }
+    void insert(std::initializer_list<value_type> x) { _M_c.insert(x); }
 
-    size_type remove(const value_type& value) { return _M_attributes.erase(value); }
-    size_type remove(const std::string& name) { return _M_attributes.erase(xml::attribute(name)); }
+    size_type remove(const value_type& value) { return _M_c.erase(value); }
+    size_type remove(const std::string& name) { return _M_c.erase(xml::attribute(name)); }
 
-    iterator remove(const_iterator ri_0, iterator ri_1) { return _M_attributes.erase(ri_0, ri_1); }
-    iterator remove(iterator ri) { return _M_attributes.erase(ri); }
-
-    ////////////////////
-    iterator begin() { return _M_attributes.begin(); }
-    const_iterator begin() const { return _M_attributes.begin(); }
-
-    iterator end() { return _M_attributes.end(); }
-    const_iterator end() const { return _M_attributes.end(); }
-
-    reverse_iterator rbegin() { return _M_attributes.rbegin(); }
-    const_reverse_iterator rbegin() const { return _M_attributes.rbegin(); }
-
-    reverse_iterator rend() { return _M_attributes.rend(); }
-    const_reverse_iterator rend() const { return _M_attributes.rend(); }
-
-    const_iterator cbegin() const { return _M_attributes.cbegin(); }
-    const_iterator cend() const { return _M_attributes.cend(); }
-
-    const_reverse_iterator crbegin() const { return _M_attributes.crbegin(); }
-    const_reverse_iterator crend() const { return _M_attributes.crend(); }
+    iterator remove(const_iterator ri_0, iterator ri_1) { return _M_c.erase(ri_0, ri_1); }
+    iterator remove(iterator ri) { return _M_c.erase(ri); }
 
     ////////////////////
-    iterator find(const value_type& value) { return _M_attributes.find(value); }
-    const_iterator find(const value_type& value) const { return _M_attributes.find(value); }
+    iterator find(const value_type& value) { return _M_c.find(value); }
+    const_iterator find(const value_type& value) const { return _M_c.find(value); }
 
-    iterator find(const std::string& name) { return _M_attributes.find(xml::attribute(name)); }
-    const_iterator find(const std::string& name) const { return _M_attributes.find(xml::attribute(name)); }
+    iterator find(const std::string& name) { return _M_c.find(xml::attribute(name)); }
+    const_iterator find(const std::string& name) const { return _M_c.find(xml::attribute(name)); }
 
-    size_type count(const value_type& value) const { return _M_attributes.count(value); }
-    size_type count(const std::string& name) const { return _M_attributes.count(xml::attribute(name)); }
+    size_type count(const value_type& value) const { return _M_c.count(value); }
+    size_type count(const std::string& name) const { return _M_c.count(xml::attribute(name)); }
 
     ////////////////////
     void validate() const
     {
         validate_name(_M_name);
-        for(const_reference x: _M_attributes) x.validate();
+        for(const_reference x: _M_c) x.validate();
     }
 
 private:
     std::string _M_name;
-    xml::attributes _M_attributes;
-
     enum tag_type { tag_start, tag_end, tag_empty };
 
     std::string _M_write(tag_type type, bool nice= false, int ix=0) const;
@@ -191,7 +166,12 @@ typedef std::vector<element> elements;
 class element
 {
 public:
-    element() { }
+    element() = default;
+    element(const element&) = default;
+    element(element&&) = default;
+
+    element& operator=(const element&) = default;
+    element& operator=(element&&) = default;
 
     explicit element(const std::string& name, const std::string& value= std::string()):
         _M_tag(name),
@@ -202,12 +182,12 @@ public:
         _M_value(std::move(value))
     { }
 
-    element(const std::string& name, std::initializer_list<attribute> attributes, const std::string& value= std::string()):
-        _M_tag(name, attributes),
+    element(const std::string& name, std::initializer_list<attribute> x, const std::string& value= std::string()):
+        _M_tag(name, x),
         _M_value(value)
     { }
-    element(std::string&& name, std::initializer_list<attribute> attributes, std::string&& value= std::string()):
-        _M_tag(std::move(name), attributes),
+    element(std::string&& name, std::initializer_list<attribute> x, std::string&& value= std::string()):
+        _M_tag(std::move(name), x),
         _M_value(std::move(value))
     { }
 
