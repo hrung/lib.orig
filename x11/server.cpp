@@ -62,9 +62,9 @@ server::server(const std::string& name, const std::string& server_auth, const ar
     this_environ::set("XAUTHORITY", server_auth);
 
     arguments xorg_args;
-    xorg_args.push_back(name);
-    xorg_args.push_back(args);
-    xorg_args.push_back({ "-auth", server_auth });
+    xorg_args.insert(name);
+    xorg_args.insert(args);
+    xorg_args.insert({ "-auth", server_auth });
 
     _M_process= process(process::group, this_process::replace, xorg_path, xorg_args);
 
