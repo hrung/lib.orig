@@ -23,7 +23,7 @@ void socket::create(net::family family, net::type type)
 {
     _M_family= family;
     _M_fd= ::socket(static_cast<int>(_M_family), static_cast<int>(type), 0);
-    if(_M_fd == invalid_desc) throw system_error();
+    if(_M_fd == invalid_desc) throw errno_error();
 
     if(_M_family==family::net)
     {
@@ -33,7 +33,7 @@ void socket::create(net::family family, net::type type)
             SO_REUSEADDR,
             &value,
             sizeof(value)))
-        throw system_error();
+        throw errno_error();
     }
 }
 
@@ -74,7 +74,7 @@ sockaddr_in socket::from(net::address address, net::port port)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void socket::bind(sockaddr* addr, socklen_t addr_len)
 {
-    if(::bind(_M_fd, addr, addr_len)) throw system_error();
+    if(::bind(_M_fd, addr, addr_len)) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ void socket::bind(net::address address, net::port port)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void socket::connect(sockaddr* addr, socklen_t addr_len)
 {
-    if(::connect(_M_fd, addr, addr_len)) throw system_error();
+    if(::connect(_M_fd, addr, addr_len)) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -114,28 +114,28 @@ void socket::connect(net::address address, net::port port)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void socket::listen(int max)
 {
-    if(::listen(_M_fd, max)) throw system_error();
+    if(::listen(_M_fd, max)) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void socket::accept(net::socket& socket)
 {
     socket._M_fd= ::accept(_M_fd, 0, 0);
-    if(socket._M_fd <= 0) throw system_error();
+    if(socket._M_fd <= 0) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void socket::set_non_blocking(bool value)
 {
     int opt= fcntl(_M_fd, F_GETFL);
-    if(opt < 0) throw system_error();
+    if(opt < 0) throw errno_error();
 
     if(value)
         opt|= O_NONBLOCK;
     else
         opt&= ~O_NONBLOCK;
 
-    if(fcntl(_M_fd, F_SETFL, opt)) throw system_error();
+    if(fcntl(_M_fd, F_SETFL, opt)) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -146,7 +146,7 @@ bool socket::can_recv(timeval* tv)
     FD_SET(_M_fd, &fds);
 
     int cnt= select(_M_fd+1, &fds, 0, 0, tv);
-    if(cnt == -1) throw system_error();
+    if(cnt == -1) throw errno_error();
 
     return cnt;
 }
@@ -160,7 +160,7 @@ void socket::set_multicast_loop(bool value)
         IP_MULTICAST_LOOP,
         &opt,
         sizeof(opt)))
-    throw system_error();
+    throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -171,7 +171,7 @@ void socket::set_multicast_ttl(unsigned char value)
         IP_MULTICAST_LOOP,
         &value,
         sizeof(value)))
-    throw system_error();
+    throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -183,7 +183,7 @@ void socket::set_multicast_all(bool value)
         IP_MULTICAST_ALL,
         &opt,
         sizeof(opt)))
-    throw system_error();
+    throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -198,7 +198,7 @@ void socket::add_membership(net::address group)
         IP_ADD_MEMBERSHIP,
         &imr,
         sizeof(imr)))
-    throw system_error();
+    throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -213,7 +213,7 @@ void socket::drop_membership(net::address group)
         IP_DROP_MEMBERSHIP,
         &imr,
         sizeof(imr)))
-    throw system_error();
+    throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -224,7 +224,7 @@ ssize_t socket::send(const void* buffer, size_t n, bool wait)
     {
         if(!wait && (errno==EAGAIN || errno==EWOULDBLOCK))
             return 0;
-        else throw system_error();
+        else throw errno_error();
     }
     return count;
 }
@@ -237,7 +237,7 @@ ssize_t socket::sendto(sockaddr* addr, socklen_t addr_len, const void* buffer, s
     {
         if(!wait && (errno==EAGAIN || errno==EWOULDBLOCK))
             return 0;
-        else throw system_error();
+        else throw errno_error();
     }
     return count;
 }
@@ -276,7 +276,7 @@ ssize_t socket::recv(void* buffer, size_t max, bool wait)
     {
         if(!wait && (errno==EAGAIN || errno==EWOULDBLOCK))
             return 0;
-        else throw system_error();
+        else throw errno_error();
     }
     return count;
 }
@@ -289,7 +289,7 @@ ssize_t socket::recvfrom(sockaddr* addr, socklen_t& addr_len, void* buffer, size
     {
         if(!wait && (errno==EAGAIN || errno==EWOULDBLOCK))
             return 0;
-        else throw system_error();
+        else throw errno_error();
     }
     return count;
 }

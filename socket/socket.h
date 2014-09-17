@@ -10,7 +10,8 @@
 #define SOCKET_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "except.h"
+#include "errno_error.h"
+
 #include <string>
 
 #include <sys/types.h>
@@ -26,7 +27,13 @@ namespace net
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct address
 {
-    address() { }
+    address() = default;
+    address(const address&) = default;
+    address(address&&) = default;
+
+    address& operator=(const address&) = default;
+    address& operator=(address&&) = default;
+
     address(in_addr_t x): _M_value(x) { }
 
     address(const std::string& string)
@@ -35,12 +42,13 @@ struct address
 
         in_addr ina;
         if(!inet_aton(string.data(), &ina))
-            throw system_error();
+            throw errno_error();
         else _M_value= ntohl(ina.s_addr);
     }
     address(const char* value): address(std::string(value)) { }
 
-    operator std::string() const {  return inet_ntoa({ htonl(_M_value) }); }
+    std::string to_string() const { return inet_ntoa({ htonl(_M_value) }); }
+    operator std::string() const {  return to_string(); }
 
     in_addr_t value() const { return _M_value; }
     void set_value(in_addr_t value) { _M_value= value; }
@@ -49,6 +57,7 @@ private:
     in_addr_t _M_value= INADDR_ANY;
 };
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
 typedef uint16_t port;
 
 typedef int desc;
@@ -72,15 +81,14 @@ enum class family
 class socket
 {
 public:
-    socket() { }
-    socket(net::family family, net::type type) { create(family, type); }
-
+    socket() = default;
     socket(const socket&) = delete;
-    socket& operator=(const socket&) = delete;
-
     socket(socket&&) = default;
+
+    socket& operator=(const socket&) = delete;
     socket& operator=(socket&&) = default;
 
+    socket(net::family family, net::type type) { create(family, type); }
     virtual ~socket() { close(); }
 
     void create(net::family, net::type);
