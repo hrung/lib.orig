@@ -11,6 +11,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "flags.h"
+#include "errno_error.h"
+
 #include <string>
 
 #include <sys/types.h>
@@ -49,15 +51,14 @@ enum class origin
 class file
 {
 public:
-    file() { }
-    file(const std::string& name, open_flags flags) { open(name, flags); }
-
+    file() = default;
     file(const file&) = delete;
-    file& operator=(const file&) = delete;
-
     file(file&&) = default;
+
+    file& operator=(const file&) = delete;
     file& operator=(file&&) = default;
 
+    file(const std::string& name, open_flags flags) { open(name, flags); }
     virtual ~file() { close(); }
 
     void open(const std::string& name, open_flags flags, perm = 0644);
