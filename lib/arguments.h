@@ -24,6 +24,9 @@ public:
     ////////////////////
     void push_back(const value_type& x) { _M_c.push_back(x); }
     void push_back(value_type&& x) { _M_c.push_back(std::move(x)); }
+
+    ////////////////////
+    charpp_ptr to_charpp() const;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
