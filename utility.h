@@ -52,7 +52,15 @@ typedef std::unique_ptr<char*[], charpp_deleter> charpp_ptr;
 /// Returns smart char* pointer with copy of the contents of std::string
 /// for temporary use in functions requiring char*.
 ///
-std::unique_ptr<char[]> clone(const std::string& value);
+inline std::unique_ptr<char[]> clone(const std::string& value)
+{
+    std::unique_ptr<char[]> buffer(new char[value.size()+1]);
+
+    value.copy(buffer.get(), value.size());
+    buffer[value.size()]=0;
+
+    return buffer;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
