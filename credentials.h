@@ -13,6 +13,10 @@ namespace app
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct credentials
 {
+    credentials(const std::string& name);
+
+    void morph_into();
+
     std::string username;
     std::string fullname;
     std::string password;
@@ -22,10 +26,6 @@ struct credentials
 
     std::string home;
     std::string shell;
-
-    void morph_into();
-
-    static credentials get(const std::string& name);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

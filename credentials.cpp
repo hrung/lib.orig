@@ -12,15 +12,7 @@ namespace app
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void credentials::morph_into()
-{
-    if(initgroups(username.data(), gid)) throw errno_error();
-    if(setgid(gid)) throw errno_error();
-    if(setuid(uid)) throw errno_error();
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-credentials credentials::get(const std::string& name)
+credentials::credentials(const std::string& name)
 {
     errno=0;
     struct passwd* pwd= getpwnam(name.data());
@@ -30,25 +22,29 @@ credentials credentials::get(const std::string& name)
         else throw std::runtime_error("No entry for "+ name);
     }
 
-    credentials x;
+    username= pwd->pw_name;
+    fullname= pwd->pw_gecos;
+    password= pwd->pw_passwd;
 
-    x.username= pwd->pw_name;
-    x.fullname= pwd->pw_gecos;
-    x.password= pwd->pw_passwd;
+    uid= pwd->pw_uid;
+    gid= pwd->pw_gid;
 
-    x.uid= pwd->pw_uid;
-    x.gid= pwd->pw_gid;
-
-    x.home= pwd->pw_dir;
-    x.shell= pwd->pw_shell;
-    if(x.shell.empty())
+    home= pwd->pw_dir;
+    shell= pwd->pw_shell;
+    if(shell.empty())
     {
         setusershell();
-        x.shell= getusershell();
+        shell= getusershell();
         endusershell();
     }
+}
 
-    return x;
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void credentials::morph_into()
+{
+    if(initgroups(username.data(), gid)) throw errno_error();
+    if(setgid(gid)) throw errno_error();
+    if(setuid(uid)) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
