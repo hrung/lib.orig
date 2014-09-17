@@ -27,7 +27,7 @@ namespace hei
 class device
 {
 public:
-    device() { }
+    device() = default;
 
     device(const device&) = delete;
     device& operator=(const device&) = delete;
