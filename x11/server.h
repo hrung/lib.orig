@@ -17,10 +17,6 @@
 struct _XDisplay;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-namespace app
-{
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace x11
 {
 
@@ -51,8 +47,8 @@ public:
 
     server(server&& x) noexcept { swap(x); }
 
-    server(const std::string& name, const std::string& server_auth, const arguments& args= {});
-    explicit server(const std::string& server_auth, const arguments& args= {}): server(default_name, server_auth, args) { }
+    server(const std::string& name, const std::string& server_auth, const app::arguments& args= {});
+    explicit server(const std::string& server_auth, const app::arguments& args= {}): server(default_name, server_auth, args) { }
     ~server();
 
     server& operator=(const server&) = delete;
@@ -84,12 +80,9 @@ private:
     std::string _M_name;
     x11::cookie _M_cookie;
 
-    process _M_process;
+    app::process _M_process;
     x11::display _M_display= nullptr;
 };
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
