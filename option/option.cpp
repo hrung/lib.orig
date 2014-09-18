@@ -7,6 +7,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "option.h"
+#include "utility.h"
 
 #include <iomanip>
 #include <sstream>
@@ -51,10 +52,7 @@ void options::parse(int argc, char* argv[], int& index)
         int length= option.longname().size();
         if(length)
         {
-            long_opt_name.emplace_back(new char[length+1]);
-
-            option.longname().copy(long_opt_name.back().get(), length);
-            long_opt_name.back()[length]=0;
+            long_opt_name.push_back(clone(option.longname()));
 
             long_opt.push_back({ long_opt_name.back().get(),
                 option.arg()==uncertain? optional_argument: option.arg()? required_argument: no_argument,
