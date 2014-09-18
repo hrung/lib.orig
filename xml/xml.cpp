@@ -120,7 +120,7 @@ std::string tag::_M_write(tag_type type, bool nice, int ix) const
     value+= _M_name;
 
     if(type==tag_start || type==tag_empty)
-        for(auto ri= _M_attributes.begin(); ri != _M_attributes.end(); ++ri)
+        for(auto ri= begin(); ri != end(); ++ri)
     value+= ri->_M_write();
 
     if(type==tag_empty) value+= "/";

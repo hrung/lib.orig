@@ -94,11 +94,11 @@ public:
     { }
 
     tag(const std::string& name, std::initializer_list<value_type> attributes):
-        _M_name(name), _M_c(attributes)
-    { }
+        _M_name(name)
+    { _M_c= attributes; }
     tag(std::string&& name, std::initializer_list<value_type> attributes):
-        _M_name(std::move(name)), _M_c(attributes)
-    { }
+        _M_name(std::move(name))
+    { _M_c= attributes; }
 
     ////////////////////
     const std::string name() const { return _M_name; }
