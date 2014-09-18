@@ -50,53 +50,61 @@ public:
 public:
     ////////////////////
     explicit attribute(const std::string& name, slap::operation mod= operation::add):
-        _M_name(name), _M_operation(mod)
+        _M_name(name),
+        _M_operation(mod)
     { }
     explicit attribute(std::string&& name, slap::operation mod= operation::add):
-        _M_name(std::move(name)), _M_operation(mod)
+        _M_name(std::move(name)),
+        _M_operation(mod)
     { }
 
     ////////////////////
     attribute(const std::string& name, std::initializer_list<value_type> values):
-        _M_name(name), _M_operation(operation::add)
-    { _M_c= values; }
+        _M_name(name),
+        _M_operation(operation::add)
+    { insert(values); }
 
     attribute(std::string&& name, std::initializer_list<value_type> values):
-        _M_name(std::move(name)), _M_operation(operation::add)
-    { _M_c= values; }
+        _M_name(std::move(name)),
+        _M_operation(operation::add)
+    { insert(values); }
 
     ////////////////////
     attribute(const std::string& name, slap::operation mod, std::initializer_list<value_type> values):
-        _M_name(name), _M_operation(mod)
-    { _M_c= values; }
+        _M_name(name),
+        _M_operation(mod)
+    { insert(values); }
 
     attribute(std::string&& name, slap::operation mod, std::initializer_list<value_type> values):
-        _M_name(std::move(name)), _M_operation(mod)
-    { _M_c= values; }
+        _M_name(std::move(name)),
+        _M_operation(mod)
+    { insert(values); }
 
     ////////////////////
     template<typename T>
-    attribute(const std::string& name, T&& value): _M_name(name), _M_operation(operation::add)
-    {
-        insert(std::forward<T>(value));
-    }
+    attribute(const std::string& name, T&& value):
+        _M_name(name),
+        _M_operation(operation::add)
+    { insert(std::forward<T>(value)); }
+
     template<typename T>
-    attribute(std::string&& name, T&& value): _M_name(std::move(name)), _M_operation(operation::add)
-    {
-        insert(std::forward<T>(value));
-    }
+    attribute(std::string&& name, T&& value):
+        _M_name(std::move(name)),
+        _M_operation(operation::add)
+    { insert(std::forward<T>(value)); }
 
     ////////////////////
     template<typename T>
-    attribute(const std::string& name, slap::operation mod, T&& value): _M_name(name), _M_operation(mod)
-    {
-        insert(std::forward<T>(value));
-    }
+    attribute(const std::string& name, slap::operation mod, T&& value):
+        _M_name(name),
+        _M_operation(mod)
+    { insert(std::forward<T>(value)); }
+
     template<typename T>
-    attribute(std::string&& name, slap::operation mod, T&& value): _M_name(std::move(name)), _M_operation(mod)
-    {
-        insert(std::forward<T>(value));
-    }
+    attribute(std::string&& name, slap::operation mod, T&& value):
+        _M_name(std::move(name)),
+        _M_operation(mod)
+    { insert(std::forward<T>(value)); }
 
    ~attribute() { delete_mod(); }
 
