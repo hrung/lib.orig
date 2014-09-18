@@ -83,7 +83,7 @@ int context::despatch(int num, const pam_message** msg, pam_response** resp, voi
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 context::context(const std::string& service, const std::string& username)
 {
-    auto s= clone(service), u= username.size()? clone(username): nullptr;
+    auto s= app::clone(service), u= username.size()? app::clone(username): nullptr;
     pam_conv conv= { despatch, this };
 
     _M_code= pam_start(s.get(), u.get(), &conv, &_M_pamh);
