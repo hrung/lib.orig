@@ -14,6 +14,7 @@
 #include "errno_error.h"
 
 #include <string>
+#include <ctime>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -28,7 +29,12 @@ typedef int desc;
 constexpr desc invalid_desc= -1;
 
 typedef mode_t perm;
+typedef off_t offset;
 
+typedef uid_t uid;
+typedef gid_t gid;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 enum class open
 {
     read= 1,
@@ -40,6 +46,7 @@ enum class open
 };
 DECLARE_FLAGS(open)
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
 enum class origin
 {
     start= SEEK_SET,
@@ -72,19 +79,20 @@ public:
     ssize_t read(std::string& string, size_t max, bool wait= true);
     ssize_t read(void* buffer, size_t max, bool wait= true);
 
-    off_t seek(off_t value, origin = origin::start);
-    off_t tell() { return seek(0, origin::current); }
-    off_t size();
+    offset seek(offset value, origin = origin::start);
+    offset tell() { return seek(0, origin::current); }
+    offset size();
 
     bool can_read(int wait_usec=0) { timeval tv= {0, wait_usec}; return can_read((wait_usec<0)? 0: &tv); }
-    bool can_read(timeval* tv);
     bool can_write(int wait_usec=0) { timeval tv= {0, wait_usec}; return can_write((wait_usec<0)? 0: &tv); }
-    bool can_write(timeval* tv);
 
     storage::desc desc() const { return _M_fd; }
 
 protected:
     storage::desc _M_fd= invalid_desc;
+
+    bool can_read(timeval* tv);
+    bool can_write(timeval* tv);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,9 +102,9 @@ void rename(const std::string& prev, const std::string& name);
 std::string real_path(const std::string& path);
 
 bool stat(const std::string& name, struct stat&);
-void chown(const std::string& name, uid_t uid, gid_t gid, bool deref= true);
+void chown(const std::string& name, storage::uid uid, storage::gid gid, bool deref= true);
 
-mode_t mode(const std::string& name);
+perm mode(const std::string& name);
 inline bool exists   (const std::string& name) { return mode(name); }
 inline bool is_file  (const std::string& name) { return S_ISREG(mode(name)); }
 inline bool is_dir   (const std::string& name) { return S_ISDIR(mode(name)); }

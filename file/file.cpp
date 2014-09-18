@@ -77,7 +77,7 @@ ssize_t file::read(void* buffer, size_t max, bool wait)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-off_t file::seek(off_t value, storage::origin origin)
+offset file::seek(offset value, storage::origin origin)
 {
     off_t offset= ::lseek(_M_fd, value, int(origin));
     if(offset == -1) throw errno_error();
@@ -86,7 +86,7 @@ off_t file::seek(off_t value, storage::origin origin)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-off_t file::size()
+offset file::size()
 {
     off_t n= tell();
     off_t e= seek(0, origin::end);
@@ -148,19 +148,19 @@ std::string real_path(const std::string& path)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool stat(const std::string& name, struct stat& value)
+bool stat(const std::string& name, struct stat& x)
 {
-    return ::stat(name.data(), &value)==0;
+    return ::stat(name.data(), &x)==0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void chown(const std::string& name, uid_t uid, gid_t gid, bool deref)
+void chown(const std::string& name, storage::uid uid, storage::gid gid, bool deref)
 {
     if( (deref? ::chown(name.data(), uid, gid): lchown(name.data(), uid, gid)) ) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-mode_t mode(const std::string& name)
+perm mode(const std::string& name)
 {
     struct stat value;
     return stat(name, value)? value.st_mode: 0;
