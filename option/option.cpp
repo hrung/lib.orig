@@ -33,7 +33,7 @@ void options::parse(int argc, char* argv[], int& index)
     std::map<int, pointer> map;
 
     ////////////////////
-    for(reference option: _M_options)
+    for(reference option: _M_c)
     {
         int code;
         if(option.name())
@@ -112,7 +112,7 @@ using std::setw; using std::left; using std::right; using std::endl;
 std::string options::usage()
 {
     std::ostringstream stream;
-    for(const_reference option: _M_options)
+    for(const_reference option: _M_c)
     {
         stream << setw(8) << right;
         if(option.name())
