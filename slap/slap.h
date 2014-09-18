@@ -52,19 +52,21 @@ public:
 
     ////////////////////
     attribute(const std::string& name, std::initializer_list<value_type> values):
-        _M_name(name), _M_operation(operation::add), _M_c(values)
-    { }
+        _M_name(name), _M_operation(operation::add)
+    { _M_c= values; }
+
     attribute(std::string&& name, std::initializer_list<value_type> values):
-        _M_name(std::move(name)), _M_operation(operation::add), _M_c(values)
-    { }
+        _M_name(std::move(name)), _M_operation(operation::add)
+    { _M_c= values; }
 
     ////////////////////
     attribute(const std::string& name, slap::operation mod, std::initializer_list<value_type> values):
-        _M_name(name), _M_operation(mod), _M_c(values)
-    { }
+        _M_name(name), _M_operation(mod)
+    { _M_c= values; }
+
     attribute(std::string&& name, slap::operation mod, std::initializer_list<value_type> values):
-        _M_name(std::move(name)), _M_operation(mod), _M_c(values)
-    { }
+        _M_name(std::move(name)), _M_operation(mod)
+    { _M_c= values; }
 
     ////////////////////
     template<typename T>
@@ -94,32 +96,34 @@ public:
 
     ////////////////////
     attribute(const attribute& x):
-        _M_name      (x._M_name),
-        _M_operation (x._M_operation),
-        _M_c         (x._M_c)
-    { }
+        _M_name(x._M_name),
+        _M_operation(x._M_operation)
+    { _M_c= x._M_c; }
+
     attribute(attribute&& x):
-        _M_name      (std::move(x._M_name)),
-        _M_operation (std::move(x._M_operation)),
-        _M_c         (std::move(x._M_c)),
-        _M_mod       (std::move(x._M_mod))
-    { x._M_mod= nullptr; }
+        _M_name(std::move(x._M_name)),
+        _M_operation(std::move(x._M_operation)),
+        _M_mod(std::move(x._M_mod))
+    {
+        _M_c= std::move(x._M_c);
+        x._M_mod= nullptr;
+    }
 
     ////////////////////
     attribute& operator=(const attribute& x)
     {
-        _M_name=      x._M_name;
+        _M_name= x._M_name;
         _M_operation= x._M_operation;
-        _M_c=         x._M_c;
+        _M_c= x._M_c;
         return *this;
     }
     attribute& operator=(attribute&& x)
     {
-        _M_name=      std::move(x._M_name);
+        _M_name= std::move(x._M_name);
         _M_operation= std::move(x._M_operation);
-        _M_c=         std::move(x._M_c);
+        _M_c= std::move(x._M_c);
         delete_mod();
-        _M_mod=       std::move(x._M_mod);
+        _M_mod= std::move(x._M_mod);
         x._M_mod= nullptr;
         return *this;
     }
@@ -213,36 +217,37 @@ public:
     explicit entry(std::string&& dn): _M_dn(std::move(dn)) { }
 
     entry(const std::string& dn, std::initializer_list<value_type> attributes):
-        _M_dn(dn), _M_c(attributes)
-    { }
+        _M_dn(dn)
+    { _M_c= attributes; }
+
     entry(std::string&& dn, std::initializer_list<value_type> attributes):
-        _M_dn(std::move(dn)), _M_c(attributes)
-    { }
+        _M_dn(std::move(dn))
+    { _M_c= attributes; }
 
    ~entry() { delete_mod(); }
 
     ////////////////////
-    entry(const entry& x):
-        _M_dn  (x._M_dn),
-        _M_c   (x._M_c)
-    { }
+    entry(const entry& x): _M_dn(x._M_dn) { _M_c= x._M_c; }
+
     entry(entry&& x):
-        _M_dn  (std::move(x._M_dn)),
-        _M_c   (std::move(x._M_c)),
-        _M_mod (std::move(x._M_mod))
-    { x._M_mod= nullptr; }
+        _M_dn(std::move(x._M_dn)),
+        _M_mod(std::move(x._M_mod))
+    {
+        _M_c= std::move(x._M_c);
+        x._M_mod= nullptr;
+    }
 
     ////////////////////
     entry& operator=(const entry& x)
     {
         _M_dn= x._M_dn;
-        _M_c=  x._M_c;
+        _M_c= x._M_c;
         return *this;
     }
     entry& operator=(entry&& x)
     {
-        _M_dn=  std::move(x._M_dn);
-        _M_c=   std::move(x._M_c);
+        _M_dn= std::move(x._M_dn);
+        _M_c= std::move(x._M_c);
         delete_mod();
         _M_mod= std::move(x._M_mod);
         x._M_mod= nullptr;

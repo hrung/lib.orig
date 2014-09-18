@@ -40,12 +40,12 @@ void attribute::create_mod() const
     _M_name.copy(_M_mod->mod_type, n);
     _M_mod->mod_type[n]=0;
 
-    n= _M_values.size();
+    n= _M_c.size();
     char** val= new char*[n+1];
     for(int i=0; i<=n; ++i) val[i]=0;
     _M_mod->mod_values= val;
 
-    for(const_reference ri: _M_values)
+    for(const_reference ri: _M_c)
     {
         n= ri.size();
         *val= new char[n+1];
@@ -83,12 +83,12 @@ void entry::create_mod() const
 {
     delete_mod();
 
-    int n= _M_attributes.size();
+    int n= _M_c.size();
     LDAPMod** lm= new LDAPMod*[n+1];
     for(int i=0; i<=n; ++i) lm[i]= nullptr;
     _M_mod= lm;
 
-    for(const_reference ri: _M_attributes)
+    for(const_reference ri: _M_c)
     {
         ri.create_mod();
         *(lm++)= ri._M_mod;
@@ -100,7 +100,7 @@ void entry::delete_mod() const
 {
     if(_M_mod)
     {
-        for(const_reference ri: _M_attributes) ri.delete_mod();
+        for(const_reference ri: _M_c) ri.delete_mod();
         delete[] _M_mod;
     }
     _M_mod= nullptr;
@@ -261,7 +261,7 @@ entries connection::search(const std::string& base,
                     {
                         slap::attribute attribute(la);
                         for(int i=0; i<n; ++i)
-                            attribute.append(std::string(bv[i]->bv_val, bv[i]->bv_len));
+                            attribute.insert(std::string(bv[i]->bv_val, bv[i]->bv_len));
 
                         entry.insert(std::move(attribute));
                     }
