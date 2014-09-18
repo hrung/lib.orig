@@ -10,8 +10,8 @@
 #define PROCESS_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "environ/environ.h"
-#include "arguments/arguments.h"
+#include "environ.h"
+#include "arguments.h"
 #include "basic_filebuf.h"
 #include "flags.h"
 
