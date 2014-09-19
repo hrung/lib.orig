@@ -27,14 +27,14 @@ namespace net
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct address
 {
-    address() = default;
-    address(const address&) = default;
-    address(address&&) = default;
+    address() noexcept = default;
+    address(const address&) noexcept = default;
+    address(address&&) noexcept = default;
 
-    address& operator=(const address&) = default;
-    address& operator=(address&&) = default;
+    address& operator=(const address&) noexcept = default;
+    address& operator=(address&&) noexcept = default;
 
-    address(in_addr_t x): _M_value(x) { }
+    address(in_addr_t x) noexcept : _M_value(x) { }
 
     address(const std::string& string)
     {
