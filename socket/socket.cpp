@@ -19,7 +19,7 @@ namespace net
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void socket::create(net::family family, net::type type)
+socket::socket(net::family family, net::type type)
 {
     _M_family= family;
     _M_fd= ::socket(static_cast<int>(_M_family), static_cast<int>(type), 0);
@@ -28,23 +28,14 @@ void socket::create(net::family family, net::type type)
     if(_M_family==family::net)
     {
         int value=1;
-        if(setsockopt(_M_fd,
-            SOL_SOCKET,
-            SO_REUSEADDR,
-            &value,
-            sizeof(value)))
-        throw errno_error();
+        if(setsockopt(_M_fd, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value))) throw errno_error();
     }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void socket::close()
+socket::~socket()
 {
-    if(_M_fd != invalid_desc)
-    {
-        ::close(_M_fd);
-        _M_fd= invalid_desc;
-    }
+    if(_M_fd != invalid_desc) ::close(_M_fd);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

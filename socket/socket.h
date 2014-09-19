@@ -85,8 +85,8 @@ public:
     socket(const socket&) = delete;
     socket(socket&& x) noexcept { swap(x); }
 
-    socket(net::family family, net::type type) { create(family, type); }
-    virtual ~socket() { close(); }
+    socket(net::family, net::type);
+    virtual ~socket();
 
     socket& operator=(const socket&) = delete;
     socket& operator=(socket&& x) noexcept
@@ -100,10 +100,6 @@ public:
         std::swap(_M_family, x._M_family);
         std::swap(_M_fd, x._M_fd);
     }
-
-    void create(net::family, net::type);
-    void close();
-    bool is_created() const { return _M_fd != invalid_desc; }
 
     void bind(const std::string& path);
     void bind(net::address address, net::port port);
