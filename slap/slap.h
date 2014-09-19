@@ -227,11 +227,11 @@ public:
 
     entry(const std::string& dn, std::initializer_list<value_type> attributes):
         _M_dn(dn)
-    { _M_c= attributes; }
+    { insert(attributes); }
 
     entry(std::string&& dn, std::initializer_list<value_type> attributes):
         _M_dn(std::move(dn))
-    { _M_c= attributes; }
+    { insert(attributes); }
 
    ~entry() { delete_mod(); }
 
