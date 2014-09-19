@@ -42,7 +42,6 @@ public:
 
 public:
     server() = default;
-    server(server&) = delete;
     server(const server&) = delete;
 
     server(server&& x) noexcept { swap(x); }
