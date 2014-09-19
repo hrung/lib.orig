@@ -18,6 +18,7 @@
 #include <functional>
 #include <initializer_list>
 #include <type_traits>
+#include <utility>
 #include <vector>
 #include <set>
 #include <string>
@@ -383,22 +384,25 @@ enum class scope
 class connection
 {
 public:
-    connection() { }
-    connection(const std::string& uri) { open(uri); }
-
-   ~connection() { close(); }
-
-    ////////////////////
+    connection() = default;
+    connection(connection&) = delete;
     connection(const connection&) = delete;
-    connection& operator=(const connection&) = delete;
 
-    connection(connection&&) = delete;
-    connection& operator=(connection&&) = delete;
+    connection(connection&& x) noexcept { swap(x); }
+
+    connection(const std::string& uri, bool start_tls= true);
+   ~connection();
+
+    connection& operator=(const connection&) = delete;
+    connection& operator=(connection&& x) noexcept
+    {
+        swap(x);
+        return (*this);
+    }
+    void swap(connection& x) noexcept { std::swap(_M_ldap, x._M_ldap); }
 
     ////////////////////
-    void open(const std::string& uri, bool start_tls= true);
     void bind(const std::string& dn, const std::string& passwd= std::string());
-    void close();
 
     void add(const entry& e);
     void remove(const std::string& dn);
