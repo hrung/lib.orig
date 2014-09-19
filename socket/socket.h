@@ -81,15 +81,25 @@ enum class family
 class socket
 {
 public:
-    socket() = default;
+    socket() noexcept = default;
     socket(const socket&) = delete;
-    socket(socket&&) = default;
-
-    socket& operator=(const socket&) = delete;
-    socket& operator=(socket&&) = default;
+    socket(socket&& x) noexcept { swap(x); }
 
     socket(net::family family, net::type type) { create(family, type); }
     virtual ~socket() { close(); }
+
+    socket& operator=(const socket&) = delete;
+    socket& operator=(socket&& x) noexcept
+    {
+        swap(x);
+        return (*this);
+    }
+
+    void swap(socket& x) noexcept
+    {
+        std::swap(_M_family, x._M_family);
+        std::swap(_M_fd, x._M_fd);
+    }
 
     void create(net::family, net::type);
     void close();
