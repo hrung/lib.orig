@@ -8,6 +8,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "slap.h"
 #include "slap_error.h"
+#include "utility.h"
 
 #include <memory>
 #include <ldap.h>
@@ -227,12 +228,7 @@ entries connection::search(const std::string& base,
     {
         for(const std::string& name: names)
         {
-            int length= name.size();
-            _M_names_data.emplace_back(new char[length+1]);
-
-            name.copy(_M_names_data.back().get(), length);
-            _M_names_data.back()[length]=0;
-
+            _M_names_data.push_back(app::clone(name));
             _M_names.push_back(_M_names_data.back().get());
         }
         _M_names.push_back(nullptr);
