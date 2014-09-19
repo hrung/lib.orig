@@ -391,7 +391,6 @@ class connection
 public:
     connection() { }
     connection(const std::string& uri) { open(uri); }
-    connection(std::string&& uri) { open(std::move(uri)); }
 
    ~connection() { close(); }
 
@@ -403,32 +402,9 @@ public:
     connection& operator=(connection&&) = delete;
 
     ////////////////////
-    void open(const std::string& uri, bool start_TLS= true)
-    {
-        _M_uri= uri;
-        _M_start_TLS= start_TLS;
-        _M_open();
-    }
-    void open(std::string&& uri, bool start_TLS= true)
-    {
-        _M_uri= std::move(uri);
-        _M_start_TLS= start_TLS;
-        _M_open();
-    }
+    void open(const std::string& uri, bool start_tls= true);
+    void bind(const std::string& dn, const std::string& passwd= std::string());
     void close();
-
-    void bind(const std::string& dn, const std::string& passwd= std::string())
-    {
-        _M_bind_dn= dn;
-        _M_passwd= passwd;
-        _M_bind();
-    }
-    void bind(std::string&& dn, const std::string& passwd= std::string())
-    {
-        _M_bind_dn= std::move(dn);
-        _M_passwd= passwd;
-        _M_bind();
-    }
 
     void add(const entry& e);
     void remove(const std::string& dn);
@@ -448,20 +424,8 @@ public:
                    const names& = names(),
     bool get_value= true);
 
-    ////////////////////
-    std::string uri() const { return _M_uri; }
-    std::string bind_dn() const { return _M_bind_dn; }
-
 private:
-    std::string _M_uri;
-    bool _M_start_TLS= false;
-
-    std::string _M_bind_dn, _M_passwd;
-
     mutable LDAP* _M_ldap= nullptr;
-
-    void _M_open();
-    void _M_bind();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

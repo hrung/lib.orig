@@ -111,17 +111,17 @@ void entry::delete_mod() const
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void connection::_M_open()
+void connection::open(const std::string& uri, bool start_tls)
 {
     close();
 
-    int err= ldap_initialize(&_M_ldap, _M_uri.data());
+    int err= ldap_initialize(&_M_ldap, uri.data());
     if(err != LDAP_SUCCESS) throw slap_error(err);
 
     int opt= LDAP_VERSION3;
     ldap_set_option(_M_ldap, LDAP_OPT_PROTOCOL_VERSION, &opt);
 
-    if(_M_start_TLS)
+    if(start_tls)
     {
         err= ldap_start_tls_s(_M_ldap, nullptr, nullptr);
         if(err != LDAP_SUCCESS) throw slap_error(err);
@@ -132,22 +132,20 @@ void connection::_M_open()
 void connection::close()
 {
     if(_M_ldap) ldap_unbind_ext_s(_M_ldap, nullptr, nullptr);
-
-    _M_bind_dn.clear();
     _M_ldap= nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void connection::_M_bind()
+void connection::bind(const std::string& dn, const std::string& passwd)
 {
+    auto n= app::clone(dn), p= app::clone(passwd);
+
     BerValue cred;
-    cred.bv_val= const_cast<char*>(_M_passwd.data());
-    cred.bv_len= _M_passwd.size();
+    cred.bv_val= const_cast<char*>(p.get());
+    cred.bv_len= passwd.size();
 
-    int err= ldap_sasl_bind_s(_M_ldap, _M_bind_dn.data(), LDAP_SASL_SIMPLE, &cred, nullptr, nullptr, nullptr);
+    int err= ldap_sasl_bind_s(_M_ldap, n.get(), LDAP_SASL_SIMPLE, &cred, nullptr, nullptr, nullptr);
     if(err != LDAP_SUCCESS) throw slap_error(err);
-
-    _M_passwd.assign(_M_passwd.size(), 'X').clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
