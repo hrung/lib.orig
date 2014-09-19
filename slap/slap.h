@@ -101,41 +101,12 @@ public:
         _M_operation(mod)
     { insert(std::forward<T>(value)); }
 
-   ~attribute() { delete_mod(); }
-
     ////////////////////
-    attribute(const attribute& x):
-        _M_name(x._M_name),
-        _M_operation(x._M_operation)
-    { _M_c= x._M_c; }
+    attribute(const attribute&) = default;
+    attribute(attribute&&) = default;
 
-    attribute(attribute&& x):
-        _M_name(std::move(x._M_name)),
-        _M_operation(std::move(x._M_operation)),
-        _M_mod(std::move(x._M_mod))
-    {
-        _M_c= std::move(x._M_c);
-        x._M_mod= nullptr;
-    }
-
-    ////////////////////
-    attribute& operator=(const attribute& x)
-    {
-        _M_name= x._M_name;
-        _M_operation= x._M_operation;
-        _M_c= x._M_c;
-        return *this;
-    }
-    attribute& operator=(attribute&& x)
-    {
-        _M_name= std::move(x._M_name);
-        _M_operation= std::move(x._M_operation);
-        _M_c= std::move(x._M_c);
-        delete_mod();
-        _M_mod= std::move(x._M_mod);
-        x._M_mod= nullptr;
-        return *this;
-    }
+    attribute& operator=(const attribute&) = default;
+    attribute& operator=(attribute&&) = default;
 
     ////////////////////
     const std::string& name() const { return _M_name; }
@@ -199,14 +170,10 @@ public:
     }
 
 private:
-    std::string     _M_name;
+    std::string _M_name;
     slap::operation _M_operation;
 
-    mutable LDAPMod* _M_mod= nullptr;
-
-    void create_mod() const;
-    void delete_mod() const;
-
+    mod get_mod() const { return to_mod(static_cast<int>(_M_operation), _M_name, _M_c); }
     friend class entry;
 };
 
@@ -233,35 +200,12 @@ public:
         _M_dn(std::move(dn))
     { insert(attributes); }
 
-   ~entry() { delete_mod(); }
-
     ////////////////////
-    entry(const entry& x): _M_dn(x._M_dn) { _M_c= x._M_c; }
+    entry(const entry&) = default;
+    entry(entry&&) = default;
 
-    entry(entry&& x):
-        _M_dn(std::move(x._M_dn)),
-        _M_mod(std::move(x._M_mod))
-    {
-        _M_c= std::move(x._M_c);
-        x._M_mod= nullptr;
-    }
-
-    ////////////////////
-    entry& operator=(const entry& x)
-    {
-        _M_dn= x._M_dn;
-        _M_c= x._M_c;
-        return *this;
-    }
-    entry& operator=(entry&& x)
-    {
-        _M_dn= std::move(x._M_dn);
-        _M_c= std::move(x._M_c);
-        delete_mod();
-        _M_mod= std::move(x._M_mod);
-        x._M_mod= nullptr;
-        return *this;
-    }
+    entry& operator=(const entry&) = default;
+    entry& operator=(entry&&) = default;
 
     ////////////////////
     const std::string& dn() const { return _M_dn; }
@@ -332,12 +276,9 @@ public:
     size_type count(const std::string& name) const { return _M_c.count(value_type(name)); }
 
 private:
-    std::string      _M_dn;
-    mutable LDAPMod** _M_mod= nullptr;
+    std::string _M_dn;
 
-    void create_mod() const;
-    void delete_mod() const;
-
+    std::vector<mod> get_mod() const;
     friend class connection;
 
     ////////////////////
@@ -423,6 +364,8 @@ public:
 
 private:
     ldap _M_ldap= nullptr;
+
+    modpp get_mod(std::vector<mod>&);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

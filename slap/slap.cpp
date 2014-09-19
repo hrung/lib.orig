@@ -8,6 +8,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "slap.h"
 #include "slap_error.h"
+#include "slap_type.h"
 #include "utility.h"
 
 #include <memory>
@@ -27,86 +28,44 @@ const std::error_category& slap_category()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void attribute::create_mod() const
+void mod_deleter::operator()(LDAPMod* mod)
 {
-    delete_mod();
-
-    // create empty LDAPMod
-    _M_mod= new LDAPMod;
-    _M_mod->mod_op= static_cast<int>(_M_operation);
-    _M_mod->mod_type= nullptr;
-    _M_mod->mod_values= nullptr;
-
-    // set mod_type
-    int n= _M_name.size();
-    _M_mod->mod_type= new char[n+1];
-    _M_name.copy(_M_mod->mod_type, n);
-    _M_mod->mod_type[n]=0;
-
-    n= _M_c.size();
-    char** val= new char*[n+1];
-    for(int i=0; i<=n; ++i) val[i]=0;
-    _M_mod->mod_values= val;
-
-    for(const_reference ri: _M_c)
+    if(mod)
     {
-        n= ri.size();
-        *val= new char[n+1];
-        ri.copy(*val, n); (*val)[n]=0;
-        ++val;
+        for(char** ri= mod->mod_values; ri; ++ri) delete *ri;
+        delete[] mod->mod_values;
+
+        delete[] mod->mod_type;
+
+        delete mod;
     }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void attribute::delete_mod() const
+slap::mod to_mod(int op, const std::string& type, const std::vector<std::string>& values)
 {
-    if(_M_mod)
-    {
-        char** val= _M_mod->mod_values;
-        while(*val)
-        {
-            delete[] *val;
-            *val=0;
-            ++val;
-        }
-        delete[] _M_mod->mod_values;
-        _M_mod->mod_values= nullptr;
+    slap::mod x;
 
-        delete[] _M_mod->mod_type;
-        _M_mod->mod_type= nullptr;
+    x.reset(new LDAPMod);
+    x->mod_op= op;
+    x->mod_type= app::clone(type).release();
+    x->mod_values= new char*[values.size()+1];
 
-        delete _M_mod;
-    }
-    _M_mod= nullptr;
+    char** rp= x->mod_values;
+    for(auto ri= values.cbegin(); ri != values.cend(); ++ri, ++rp) *rp= app::clone(*ri).release();
+    *rp= nullptr;
+
+    return x;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void entry::create_mod() const
+std::vector<mod> entry::get_mod() const
 {
-    delete_mod();
+    std::vector<mod> x;
+    for(const_reference ri: _M_c) x.push_back(ri.get_mod());
 
-    int n= _M_c.size();
-    LDAPMod** lm= new LDAPMod*[n+1];
-    for(int i=0; i<=n; ++i) lm[i]= nullptr;
-    _M_mod= lm;
-
-    for(const_reference ri: _M_c)
-    {
-        ri.create_mod();
-        *(lm++)= ri._M_mod;
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-void entry::delete_mod() const
-{
-    if(_M_mod)
-    {
-        for(const_reference ri: _M_c) ri.delete_mod();
-        delete[] _M_mod;
-    }
-    _M_mod= nullptr;
+    return x;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -146,14 +105,25 @@ void connection::bind(const std::string& dn, const std::string& passwd)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+modpp connection::get_mod(std::vector<mod>& x)
+{
+    modpp val(new LDAPMod*[x.size()+1]);
+
+    LDAPMod** rp= val.get();
+    for(auto ri= x.begin(); ri != x.end(); ++ri, ++rp) *rp= ri->get();
+    *rp= nullptr;
+
+    return val;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 void connection::add(const entry& e)
 {
-    e.create_mod();
+    auto e_mod= e.get_mod();
+    modpp mod= get_mod(e_mod);
 
-    int err= ldap_add_ext_s(_M_ldap, e.dn().data(), e._M_mod, nullptr, nullptr);
+    int err= ldap_add_ext_s(_M_ldap, e.dn().data(), mod.get(), nullptr, nullptr);
     if(err != LDAP_SUCCESS) throw slap_error(err);
-
-    e.delete_mod();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -166,12 +136,11 @@ void connection::remove(const std::string& dn)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void connection::modify(const entry& e)
 {
-    e.create_mod();
+    auto e_mod= e.get_mod();
+    modpp mod= get_mod(e_mod);
 
-    int err= ldap_modify_ext_s(_M_ldap, e.dn().data(), e._M_mod, nullptr, nullptr);
+    int err= ldap_modify_ext_s(_M_ldap, e.dn().data(), mod.get(), nullptr, nullptr);
     if(err != LDAP_SUCCESS) throw slap_error(err);
-
-    e.delete_mod();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
