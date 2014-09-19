@@ -61,8 +61,8 @@ public:
 private:
     std::string _M_name, _M_value;
 
-    std::string _M_write() const;
-    void _M_parse(std::string& source);
+    std::string to_string() const;
+    void parse(std::string& source);
 
     friend class tag;
 };
@@ -85,8 +85,7 @@ public:
     tag& operator=(const tag&) = default;
     tag& operator=(tag&&) = default;
 
-    tag(const std::string& name):
-        _M_name(name)
+    tag(const std::string& name): _M_name(name)
     { }
     tag(std::string&& name):
         _M_name(std::move(name))
@@ -94,10 +93,11 @@ public:
 
     tag(const std::string& name, std::initializer_list<value_type> attributes):
         _M_name(name)
-    { _M_c= attributes; }
+    { insert(attributes); }
+
     tag(std::string&& name, std::initializer_list<value_type> attributes):
         _M_name(std::move(name))
-    { _M_c= attributes; }
+    { insert(attributes); }
 
     ////////////////////
     const std::string name() const { return _M_name; }
@@ -152,8 +152,8 @@ private:
     std::string _M_name;
     enum tag_type { tag_start, tag_end, tag_empty };
 
-    std::string _M_write(tag_type type, bool nice= false, int ix=0) const;
-    void _M_parse(std::string& source, tag_type type, bool& empty);
+    std::string to_string(tag_type type, bool nice, int ix) const;
+    void parse(std::string& source, tag_type type, bool& empty);
 
     friend class element;
 };
@@ -232,7 +232,7 @@ public:
     }
 
     ////////////////////
-    std::string write(bool nice= false) const { return _M_write(nice, 0); }
+    std::string to_string(bool nice= false) const { return to_string(nice, 0); }
 
 private:
     xml::tag _M_tag;
@@ -240,20 +240,20 @@ private:
     std::string _M_value;
     elements _M_children;
 
-    std::string _M_write(bool nice= false, int ix=0) const;
-    void _M_parse(std::string& source);
+    std::string to_string(bool nice, int ix) const;
+    void parse(std::string& source);
 
-    friend element parse(const std::string& source);
-    friend element parse(std::string&& source);
+    friend element parse(const std::string&);
+    friend element parse(std::string&&);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline element parse(const std::string& source)
 {
     element e;
-    std::string copy= source;
+    std::string x= source;
 
-    e._M_parse(copy);
+    e.parse(x);
     return e;
 }
 
@@ -261,9 +261,9 @@ inline element parse(const std::string& source)
 inline element parse(std::string&& source)
 {
     element e;
-    std::string move= std::move(source);
+    std::string x= std::move(source);
 
-    e._M_parse(move);
+    e.parse(x);
     return e;
 }
 
