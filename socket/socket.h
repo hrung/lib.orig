@@ -10,7 +10,7 @@
 #define SOCKET_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "errno_error.h"
+#include "address.h"
 
 #include <string>
 
@@ -23,39 +23,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace net
 {
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-struct address
-{
-    address() noexcept = default;
-    address(const address&) noexcept = default;
-    address(address&&) noexcept = default;
-
-    address& operator=(const address&) noexcept = default;
-    address& operator=(address&&) noexcept = default;
-
-    address(in_addr_t x) noexcept : _M_value(x) { }
-
-    address(const std::string& string)
-    {
-        if(string.empty()) return;
-
-        in_addr ina;
-        if(!inet_aton(string.data(), &ina))
-            throw errno_error();
-        else _M_value= ntohl(ina.s_addr);
-    }
-    address(const char* value): address(std::string(value)) { }
-
-    std::string to_string() const { return inet_ntoa({ htonl(_M_value) }); }
-    operator std::string() const {  return to_string(); }
-
-    in_addr_t value() const { return _M_value; }
-    void set_value(in_addr_t value) { _M_value= value; }
-
-private:
-    in_addr_t _M_value= INADDR_ANY;
-};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 typedef in_port_t port;
@@ -102,11 +69,11 @@ public:
     }
 
     void bind(const std::string& path);
-    void bind(net::address address, net::port port);
-    void bind(net::port port) { bind(address(), port); }
+    void bind(ipv4::address address, net::port port);
+    void bind(net::port port) { bind(ipv4::address::any, port); }
 
     void connect(const std::string& path);
-    void connect(net::address address, net::port port);
+    void connect(ipv4::address address, net::port port);
 
     void listen(int max= 128);
     void accept(socket& socket);
@@ -119,8 +86,8 @@ public:
     void set_multicast_ttl(unsigned char);
     void set_multicast_all(bool);
 
-    void add_membership(net::address group);
-    void drop_membership(net::address group);
+    void add_membership(ipv4::address group);
+    void drop_membership(ipv4::address group);
 
     ssize_t send(const std::string& string, bool wait= true)
         { return send(string.data(), string.size(), wait); }
@@ -130,9 +97,9 @@ public:
         { return sendto(path, string.data(), string.size(), wait); }
     ssize_t sendto(const std::string& path, const void* buffer, size_t n, bool wait= true);
 
-    ssize_t sendto(net::address address, net::port port, const std::string& string, bool wait= true)
+    ssize_t sendto(ipv4::address address, net::port port, const std::string& string, bool wait= true)
         { return sendto(address, port, string.data(), string.size(), wait); }
-    ssize_t sendto(net::address address, net::port port, const void* buffer, size_t n, bool wait= true);
+    ssize_t sendto(ipv4::address address, net::port port, const void* buffer, size_t n, bool wait= true);
 
     ssize_t recv(std::string& string, size_t max, bool wait= true);
     ssize_t recv(void* buffer, size_t max, bool wait= true);
@@ -140,8 +107,8 @@ public:
     ssize_t recvfrom(std::string& path, std::string& string, size_t max, bool wait= true);
     ssize_t recvfrom(std::string& path, void* buffer, size_t n, bool wait= true);
 
-    ssize_t recvfrom(net::address& address, net::port& port, std::string& string, size_t max, bool wait= true);
-    ssize_t recvfrom(net::address& address, net::port& port, void* buffer, size_t n, bool wait= true);
+    ssize_t recvfrom(ipv4::address& address, net::port& port, std::string& string, size_t max, bool wait= true);
+    ssize_t recvfrom(ipv4::address& address, net::port& port, void* buffer, size_t n, bool wait= true);
 
     net::family family() const { return _M_family; }
     net::desc desc() const { return _M_fd; }
@@ -151,7 +118,7 @@ protected:
     net::desc _M_fd= invalid_desc;
 
     sockaddr_un from(const std::string&);
-    sockaddr_in from(net::address, net::port);
+    sockaddr_in from(ipv4::address, net::port);
 
     void bind(sockaddr* addr, socklen_t addr_len);
     void connect(sockaddr* addr, socklen_t addr_len);

@@ -7,6 +7,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "socket.h"
+#include "errno_error.h"
+
 #include <memory>
 
 #include <unistd.h>
@@ -51,12 +53,12 @@ sockaddr_un socket::from(const std::string& path)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-sockaddr_in socket::from(net::address address, net::port port)
+sockaddr_in socket::from(ipv4::address address, net::port port)
 {
     sockaddr_in addr;
 
     addr.sin_family= AF_INET;
-    addr.sin_addr.s_addr= htonl(address.value());
+    addr.sin_addr= address._M_addr;
     addr.sin_port= htons(port);
 
     return addr;
@@ -71,14 +73,14 @@ void socket::bind(sockaddr* addr, socklen_t addr_len)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void socket::bind(const std::string& path)
 {
-    sockaddr_un addr(from(path));
+    sockaddr_un addr= from(path);
     bind((sockaddr*)&addr, sizeof(addr));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void socket::bind(net::address address, net::port port)
+void socket::bind(ipv4::address address, net::port port)
 {
-    sockaddr_in addr(from(address, port));
+    sockaddr_in addr= from(address, port);
     bind((sockaddr*)&addr, sizeof(addr));
 }
 
@@ -91,14 +93,14 @@ void socket::connect(sockaddr* addr, socklen_t addr_len)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void socket::connect(const std::string& path)
 {
-    sockaddr_un addr(from(path));
+    sockaddr_un addr= from(path);
     connect((sockaddr*)&addr, sizeof(addr));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void socket::connect(net::address address, net::port port)
+void socket::connect(ipv4::address address, net::port port)
 {
-    sockaddr_in addr(from(address, port));
+    sockaddr_in addr= from(address, port);
     connect((sockaddr*)&addr, sizeof(addr));
 }
 
@@ -178,11 +180,11 @@ void socket::set_multicast_all(bool value)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void socket::add_membership(net::address group)
+void socket::add_membership(ipv4::address group)
 {
     ip_mreq imr;
-    imr.imr_multiaddr.s_addr= htonl(group.value());
-    imr.imr_interface.s_addr= htonl(INADDR_ANY);
+    imr.imr_multiaddr= group._M_addr;
+    imr.imr_interface= ipv4::address::any._M_addr;
 
     if(setsockopt(_M_fd,
         IPPROTO_IP,
@@ -193,11 +195,11 @@ void socket::add_membership(net::address group)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void socket::drop_membership(net::address group)
+void socket::drop_membership(ipv4::address group)
 {
     ip_mreq imr;
-    imr.imr_multiaddr.s_addr= htonl(group.value());
-    imr.imr_interface.s_addr= htonl(INADDR_ANY);
+    imr.imr_multiaddr= group._M_addr;
+    imr.imr_interface= ipv4::address::any._M_addr;
 
     if(setsockopt(_M_fd,
         IPPROTO_IP,
@@ -241,9 +243,9 @@ ssize_t socket::sendto(const std::string& path, const void* buffer, size_t n, bo
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-ssize_t socket::sendto(net::address address, net::port port, const void* buffer, size_t n, bool wait)
+ssize_t socket::sendto(ipv4::address address, net::port port, const void* buffer, size_t n, bool wait)
 {
-    sockaddr_in addr(from(address, port));
+    sockaddr_in addr= from(address, port);
     return sendto((sockaddr*)&addr, sizeof(addr), buffer, n, wait);
 }
 
@@ -306,13 +308,13 @@ ssize_t socket::recvfrom(std::string& path, void* buffer, size_t n, bool wait)
 
     ssize_t count= recvfrom((sockaddr*)&addr, addr_len, buffer, n, wait);
 
-    if(addr.sun_family==AF_UNIX) path.assign(addr.sun_path);
+    if(net::family(addr.sun_family) == net::family::local) path.assign(addr.sun_path);
 
     return count;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-ssize_t socket::recvfrom(net::address& address, net::port& port, std::string& string, size_t max, bool wait)
+ssize_t socket::recvfrom(ipv4::address& address, net::port& port, std::string& string, size_t max, bool wait)
 {
     std::unique_ptr<char[]> buffer(new char[max+1]);
 
@@ -324,7 +326,7 @@ ssize_t socket::recvfrom(net::address& address, net::port& port, std::string& st
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-ssize_t socket::recvfrom(net::address& address, net::port& port, void* buffer, size_t n, bool wait)
+ssize_t socket::recvfrom(ipv4::address& address, net::port& port, void* buffer, size_t n, bool wait)
 {
     sockaddr_in addr;
     socklen_t addr_len= sizeof(addr);
@@ -332,9 +334,9 @@ ssize_t socket::recvfrom(net::address& address, net::port& port, void* buffer, s
 
     ssize_t count= recvfrom((sockaddr*)&addr, addr_len, buffer, n, wait);
 
-    if(addr.sin_family==AF_INET)
+    if(net::family(addr.sin_family) == net::family::net)
     {
-        address.set_value(ntohl(addr.sin_addr.s_addr));
+        address._M_addr= addr.sin_addr;
         port= ntohs(addr.sin_port);
     }
 
