@@ -28,13 +28,16 @@ typedef int desc;
 constexpr desc invalid_desc= -1;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+enum class type { stream, datagram };
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 class socket
 {
 public:
     socket() noexcept = default;
     socket(const socket&) = delete;
     socket(socket&& x) noexcept { swap(x); }
-    virtual ~socket() = default;
+    virtual ~socket();
 
     socket& operator=(const socket&) = delete;
     socket& operator=(socket&& x) noexcept
@@ -72,6 +75,8 @@ public:
 
 protected:
     app::desc _M_fd= invalid_desc;
+
+    socket(int family, app::type);
 
     bool can_recv(std::chrono::seconds, std::chrono::nanoseconds);
 
