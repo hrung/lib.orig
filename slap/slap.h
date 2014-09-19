@@ -385,7 +385,6 @@ class connection
 {
 public:
     connection() = default;
-    connection(connection&) = delete;
     connection(const connection&) = delete;
 
     connection(connection&& x) noexcept { swap(x); }
