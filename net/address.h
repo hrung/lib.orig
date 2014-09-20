@@ -43,6 +43,8 @@ public:
 
     std::string to_string() const;
 
+    in_addr_t value() const;
+
 private:
     in_addr _M_addr; // in network byte order (big endian)
     friend class net::socket;
