@@ -96,9 +96,7 @@ public:
 
 public:
     process() = default;
-    process(process&) = delete;
     process(const process&) = delete;
-
     process(process&& x) noexcept { swap(x); }
 
     ////////////////////
