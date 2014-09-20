@@ -143,19 +143,14 @@ public:
     }
 
     ////////////////////
-    void insert(const value_type& value) { _M_c.push_back(value); }
-    void insert(value_type&& value) { _M_c.push_back(std::move(value)); }
-    void insert(std::initializer_list<value_type> values) { _M_c.insert(_M_c.end(), values); }
-
-    void insert(bool value) { _M_c.push_back(value? "TRUE": "FALSE"); }
+    using container::insert;
+    void insert(bool value) { insert(value? "TRUE": "FALSE"); }
 
     template<typename T>
     void insert(const T& value) { insert(convert::to<value_type>(value)); }
 
+    using container::erase;
     iterator erase(const value_type& value) { return _M_c.erase(find(value)); }
-
-    iterator erase(const_iterator ri_0, const_iterator ri_1) { return _M_c.erase(ri_0, ri_1); }
-    iterator erase(const_iterator ri) { return _M_c.erase(ri); }
 
     ////////////////////
     iterator find(const value_type& value)
@@ -255,15 +250,11 @@ public:
     }
 
     ////////////////////
-    std::pair<iterator,bool> insert(const value_type& x) { return _M_c.insert(x); }
-    std::pair<iterator,bool> insert(value_type&& x) { return _M_c.insert(std::move(x)); }
-    void insert(std::initializer_list<value_type> x) { _M_c.insert(x); }
+    using container::insert;
+    using container::erase;
 
     size_type erase(const value_type& value) { return _M_c.erase(value); }
-    size_type erase(const std::string& name) { return _M_c.erase(slap::attribute(name)); }
-
-    iterator erase(const_iterator ri_0, iterator ri_1) { return _M_c.erase(ri_0, ri_1); }
-    iterator erase(iterator ri) { return _M_c.erase(ri); }
+    size_type erase(const std::string& name) { return _M_c.erase(value_type(name)); }
 
     ////////////////////
     iterator find(const value_type& value) { return _M_c.find(value); }
