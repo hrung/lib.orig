@@ -43,10 +43,11 @@ public:
     value_type& get(const name_type& name) { return _M_c.at(name); }
     const value_type& get(const name_type& name) const { return _M_c.at(name); }
 
-    void set(const name_type& name, const value_type& value) { _M_c[name]= value; }
-    void set(name_type&& name, value_type&& value) { _M_c[std::move(name)]= std::move(value); }
-    void set(const name_type& name, value_type&& value) { _M_c[name]= std::move(value); }
-    void set(name_type&& name, const value_type& value) { _M_c[std::move(name)]= value; }
+    template<typename NameType, typename ValueType>
+    void set(NameType&& name, ValueType&& value)
+    {
+        _M_c[std::forward<NameType>(name)]= std::forward<ValueType>(value);
+    }
 
     void reset(const name_type& name) { _M_c.erase(name); }
 
