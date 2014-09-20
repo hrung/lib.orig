@@ -41,9 +41,7 @@ class context
 {
 public:
     context() = default;
-    context(context&) = delete;
     context(const context&) = delete;
-
     context(context&& x) { swap(x); }
 
     context(const std::string& service, const std::string& username= std::string());
