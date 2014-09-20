@@ -46,7 +46,7 @@ public:
     template<typename NameType, typename ValueType>
     void set(NameType&& name, ValueType&& value)
     {
-        _M_c[std::forward<NameType>(name)]= std::forward<ValueType>(value);
+        insert(std::make_pair(std::forward<NameType>(name), std::forward<ValueType>(value)));
     }
 
     void reset(const name_type& name) { _M_c.erase(name); }
