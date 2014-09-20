@@ -71,7 +71,7 @@ public:
     ssize_t recv(std::string& string, size_t max, bool wait= true);
     ssize_t recv(void* buffer, size_t max, bool wait= true);
 
-    app::desc desc() const { return _M_fd; }
+    app::desc desc() const noexcept { return _M_fd; }
 
 protected:
     app::desc _M_fd= invalid_desc;
