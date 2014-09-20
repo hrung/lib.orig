@@ -22,9 +22,22 @@ namespace app
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-socket::socket(int family, app::type type)
+socket::socket(int family, app::type x)
 {
-    _M_fd= ::socket(family, static_cast<int>(type), 0);
+    int type;
+    switch(x)
+    {
+    case app::type::datagram:
+        type= SOCK_DGRAM;
+        break;
+    case app::type::stream:
+        type= SOCK_STREAM;
+        break;
+    default:
+        throw std::runtime_error("socket_base::socket_base(): unsupported type");
+    }
+
+    _M_fd= ::socket(family, type, 0);
     if(_M_fd == invalid_desc) throw errno_error();
 }
 
