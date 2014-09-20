@@ -121,15 +121,11 @@ public:
     const_reference operator[](const std::string& name) const { return attribute(name); }
 
     ////////////////////
-    std::pair<iterator,bool> insert(const value_type& x) { return _M_c.insert(x); }
-    std::pair<iterator,bool> insert(value_type&& x) { return _M_c.insert(std::move(x)); }
-    void insert(std::initializer_list<value_type> x) { _M_c.insert(x); }
+    using container::insert;
+    using container::erase;
 
-    size_type remove(const value_type& value) { return _M_c.erase(value); }
-    size_type remove(const std::string& name) { return _M_c.erase(value_type(name)); }
-
-    iterator remove(const_iterator ri_0, iterator ri_1) { return _M_c.erase(ri_0, ri_1); }
-    iterator remove(iterator ri) { return _M_c.erase(ri); }
+    size_type erase(const value_type& value) { return _M_c.erase(value); }
+    size_type erase(const std::string& name) { return _M_c.erase(value_type(name)); }
 
     ////////////////////
     iterator find(const value_type& value) { return _M_c.find(value); }
