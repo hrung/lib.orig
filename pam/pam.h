@@ -73,8 +73,8 @@ public:
     bool valid() const noexcept { return _M_pamh; }
 
     std::string get(pam::item, bool* found= nullptr);
-    void set(pam::item, const std::string& value);
-    void reset(pam::item);
+    void insert(pam::item, const std::string& value);
+    void erase(pam::item);
 
     void set_user_func(user_func x)   noexcept { _M_user=x; }
     void set_pass_func(pass_func x)   noexcept { _M_pass=x; }
@@ -82,8 +82,8 @@ public:
     void set_error_func(error_func x) noexcept { _M_error=x; }
 
     std::string get(const std::string& name, bool* found= nullptr);
-    void set(const std::string& name, const std::string& value);
-    void reset(const std::string& name);
+    void insert(const std::string& name, const std::string& value);
+    void erase(const std::string& name);
 
     app::environ environ();
 
