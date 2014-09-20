@@ -15,16 +15,16 @@ enum uncertain_t { uncertain };
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct tern
 {
-    tern(): value(uncertain_value) { }
-    tern(bool x): value(x? true_value: false_value) { }
-    tern(uncertain_t): value(uncertain_value) { }
+    constexpr tern() noexcept: value(uncertain_value) { }
+    constexpr tern(bool x) noexcept: value(x? true_value: false_value) { }
+    constexpr tern(uncertain_t) noexcept: value(uncertain_value) { }
 
-    operator bool() const { return value == true_value; }
+    constexpr operator bool() const noexcept { return value == true_value; }
 
     enum value_type { false_value, true_value, uncertain_value } value;
 
-    bool uncertain() const { return value == uncertain_value; }
-    static bool uncertain(tern x) { return x.value == tern::uncertain_value; }
+    constexpr bool uncertain() const noexcept { return value == uncertain_value; }
+    static constexpr bool uncertain(tern x) noexcept { return x.value == tern::uncertain_value; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@ struct tern
 /// true        true
 /// uncertain   uncertain
 ///
-inline tern operator!(tern x)
+constexpr inline tern operator!(tern x) noexcept
 {
     return x.value == tern::false_value? tern(true):
         x.value == tern::true_value? tern(false):
@@ -54,7 +54,7 @@ inline tern operator!(tern x)
 /// uncertain   true        uncertain
 /// uncertain   uncertain   uncertain
 ///
-inline tern operator&&(tern x, tern y)
+inline tern operator&&(tern x, tern y) noexcept
 {
     if(x.value == tern::true_value)
         return y;
@@ -63,11 +63,11 @@ inline tern operator&&(tern x, tern y)
     else return tern(uncertain);
 }
 
-inline tern operator&&(tern x, bool y) { return y? x: tern(false); }
-inline tern operator&&(bool x, tern y) { return x? y: tern(false); }
+constexpr inline tern operator&&(tern x, bool y) noexcept { return y? x: tern(false); }
+constexpr inline tern operator&&(bool x, tern y) noexcept { return x? y: tern(false); }
 
-inline tern operator&&(uncertain_t, tern x) { return x.value == tern::false_value? tern(false): tern(uncertain); }
-inline tern operator&&(tern x, uncertain_t) { return x.value == tern::false_value? tern(false): tern(uncertain); }
+constexpr inline tern operator&&(uncertain_t, tern x) noexcept { return x.value == tern::false_value? tern(false): tern(uncertain); }
+constexpr inline tern operator&&(tern x, uncertain_t) noexcept { return x.value == tern::false_value? tern(false): tern(uncertain); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /// x           y           x || y
@@ -82,7 +82,7 @@ inline tern operator&&(tern x, uncertain_t) { return x.value == tern::false_valu
 /// uncertain   true        true
 /// uncertain   uncertain   uncertain
 ///
-inline tern operator||(tern x, tern y)
+inline tern operator||(tern x, tern y) noexcept
 {
     if(x.value == tern::false_value)
         return y;
@@ -91,11 +91,11 @@ inline tern operator||(tern x, tern y)
     else return tern(uncertain);
 }
 
-inline tern operator||(tern x, bool y) { return y? tern(true): x; }
-inline tern operator||(bool x, tern y) { return x? tern(true): y; }
+constexpr inline tern operator||(tern x, bool y) noexcept { return y? tern(true): x; }
+constexpr inline tern operator||(bool x, tern y) noexcept { return x? tern(true): y; }
 
-inline tern operator||(uncertain_t, tern x) { return x.value == tern::true_value? tern(true): tern(uncertain); }
-inline tern operator||(tern x, uncertain_t) { return x.value == tern::true_value? tern(true): tern(uncertain); }
+constexpr inline tern operator||(uncertain_t, tern x) noexcept { return x.value == tern::true_value? tern(true): tern(uncertain); }
+constexpr inline tern operator||(tern x, uncertain_t) noexcept { return x.value == tern::true_value? tern(true): tern(uncertain); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /// x           y           x == y
@@ -110,11 +110,11 @@ inline tern operator||(tern x, uncertain_t) { return x.value == tern::true_value
 /// uncertain   true        false
 /// uncertain   uncertain   true
 ///
-inline bool operator==(tern x, tern y) { return x.value == y.value; }
-inline bool operator==(tern x, bool y) { return x == tern(y); }
-inline bool operator==(bool x, tern y) { return tern(x) == y; }
-inline bool operator==(uncertain_t, tern y) { return y.uncertain(); }
-inline bool operator==(tern x, uncertain_t) { return x.uncertain(); }
+constexpr inline bool operator==(tern x, tern y) noexcept { return x.value == y.value; }
+constexpr inline bool operator==(tern x, bool y) noexcept { return x == tern(y); }
+constexpr inline bool operator==(bool x, tern y) noexcept { return tern(x) == y; }
+constexpr inline bool operator==(uncertain_t, tern y) noexcept { return y.uncertain(); }
+constexpr inline bool operator==(tern x, uncertain_t) noexcept { return x.uncertain(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /// x           y           x != y
@@ -129,11 +129,11 @@ inline bool operator==(tern x, uncertain_t) { return x.uncertain(); }
 /// uncertain   true        true
 /// uncertain   uncertain   false
 ///
-inline bool operator!=(tern x, tern y) { return x.value != y.value; }
-inline bool operator!=(tern x, bool y) { return x != tern(y); }
-inline bool operator!=(bool x, tern y) { return tern(x) != y; }
-inline bool operator!=(uncertain_t, tern y) { return !y.uncertain(); }
-inline bool operator!=(tern x, uncertain_t) { return !x.uncertain(); }
+constexpr inline bool operator!=(tern x, tern y) noexcept { return x.value != y.value; }
+constexpr inline bool operator!=(tern x, bool y) noexcept { return x != tern(y); }
+constexpr inline bool operator!=(bool x, tern y) noexcept { return tern(x) != y; }
+constexpr inline bool operator!=(uncertain_t, tern y) noexcept { return !y.uncertain(); }
+constexpr inline bool operator!=(tern x, uncertain_t) noexcept { return !x.uncertain(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #endif // TERN_H
