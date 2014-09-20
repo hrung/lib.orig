@@ -22,7 +22,7 @@ namespace app
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct charpp_deleter
 {
-    void operator()(char* args[])
+    void operator()(char* args[]) noexcept
     {
         if(args)
         {
