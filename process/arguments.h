@@ -35,17 +35,8 @@ public:
     arguments& operator=(arguments&&) = default;
 
     ////////////////////
-    void insert(const value_type& x) { _M_c.push_back(x); }
-    void insert(value_type&& x) { _M_c.push_back(std::move(x)); }
-
-    void insert(const arguments& x)
-    {
-        _M_c.insert(end(), x.begin(), x.end());
-    }
-    void insert(std::initializer_list<value_type> x)
-    {
-        _M_c.insert(end(), x);
-    }
+    using container::insert;
+    using container::erase;
 
     ////////////////////
     charpp_ptr to_charpp() const;
