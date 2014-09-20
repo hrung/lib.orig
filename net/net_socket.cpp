@@ -21,10 +21,10 @@ namespace net
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-socket::socket(net::type type): app::socket(AF_INET, type)
+socket::socket(type x): app::socket(AF_INET, x)
 {
-    int x=1;
-    if(setsockopt(_M_fd, SOL_SOCKET, SO_REUSEADDR, &x, sizeof(x))) throw errno_error();
+    int val=1;
+    if(setsockopt(_M_fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val))) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -56,8 +56,8 @@ void socket::connect(net::address address, net::port port)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void socket::set_multicast_loop(bool x)
 {
-    int y= x? 1: 0;
-    if(setsockopt(_M_fd, IPPROTO_IP, IP_MULTICAST_LOOP, &y, sizeof(y))) throw errno_error();
+    int val= x? 1: 0;
+    if(setsockopt(_M_fd, IPPROTO_IP, IP_MULTICAST_LOOP, &val, sizeof(val))) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,8 +69,8 @@ void socket::set_multicast_ttl(int x)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void socket::set_multicast_all(bool x)
 {
-    int y= x? 1: 0;
-    if(setsockopt(_M_fd, IPPROTO_IP, IP_MULTICAST_ALL, &y, sizeof(y))) throw errno_error();
+    int val= x? 1: 0;
+    if(setsockopt(_M_fd, IPPROTO_IP, IP_MULTICAST_ALL, &val, sizeof(val))) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

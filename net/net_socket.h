@@ -23,18 +23,19 @@ namespace net
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 typedef in_port_t port;
 
-using desc = app::desc;
-using type = app::type;
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class socket: public app::socket
 {
+public:
+    typedef app::socket::id id;
+    typedef app::socket::type type;
+
 public:
     socket() noexcept = default;
     socket(const socket&) = delete;
     socket(socket&& x) noexcept { swap(x); }
 
-    socket(net::type);
+    socket(type);
 
     socket& operator=(const socket&) = delete;
     socket& operator=(socket&& x) noexcept

@@ -24,15 +24,14 @@ namespace app
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-typedef int desc;
-constexpr desc invalid_desc= -1;
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-enum class type { stream, datagram };
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 class socket
 {
+public:
+    typedef int id;
+    static constexpr id invalid= -1;
+
+    enum type { stream, datagram };
+
 public:
     socket() noexcept = default;
     socket(const socket&) = delete;
@@ -71,12 +70,12 @@ public:
     ssize_t recv(std::string& string, size_t max, bool wait= true);
     ssize_t recv(void* buffer, size_t max, bool wait= true);
 
-    app::desc desc() const noexcept { return _M_fd; }
+    socket::id get_id() const noexcept { return _M_fd; }
 
 protected:
-    app::desc _M_fd= invalid_desc;
+    id _M_fd= invalid;
 
-    socket(int family, app::type);
+    socket(int family, type);
 
     bool can_recv(std::chrono::seconds, std::chrono::nanoseconds);
 
