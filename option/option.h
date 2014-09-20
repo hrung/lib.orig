@@ -110,6 +110,14 @@ public:
     { }
 
     ///////////////////
+    option() = default;
+    option(const option&) = default;
+    option(option&&) = default;
+
+    option& operator=(const option&) = default;
+    option& operator=(option&&) = default;
+
+    ///////////////////
     std::string longname() const { return _M_longname; }
     char name()    const { return _M_name; }
 
@@ -158,7 +166,13 @@ class options: public container<std::vector<option>>
 {
 public:
     options() = default;
-    options(std::initializer_list<value_type> option) { for(const_reference ri: option) insert(ri); }
+    options(const options&) = default;
+    options(options&&) = default;
+
+    options(std::initializer_list<value_type> x) { insert(x); }
+
+    options& operator=(const options&) = default;
+    options& operator=(options&&) = default;
 
     ////////////////////
     reference operator[](size_type n) { return _M_c.at(n); }
@@ -193,6 +207,10 @@ public:
     ////////////////////
     void insert(const value_type& option) { _M_c.push_back(option); }
     void insert(value_type&& option) { _M_c.push_back(std::move(option)); }
+    void insert(std::initializer_list<value_type> x)
+    {
+        _M_c.insert(end(), x);
+    }
 
     template<typename... Args>
     void emplace(Args&&... args) { _M_c.emplace_back(std::forward<Args>(args)...); }
