@@ -67,11 +67,11 @@ public:
     }
 
     ////////////////////
-    const std::string& name() const { return _M_name; }
+    const std::string& name() const noexcept { return _M_name; }
 
     bool running() { return _M_process.running(); }
 
-    x11::display display() const { return _M_display; }
+    x11::display display() const noexcept { return _M_display; }
 
     void set_cookie(const std::string& path);
 
