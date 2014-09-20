@@ -39,7 +39,7 @@ environ environ::from_charpp(char* args[], bool free)
             std::string x= *ri;
             auto pos= x.find_first_of('=');
 
-            if(pos != std::string::npos) e.set(x.substr(0, pos), x.substr(pos+1));
+            if(pos != std::string::npos) e.insert(x.substr(0, pos), x.substr(pos+1));
             if(free) ::free(*ri);
         }
         if(free) ::free(args);
@@ -61,14 +61,14 @@ value_type get(const name_type& name, bool* found) noexcept
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void set(const name_type& name, const value_type& value, bool over)
+void insert(const name_type& name, const value_type& value, bool over)
 {
     auto n= clone(name), v= clone(value);
     if(setenv(n.get(), v.get(), over)) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void reset(const std::string& name)
+void erase(const std::string& name)
 {
     if(unsetenv(name.data())) throw errno_error();
 }
