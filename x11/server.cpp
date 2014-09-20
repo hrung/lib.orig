@@ -57,7 +57,7 @@ server::server(const std::string& name, const std::string& server_auth, const ap
     _M_name(name)
 {
     set_cookie(server_auth);
-    this_environ::set("XAUTHORITY", server_auth);
+    this_environ::insert("XAUTHORITY", server_auth);
 
     arguments xorg_args;
     xorg_args.insert(name);
