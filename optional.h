@@ -84,13 +84,13 @@ struct optional
     }
 
     ////////////////////
-    const value_type* operator->() const { return &_M_value; }
-    value_type* operator->() { return &_M_value; }
+    const value_type* operator->() const noexcept { return &_M_value; }
+    value_type* operator->() noexcept { return &_M_value; }
 
-    const value_type& operator*() const { return _M_value; }
-    value_type& operator*() { return _M_value; }
+    const value_type& operator*() const noexcept { return _M_value; }
+    value_type& operator*() noexcept { return _M_value; }
 
-    bool is_none() const { return _M_none; }
+    bool is_none() const noexcept { return _M_none; }
 
 private:
     value_type _M_value;
@@ -98,11 +98,11 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-template<typename T> inline bool operator==(const optional<T>& x, none_t) { return  x.is_none(); }
-template<typename T> inline bool operator==(none_t, const optional<T>& x) { return  x.is_none(); }
+template<typename T> inline bool operator==(const optional<T>& x, none_t) noexcept { return  x.is_none(); }
+template<typename T> inline bool operator==(none_t, const optional<T>& x) noexcept { return  x.is_none(); }
 
-template<typename T> inline bool operator!=(none_t, const optional<T>& x) { return !x.is_none(); }
-template<typename T> inline bool operator!=(const optional<T>& x, none_t) { return !x.is_none(); }
+template<typename T> inline bool operator!=(none_t, const optional<T>& x) noexcept { return !x.is_none(); }
+template<typename T> inline bool operator!=(const optional<T>& x, none_t) noexcept { return !x.is_none(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T>
