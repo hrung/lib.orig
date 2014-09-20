@@ -33,6 +33,13 @@ public:
     typedef typename container_type::mapped_type value_type;
 
 public:
+    environ() = default;
+    environ(const environ&) = default;
+    environ(environ&&) = default;
+
+    environ& operator=(const environ&) = default;
+    environ& operator=(environ&&) = default;
+
     value_type& get(const name_type& name) { return _M_c.at(name); }
     const value_type& get(const name_type& name) const { return _M_c.at(name); }
 
