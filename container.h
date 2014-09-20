@@ -10,6 +10,28 @@
 #define CONTAINER_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+#include <type_traits>
+#include <utility>
+#include <initializer_list>
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+#include <vector>
+
+template<typename T, typename Alloc = typename T::allocator_type>
+struct is_vector: public std::false_type
+{ };
+
+template<typename T, typename Alloc>
+struct is_vector<std::vector<T, Alloc>, Alloc>: public std::true_type
+{ };
+
+template<typename T>
+using if_vector = typename std::enable_if<is_vector<T>::value>::type;
+
+template<typename T>
+using if_not_vector = typename std::enable_if<!is_vector<T>::value>::type;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T>
 class container
 {
@@ -56,6 +78,36 @@ public:
 
     const_reverse_iterator crbegin() const noexcept { return _M_c.rbegin(); }
     const_reverse_iterator crend() const noexcept { return _M_c.rend(); }
+
+    ////////////////////
+    template<typename U = T, if_not_vector<U>* = nullptr>
+    iterator insert(const value_type& x) { return _M_c.insert(x); }
+
+    template<typename U = T, if_not_vector<U>* = nullptr>
+    iterator insert(value_type&& x) { return _M_c.insert(std::move(x)); }
+
+    template<typename U = T, if_not_vector<U>* = nullptr>
+    void insert(std::initializer_list<value_type> x) { _M_c.insert(x); }
+
+    template<typename U = T, if_not_vector<U>* = nullptr>
+    void insert(const container& x) { _M_c.insert(x.begin(), x.end()); }
+
+    ////////////////////
+    template<typename U = T, if_vector<U>* = nullptr>
+    iterator insert(const value_type& x) { return _M_c.insert(end(), x); }
+
+    template<typename U = T, if_vector<U>* = nullptr>
+    iterator insert(value_type&& x) { return _M_c.insert(end(), std::move(x)); }
+
+    template<typename U = T, if_vector<U>* = nullptr>
+    void insert(std::initializer_list<value_type> x) { _M_c.insert(end(), x); }
+
+    template<typename U = T, if_vector<U>* = nullptr>
+    void insert(const container& x) { _M_c.insert(end(), x.begin(), x.end()); }
+
+    ////////////////////
+    iterator erase(const_iterator ri_0, const_iterator ri_1) { return _M_c.erase(ri_0, ri_1); }
+    iterator erase(const_iterator ri) { return _M_c.erase(ri); }
 
     ////////////////////
     template<typename U>
