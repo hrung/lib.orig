@@ -44,13 +44,13 @@ public:
         _M_name(std::move(name)), _M_value(std::move(value))
     { }
 
-    std::string& name() { return _M_name; }
-    const std::string& name() const { return _M_name; }
+    std::string& name() noexcept { return _M_name; }
+    const std::string& name() const noexcept { return _M_name; }
 
-    std::string& value() { return _M_value; }
-    const std::string& value() const { return _M_value; }
+    std::string& value() noexcept { return _M_value; }
+    const std::string& value() const noexcept { return _M_value; }
 
-    bool empty_attribute() const { return _M_name.empty() && _M_value.empty(); }
+    bool empty_attribute() const noexcept { return _M_name.empty() && _M_value.empty(); }
 
     void validate() const
     {
@@ -100,8 +100,8 @@ public:
     { insert(attributes); }
 
     ////////////////////
-    const std::string name() const { return _M_name; }
-    bool empty_tag() const { return _M_name.empty() && _M_c.empty(); }
+    const std::string& name() const noexcept { return _M_name; }
+    bool empty_tag() const noexcept { return _M_name.empty() && _M_c.empty(); }
 
     ////////////////////
     reference attribute(const std::string& name)
@@ -187,17 +187,17 @@ public:
     { }
 
     ////////////////////
-    std::string name() const { return _M_tag.name(); }
+    const std::string& name() const noexcept { return _M_tag.name(); }
     std::string value() const;
 
-    xml::tag& tag() { return _M_tag; }
-    const xml::tag& tag() const { return _M_tag; }
+    xml::tag& tag() noexcept { return _M_tag; }
+    const xml::tag& tag() const noexcept { return _M_tag; }
 
-    xml::elements& children() { return _M_children; }
-    const xml::elements& children() const { return _M_children; }
+    xml::elements& children() noexcept { return _M_children; }
+    const xml::elements& children() const noexcept { return _M_children; }
 
-    bool empty_element() const { return _M_tag.empty_tag() && _M_children.empty() && _M_value.empty(); }
-    bool complex() const { return !_M_children.empty(); }
+    bool empty_element() const noexcept { return _M_tag.empty_tag() && _M_children.empty() && _M_value.empty(); }
+    bool complex() const noexcept { return !_M_children.empty(); }
 
     bool make_simple();
 
