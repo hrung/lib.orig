@@ -81,10 +81,10 @@ public:
 
     ////////////////////
     template<typename U = T, if_not_vector<U>* = nullptr>
-    iterator insert(const value_type& x) { return _M_c.insert(x); }
+    void insert(const value_type& x) { _M_c.insert(x); }
 
     template<typename U = T, if_not_vector<U>* = nullptr>
-    iterator insert(value_type&& x) { return _M_c.insert(std::move(x)); }
+    void insert(value_type&& x) { _M_c.insert(std::move(x)); }
 
     template<typename U = T, if_not_vector<U>* = nullptr>
     void insert(std::initializer_list<value_type> x) { _M_c.insert(x); }
@@ -94,10 +94,10 @@ public:
 
     ////////////////////
     template<typename U = T, if_vector<U>* = nullptr>
-    iterator insert(const value_type& x) { return _M_c.insert(end(), x); }
+    void insert(const value_type& x) { _M_c.push_back(x); }
 
     template<typename U = T, if_vector<U>* = nullptr>
-    iterator insert(value_type&& x) { return _M_c.insert(end(), std::move(x)); }
+    void insert(value_type&& x) { _M_c.push_back(std::move(x)); }
 
     template<typename U = T, if_vector<U>* = nullptr>
     void insert(std::initializer_list<value_type> x) { _M_c.insert(end(), x); }
