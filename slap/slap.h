@@ -109,8 +109,8 @@ public:
     attribute& operator=(attribute&&) = default;
 
     ////////////////////
-    const std::string& name() const { return _M_name; }
-    slap::operation operation() const { return _M_operation; }
+    const std::string& name() const noexcept { return _M_name; }
+    slap::operation operation() const noexcept { return _M_operation; }
 
     ////////////////////
     reference value(size_type n=0) { return _M_c.at(n); }
@@ -203,7 +203,7 @@ public:
     entry& operator=(entry&&) = default;
 
     ////////////////////
-    const std::string& dn() const { return _M_dn; }
+    const std::string& dn() const noexcept { return _M_dn; }
 
     ////////////////////
     reference attribute(const std::string& name)
