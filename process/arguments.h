@@ -26,7 +26,13 @@ class arguments: public container<std::vector<std::string>>
 {
 public:
     arguments() = default;
-    arguments(std::initializer_list<value_type> x) { _M_c=x; }
+    arguments(const arguments&) = default;
+    arguments(arguments&&) = default;
+
+    arguments(std::initializer_list<value_type> x) { insert(x); }
+
+    arguments& operator=(const arguments&) = default;
+    arguments& operator=(arguments&&) = default;
 
     ////////////////////
     void insert(const value_type& x) { _M_c.push_back(x); }
