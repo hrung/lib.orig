@@ -205,21 +205,11 @@ public:
     }
 
     ////////////////////
-    void insert(const value_type& option) { _M_c.push_back(option); }
-    void insert(value_type&& option) { _M_c.push_back(std::move(option)); }
-    void insert(std::initializer_list<value_type> x)
-    {
-        _M_c.insert(end(), x);
-    }
-
-    template<typename... Args>
-    void emplace(Args&&... args) { _M_c.emplace_back(std::forward<Args>(args)...); }
+    using container::insert;
+    using container::erase;
 
     iterator erase(const std::string& longname) { return _M_c.erase(find(longname)); }
     iterator erase(const char name) { return _M_c.erase(find(name)); }
-
-    iterator erase(const_iterator ri_0, const_iterator ri_1) { return _M_c.erase(ri_0, ri_1); }
-    iterator erase(const_iterator ri) { return _M_c.erase(ri); }
 
     ////////////////////
     iterator find(const std::string& longname)
