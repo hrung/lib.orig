@@ -59,8 +59,8 @@ struct exit_code
     static constexpr int none= -1;
 
     exit_code() noexcept = default;
-    exit_code(int code): _M_code(code) { }
-    exit_code(app::signal term): _M_term(term) { }
+    exit_code(int code) noexcept: _M_code(code) { }
+    exit_code(app::signal term) noexcept: _M_term(term) { }
 
     int code() const noexcept { return _M_code; }
     signal term() const noexcept { return _M_term; }

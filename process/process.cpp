@@ -35,7 +35,7 @@ process::~process()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-static inline void discard(int fd)
+static inline void discard(int fd) noexcept
 {
     if(fd != -1)
     {
@@ -44,7 +44,7 @@ static inline void discard(int fd)
     }
 }
 
-static inline void discard(int fd[2])
+static inline void discard(int fd[2]) noexcept
 {
     discard(fd[0]);
     discard(fd[1]);
