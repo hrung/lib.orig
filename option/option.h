@@ -44,23 +44,26 @@ public:
     /// \example option("bar", "Option bar");
     /// \example option('b', "Option baz", true);
     ///
-    option(const std::string& long_name, const char name, const std::string& description, const bool once= false):
-        _M_long(long_name), _M_name(name), _M_once(once), _M_desc(description)
+    template<typename LongNameType, typename DescriptionType>
+    option(LongNameType&& long_name, const char name, DescriptionType&& description, const bool once= false):
+        _M_long(std::forward<LongNameType>(long_name)),
+        _M_name(name),
+        _M_once(once),
+        _M_desc(std::forward<DescriptionType>(description))
     { }
-    option(std::string&& long_name, const char name, std::string&& description, const bool once= false):
-        _M_long(std::move(long_name)), _M_name(name), _M_once(once), _M_desc(std::move(description))
+
+    template<typename LongNameType, typename DescriptionType>
+    option(LongNameType&& long_name, DescriptionType&& description, const bool once= false):
+        _M_long(std::forward<LongNameType>(long_name)),
+        _M_once(once),
+        _M_desc(std::forward<DescriptionType>(description))
     { }
-    option(const std::string& long_name, const std::string& description, const bool once= false):
-        _M_long(long_name), _M_once(once), _M_desc(description)
-    { }
-    option(std::string&& long_name, std::string&& description, const bool once= false):
-        _M_long(std::move(long_name)), _M_once(once), _M_desc(std::move(description))
-    { }
-    option(const char name, const std::string& description, const bool once= false):
-        _M_name(name), _M_once(once), _M_desc(description)
-    { }
-    option(const char name, std::string&& description, const bool once= false):
-        _M_name(name), _M_once(once), _M_desc(std::move(description))
+
+    template<typename DescriptionType>
+    option(const char name, DescriptionType&& description, const bool once= false):
+        _M_name(name),
+        _M_once(once),
+        _M_desc(std::forward<DescriptionType>(description))
     { }
 
     ////////////////////
@@ -78,35 +81,32 @@ public:
     /// \example bool arg2;        option("bar", "Option bar", arg2);
     /// \example string arg3;      option('b', "Option baz", arg3, optional);
     ///
-    template<typename T>
-    option(const std::string& long_name, const char name, const std::string& description, T& value, const tern arg= true):
-        _M_long(long_name), _M_name(name), _M_arg(arg? true: uncertain), _M_once(_M_Arg<T>::once), _M_desc(description),
-        _M_assign(std::bind(_M_Arg<T>::assign, std::ref(value), std::placeholders::_1))
+    template<typename LongNameType, typename DescriptionType, typename ValueType>
+    option(LongNameType&& long_name, const char name, DescriptionType&& description, ValueType& value, const tern arg= true):
+        _M_long(std::forward<LongNameType>(long_name)),
+        _M_name(name),
+        _M_arg(arg? true: uncertain),
+        _M_once(_M_Arg<ValueType>::once),
+        _M_desc(std::forward<DescriptionType>(description)),
+        _M_assign(std::bind(_M_Arg<ValueType>::assign, std::ref(value), std::placeholders::_1))
     { }
-    template<typename T>
-    option(std::string&& long_name, const char name, std::string&& description, T& value, const tern arg= true):
-        _M_long(std::move(long_name)), _M_name(name), _M_arg(arg? true: uncertain), _M_once(_M_Arg<T>::once), _M_desc(std::move(description)),
-        _M_assign(std::bind(_M_Arg<T>::assign, std::ref(value), std::placeholders::_1))
+
+    template<typename LongNameType, typename DescriptionType, typename ValueType>
+    option(LongNameType&& long_name, DescriptionType&& description, ValueType& value, const tern arg= true):
+        _M_long(std::forward<LongNameType>(long_name)),
+        _M_arg(arg? true: uncertain),
+        _M_once(_M_Arg<ValueType>::once),
+        _M_desc(std::forward<DescriptionType>(description)),
+        _M_assign(std::bind(_M_Arg<ValueType>::assign, std::ref(value), std::placeholders::_1))
     { }
-    template<typename T>
-    option(const std::string& long_name, const std::string& description, T& value, const tern arg= true):
-        _M_long(long_name), _M_arg(arg? true: uncertain), _M_once(_M_Arg<T>::once), _M_desc(description),
-        _M_assign(std::bind(_M_Arg<T>::assign, std::ref(value), std::placeholders::_1))
-    { }
-    template<typename T>
-    option(std::string&& long_name, std::string&& description, T& value, const tern arg= true):
-        _M_long(std::move(long_name)), _M_arg(arg? true: uncertain), _M_once(_M_Arg<T>::once), _M_desc(std::move(description)),
-        _M_assign(std::bind(_M_Arg<T>::assign, std::ref(value), std::placeholders::_1))
-    { }
-    template<typename T>
-    option(const char name, const std::string& description, T& value, const tern arg= true):
-        _M_name(name), _M_arg(arg? true: uncertain), _M_once(_M_Arg<T>::once), _M_desc(description),
-        _M_assign(std::bind(_M_Arg<T>::assign, std::ref(value), std::placeholders::_1))
-    { }
-    template<typename T>
-    option(const char name, std::string&& description, T& value, const tern arg= true):
-        _M_name(name), _M_arg(arg? true: uncertain), _M_once(_M_Arg<T>::once), _M_desc(std::move(description)),
-        _M_assign(std::bind(_M_Arg<T>::assign, std::ref(value), std::placeholders::_1))
+
+    template<typename DescriptionType, typename ValueType>
+    option(const char name, DescriptionType&& description, ValueType& value, const tern arg= true):
+        _M_name(name),
+        _M_arg(arg? true: uncertain),
+        _M_once(_M_Arg<ValueType>::once),
+        _M_desc(std::forward<DescriptionType>(description)),
+        _M_assign(std::bind(_M_Arg<ValueType>::assign, std::ref(value), std::placeholders::_1))
     { }
 
     ///////////////////
