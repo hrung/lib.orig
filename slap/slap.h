@@ -153,16 +153,19 @@ public:
     iterator erase(const value_type& value) { return _M_c.erase(find(value)); }
 
     ////////////////////
-    iterator find(const value_type& value)
+    iterator find(const value_type& value, iterator from)
     {
-        for(auto ri= begin(); ri!=end(); ++ri) if(value == *ri) return ri;
+        for(iterator ri= from; ri != end(); ++ri) if(value == *ri) return ri;
         return end();
     }
-    const_iterator find(const value_type& value) const
+    iterator find(const value_type& value) { return find(value, begin()); }
+
+    const_iterator find(const value_type& value, const_iterator from) const
     {
-        for(auto ri= begin(); ri!=end(); ++ri) if(value == *ri) return ri;
+        for(const_iterator ri= from; ri!=end(); ++ri) if(value == *ri) return ri;
         return end();
     }
+    const_iterator find(const value_type& value) const { return find(value, begin()); }
 
 private:
     std::string _M_name;
