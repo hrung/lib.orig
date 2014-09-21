@@ -177,12 +177,12 @@ public:
     void detach() noexcept { _M_active= false; }
 
     template<typename Rep, typename Period>
-    bool wait_for(const std::chrono::duration<Rep, Period>& t)
+    bool can_join(const std::chrono::duration<Rep, Period>& x)
     {
-        std::chrono::seconds s= std::chrono::duration_cast<std::chrono::seconds>(t);
-        std::chrono::nanoseconds ns= std::chrono::duration_cast<std::chrono::nanoseconds>(t - s);
+        std::chrono::seconds s= std::chrono::duration_cast<std::chrono::seconds>(x);
+        std::chrono::nanoseconds n= std::chrono::duration_cast<std::chrono::nanoseconds>(x - s);
 
-        return wait_for(s, ns);
+        return can_join(s, n);
     }
     void join();
 
@@ -199,7 +199,7 @@ protected:
 
     void _M_process(std::function<int()>, bool group, redir_flags flags);
 
-    bool wait_for(std::chrono::seconds, std::chrono::nanoseconds);
+    bool can_join(std::chrono::seconds, std::chrono::nanoseconds);
     void set_code(int code);
 };
 
@@ -229,12 +229,12 @@ exit_code execute(const std::string& command);
 namespace internal { void sleep_for(std::chrono::seconds, std::chrono::nanoseconds); }
 
 template<typename Rep, typename Period>
-inline void sleep_for(const std::chrono::duration<Rep, Period>& t)
+inline void sleep_for(const std::chrono::duration<Rep, Period>& x)
 {
-    std::chrono::seconds s= std::chrono::duration_cast<std::chrono::seconds>(t);
-    std::chrono::nanoseconds ns= std::chrono::duration_cast<std::chrono::nanoseconds>(t - s);
+    std::chrono::seconds s= std::chrono::duration_cast<std::chrono::seconds>(x);
+    std::chrono::nanoseconds n= std::chrono::duration_cast<std::chrono::nanoseconds>(x - s);
 
-    internal::sleep_for(s, ns);
+    internal::sleep_for(s, n);
 }
 
 template<typename Clock, typename Duration>

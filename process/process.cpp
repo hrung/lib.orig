@@ -30,7 +30,7 @@ process::~process()
     if(running())
     {
         terminate();
-        if(!wait_for(std::chrono::seconds(3))) kill();
+        if(!can_join(std::chrono::seconds(3))) kill();
     }
 }
 
@@ -184,7 +184,7 @@ static void handler(int)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool process::wait_for(std::chrono::seconds s, std::chrono::nanoseconds ns)
+bool process::can_join(std::chrono::seconds s, std::chrono::nanoseconds n)
 {
     if(running())
     {
@@ -195,14 +195,10 @@ bool process::wait_for(std::chrono::seconds s, std::chrono::nanoseconds ns)
 
         if(sigaction(int(app::signal::child), &sa_new, &sa_old)) throw errno_error();
 
-        struct timespec x=
-        {
-            static_cast<std::time_t>(s.count()),
-            static_cast<long>(ns.count())
-        };
+        timespec time= { static_cast<std::time_t>(s.count()), static_cast<long>(n.count()) };
 
         bool value= false;
-        while(nanosleep(&x, &x) == -1)
+        while(nanosleep(&time, &time) == -1)
         {
             if(std::errc(errno) == std::errc::interrupted)
             {
@@ -293,15 +289,11 @@ exit_code execute(const std::string& command)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void internal::sleep_for(std::chrono::seconds s, std::chrono::nanoseconds ns)
+void internal::sleep_for(std::chrono::seconds s, std::chrono::nanoseconds n)
 {
-    struct timespec x=
-    {
-        static_cast<std::time_t>(s.count()),
-        static_cast<long>(ns.count())
-    };
+    timespec time= { static_cast<std::time_t>(s.count()), static_cast<long>(n.count()) };
 
-    nanosleep(&x, nullptr);
+    nanosleep(&time, nullptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
