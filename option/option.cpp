@@ -49,10 +49,10 @@ void options::parse(int argc, char* argv[], int& index)
         }
         else code= unique++;
 
-        int length= option.longname().size();
+        int length= option.long_name().size();
         if(length)
         {
-            long_opt_name.push_back(clone(option.longname()));
+            long_opt_name.push_back(clone(option.long_name()));
 
             long_opt.push_back({ long_opt_name.back().get(),
                 option.arg()==uncertain? optional_argument: option.arg()? required_argument: no_argument,
@@ -114,15 +114,15 @@ std::string options::usage()
     {
         stream << setw(8) << right;
         if(option.name())
-            stream << std::string("-")+ option.name()+ (option.longname().size()? ", ": "  ");
+            stream << std::string("-")+ option.name()+ (option.long_name().size()? ", ": "  ");
         else stream << ' ';
 
         stream << setw(20) << left;
-        if(option.longname().size())
-            stream << std::string("--")+ option.longname()+ (option.arg()==uncertain? "[=arg]": option.arg()? "=<arg>": "");
+        if(option.long_name().size())
+            stream << std::string("--")+ option.long_name()+ (option.arg()==uncertain? "[=arg]": option.arg()? "=<arg>": "");
         else stream << ' ';
 
-        stream << option.desc() << std::endl;
+        stream << option.description() << std::endl;
     }
 
     return stream.str();

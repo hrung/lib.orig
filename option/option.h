@@ -33,10 +33,10 @@ class option
 public:
     ////////////////////
     ///
-    /// \param longname long name (eg, --foo)
-    /// \param name     short name (eg, -f)
-    /// \param desc     description
-    /// \param once     this option can only be specified once
+    /// \param long_name    long name (eg, --foo)
+    /// \param name         short name (eg, -f)
+    /// \param description  description
+    /// \param once         this option can only be specified once
     ///
     /// option constuctor (for options without argument)
     ///
@@ -44,33 +44,33 @@ public:
     /// \example option("bar", "Option bar");
     /// \example option('b', "Option baz", true);
     ///
-    option(const std::string& longname, const char name, const std::string& desc, const bool once= false):
-        _M_longname(longname), _M_name(name), _M_once(once), _M_desc(desc)
+    option(const std::string& long_name, const char name, const std::string& description, const bool once= false):
+        _M_long(long_name), _M_name(name), _M_once(once), _M_desc(description)
     { }
-    option(std::string&& longname, const char name, std::string&& desc, const bool once= false):
-        _M_longname(std::move(longname)), _M_name(name), _M_once(once), _M_desc(std::move(desc))
+    option(std::string&& long_name, const char name, std::string&& description, const bool once= false):
+        _M_long(std::move(long_name)), _M_name(name), _M_once(once), _M_desc(std::move(description))
     { }
-    option(const std::string& longname, const std::string& desc, const bool once= false):
-        _M_longname(longname), _M_once(once), _M_desc(desc)
+    option(const std::string& long_name, const std::string& description, const bool once= false):
+        _M_long(long_name), _M_once(once), _M_desc(description)
     { }
-    option(std::string&& longname, std::string&& desc, const bool once= false):
-        _M_longname(std::move(longname)), _M_once(once), _M_desc(std::move(desc))
+    option(std::string&& long_name, std::string&& description, const bool once= false):
+        _M_long(std::move(long_name)), _M_once(once), _M_desc(std::move(description))
     { }
-    option(const char name, const std::string& desc, const bool once= false):
-        _M_name(name), _M_once(once), _M_desc(desc)
+    option(const char name, const std::string& description, const bool once= false):
+        _M_name(name), _M_once(once), _M_desc(description)
     { }
-    option(const char name, std::string&& desc, const bool once= false):
-        _M_name(name), _M_once(once), _M_desc(std::move(desc))
+    option(const char name, std::string&& description, const bool once= false):
+        _M_name(name), _M_once(once), _M_desc(std::move(description))
     { }
 
     ////////////////////
     ///
-    /// \param longname long name (eg, --foo)
-    /// \param name     short name (eg, -f)
-    /// \param desc     description
-    /// \param value    variable to store the value of the argument
-    ///                 (if the variable is of type vector<T>, the option can be specified more than once)
-    /// \param arg      whether option has an argument (must be one of false, true or optional)
+    /// \param long_name    long name (eg, --foo)
+    /// \param name         short name (eg, -f)
+    /// \param description  description
+    /// \param value        variable to store the value of the argument
+    ///                     (if the variable is of type vector<T>, the option can be specified more than once)
+    /// \param arg          whether option has an argument (must be one of false, true or optional)
     ///
     /// option constuctor
     ///
@@ -79,33 +79,33 @@ public:
     /// \example string arg3;      option('b', "Option baz", arg3, optional);
     ///
     template<typename T>
-    option(const std::string& longname, const char name, const std::string& desc, T& value, const tern arg= true):
-        _M_longname(longname), _M_name(name), _M_arg(arg? true: uncertain), _M_once(_M_Arg<T>::once), _M_desc(desc),
+    option(const std::string& long_name, const char name, const std::string& description, T& value, const tern arg= true):
+        _M_long(long_name), _M_name(name), _M_arg(arg? true: uncertain), _M_once(_M_Arg<T>::once), _M_desc(description),
         _M_assign(std::bind(_M_Arg<T>::assign, std::ref(value), std::placeholders::_1))
     { }
     template<typename T>
-    option(std::string&& longname, const char name, std::string&& desc, T& value, const tern arg= true):
-        _M_longname(std::move(longname)), _M_name(name), _M_arg(arg? true: uncertain), _M_once(_M_Arg<T>::once), _M_desc(std::move(desc)),
+    option(std::string&& long_name, const char name, std::string&& description, T& value, const tern arg= true):
+        _M_long(std::move(long_name)), _M_name(name), _M_arg(arg? true: uncertain), _M_once(_M_Arg<T>::once), _M_desc(std::move(description)),
         _M_assign(std::bind(_M_Arg<T>::assign, std::ref(value), std::placeholders::_1))
     { }
     template<typename T>
-    option(const std::string& longname, const std::string& desc, T& value, const tern arg= true):
-        _M_longname(longname), _M_arg(arg? true: uncertain), _M_once(_M_Arg<T>::once), _M_desc(desc),
+    option(const std::string& long_name, const std::string& description, T& value, const tern arg= true):
+        _M_long(long_name), _M_arg(arg? true: uncertain), _M_once(_M_Arg<T>::once), _M_desc(description),
         _M_assign(std::bind(_M_Arg<T>::assign, std::ref(value), std::placeholders::_1))
     { }
     template<typename T>
-    option(std::string&& longname, std::string&& desc, T& value, const tern arg= true):
-        _M_longname(std::move(longname)), _M_arg(arg? true: uncertain), _M_once(_M_Arg<T>::once), _M_desc(std::move(desc)),
+    option(std::string&& long_name, std::string&& description, T& value, const tern arg= true):
+        _M_long(std::move(long_name)), _M_arg(arg? true: uncertain), _M_once(_M_Arg<T>::once), _M_desc(std::move(description)),
         _M_assign(std::bind(_M_Arg<T>::assign, std::ref(value), std::placeholders::_1))
     { }
     template<typename T>
-    option(const char name, const std::string& desc, T& value, const tern arg= true):
-        _M_name(name), _M_arg(arg? true: uncertain), _M_once(_M_Arg<T>::once), _M_desc(desc),
+    option(const char name, const std::string& description, T& value, const tern arg= true):
+        _M_name(name), _M_arg(arg? true: uncertain), _M_once(_M_Arg<T>::once), _M_desc(description),
         _M_assign(std::bind(_M_Arg<T>::assign, std::ref(value), std::placeholders::_1))
     { }
     template<typename T>
-    option(const char name, std::string&& desc, T& value, const tern arg= true):
-        _M_name(name), _M_arg(arg? true: uncertain), _M_once(_M_Arg<T>::once), _M_desc(std::move(desc)),
+    option(const char name, std::string&& description, T& value, const tern arg= true):
+        _M_name(name), _M_arg(arg? true: uncertain), _M_once(_M_Arg<T>::once), _M_desc(std::move(description)),
         _M_assign(std::bind(_M_Arg<T>::assign, std::ref(value), std::placeholders::_1))
     { }
 
@@ -118,21 +118,21 @@ public:
     option& operator=(option&&) = default;
 
     ///////////////////
-    std::string longname() const { return _M_longname; }
-    char name()    const { return _M_name; }
+    const std::string& long_name() const noexcept { return _M_long; }
+    char name() const noexcept { return _M_name; }
 
-    tern arg()     const { return _M_arg; }
-    bool has_arg() const { return _M_has_arg; }
+    tern arg() const noexcept { return _M_arg; }
+    bool has_arg() const noexcept { return _M_has_arg; }
 
-    bool once()    const { return _M_once; }
-    int count()    const { return _M_count; }
+    bool once() const noexcept { return _M_once; }
+    int count() const noexcept { return _M_count; }
 
-    std::string desc() const { return _M_desc; }
+    const std::string& description() const noexcept { return _M_desc; }
 
-    operator bool() { return count(); }
+    operator bool() const noexcept { return count(); }
 
 protected:
-    std::string _M_longname;
+    std::string _M_long;
     char _M_name=0;
 
     tern _M_arg= false;
@@ -142,7 +142,7 @@ protected:
     int _M_count=0;
 
     std::string _M_desc;
-    std::function<void(const std::string&)> _M_assign= nullptr;
+    std::function<void(const std::string&)> _M_assign;
 
     friend class options;
 
@@ -178,15 +178,15 @@ public:
     reference operator[](size_type n) { return _M_c.at(n); }
     const_reference operator[](size_type n) const { return _M_c.at(n); }
 
-    reference operator[](const std::string& longname)
+    reference operator[](const std::string& long_name)
     {
-        iterator ri= find(longname);
+        iterator ri= find(long_name);
         if(ri == end()) throw std::out_of_range("option::operator[]");
         return *ri;
     }
-    const_reference operator[](const std::string& longname) const
+    const_reference operator[](const std::string& long_name) const
     {
-        const_iterator ri= find(longname);
+        const_iterator ri= find(long_name);
         if(ri == end()) throw std::out_of_range("option::operator[]");
         return *ri;
     }
@@ -208,28 +208,28 @@ public:
     using container::insert;
     using container::erase;
 
-    iterator erase(const std::string& longname) { return _M_c.erase(find(longname)); }
+    iterator erase(const std::string& long_name) { return _M_c.erase(find(long_name)); }
     iterator erase(const char name) { return _M_c.erase(find(name)); }
 
     ////////////////////
-    iterator find(const std::string& longname)
+    iterator find(const std::string& long_name)
     {
-        for(auto ri= begin(); ri!=end(); ++ri) if(ri->longname()==longname) return ri;
+        for(auto ri= begin(); ri!=end(); ++ri) if(ri->long_name() == long_name) return ri;
         return end();
     }
-    const_iterator find(const std::string& longname) const
+    const_iterator find(const std::string& long_name) const
     {
-        for(auto ri= begin(); ri!=end(); ++ri) if(ri->longname()==longname) return ri;
+        for(auto ri= begin(); ri!=end(); ++ri) if(ri->long_name() == long_name) return ri;
         return end();
     }
     iterator find(const char name)
     {
-        for(auto ri= begin(); ri!=end(); ++ri) if(ri->name()==name) return ri;
+        for(auto ri= begin(); ri!=end(); ++ri) if(ri->name() == name) return ri;
         return end();
     }
     const_iterator find(const char name) const
     {
-        for(auto ri= begin(); ri!=end(); ++ri) if(ri->name()==name) return ri;
+        for(auto ri= begin(); ri!=end(); ++ri) if(ri->name() == name) return ri;
         return end();
     }
 
