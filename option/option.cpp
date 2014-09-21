@@ -49,8 +49,7 @@ void options::parse(int argc, char* argv[], int& index)
         }
         else code= unique++;
 
-        int length= option.long_name().size();
-        if(length)
+        if(option.long_name().size())
         {
             long_opt_name.push_back(clone(option.long_name()));
 
