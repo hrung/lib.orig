@@ -165,7 +165,7 @@ void context::erase(const std::string& name)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-app::environ context::environ()
+app::environ context::environ() const
 {
     return app::environ::from_charpp(pam_getenvlist(_M_pamh), true);
 }

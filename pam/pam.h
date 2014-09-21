@@ -85,7 +85,7 @@ public:
     void insert(const std::string& name, const std::string& value);
     void erase(const std::string& name);
 
-    app::environ environ();
+    app::environ environ() const;
 
     void authenticate();
 
