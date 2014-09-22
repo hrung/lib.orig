@@ -328,6 +328,7 @@ public:
     ~connection() { close(); }
 
     void close() noexcept;
+    bool is_open() const noexcept { return _M_ldap != nullptr; }
 
     connection& operator=(const connection&) = delete;
     connection& operator=(connection&& x) noexcept
