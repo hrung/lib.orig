@@ -27,7 +27,7 @@ namespace convert
 template<typename ToType, typename FromType, typename= void>
 struct _M_convert
 {
-    static ToType to(const FromType& source)
+    static ToType to(FromType&& source)
     {
         std::stringstream stream;
         ToType value;
@@ -46,7 +46,7 @@ using enable_if_int = typename std::enable_if< std::is_integral<T>::value &&
 template<typename ToType, typename FromType>
 struct _M_convert<ToType, FromType, enable_if_int<ToType>>
 {
-    static ToType to(const FromType& source, int base=0)
+    static ToType to(FromType&& source, int base=0)
     {
         std::stringstream stream;
         ToType value;
@@ -63,7 +63,7 @@ struct _M_convert<ToType, FromType, enable_if_int<ToType>>
 template<typename FromType>
 struct _M_convert<bool, FromType, void>
 {
-    static bool to(const FromType& source, bool text= false)
+    static bool to(FromType&& source, bool text= false)
     {
         std::stringstream stream;
         bool value;
@@ -80,7 +80,7 @@ struct _M_convert<bool, FromType, void>
 template<typename FromType>
 struct _M_convert<std::string, FromType, void>
 {
-    static std::string to(const FromType& source)
+    static std::string to(FromType&& source)
     {
         std::stringstream stream;
 
@@ -95,9 +95,9 @@ struct _M_convert<std::string, FromType, void>
 template<typename FromType>
 struct _M_convert<QString, FromType, void>
 {
-    static QString to(const FromType& source)
+    static QString to(FromType&& source)
     {
-        return QString::fromStdString(_M_convert<std::string, FromType>::to(source));
+        return QString::fromStdString(_M_convert<std::string, FromType>::to(std::forward<FromType>(source)));
     }
 };
 #endif
@@ -115,9 +115,9 @@ struct _M_convert<QString, FromType, void>
 /// \example        std::string s(convert::to(567));
 ///
 template<typename ToType= std::string, typename FromType>
-ToType to(const FromType& source)
+ToType to(FromType&& source)
 {
-    return _M_convert<ToType, FromType>::to(source);
+    return _M_convert<ToType, FromType>::to(std::forward<FromType>(source));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -148,9 +148,9 @@ ToType to(const QString& source)
 /// \example        auto n= convert::to<long>("deadbeef", 16);
 ///
 template<typename ToType= int, typename FromType, enable_if_int<ToType>* = nullptr>
-ToType to(const FromType& source, int base)
+ToType to(FromType&& source, int base)
 {
-    return _M_convert<ToType, FromType>::to(source, base);
+    return _M_convert<ToType, FromType>::to(std::forward<FromType>(source), base);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -165,9 +165,9 @@ ToType to(const FromType& source, int base)
 /// \example        bool b= convert::to_bool("false", true);
 ///
 template<typename FromType>
-bool to_bool(const FromType& source, bool text)
+bool to_bool(FromType&& source, bool text)
 {
-    return _M_convert<bool, FromType>::to(source, text);
+    return _M_convert<bool, FromType>::to(std::forward<FromType>(source), text);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -182,11 +182,11 @@ bool to_bool(const FromType& source, bool text)
 /// \example        std::string o= convert::to_oct("0x123");
 ///
 template<typename ViaType= int, typename FromType, enable_if_int<ViaType>* = nullptr>
-std::string to_oct(const FromType& source)
+std::string to_oct(FromType&& source)
 {
     std::stringstream stream;
 
-    if(stream << std::oct << to<ViaType>(source))
+    if(stream << std::oct << to<ViaType>(std::forward<FromType>(source)))
         return stream.str();
     else throw std::invalid_argument("Conversion failed");
 }
@@ -203,11 +203,11 @@ std::string to_oct(const FromType& source)
 /// \example        std::string h= convert::to_hex("0123");
 ///
 template<typename ViaType= int, typename FromType, enable_if_int<ViaType>* = nullptr>
-std::string to_hex(const FromType& source)
+std::string to_hex(FromType&& source)
 {
     std::stringstream stream;
 
-    if(stream << std::hex << to<ViaType>(source))
+    if(stream << std::hex << to<ViaType>(std::forward<FromType>(source)))
         return stream.str();
     else throw std::invalid_argument("Conversion failed");
 }
