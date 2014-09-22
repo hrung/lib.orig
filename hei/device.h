@@ -28,28 +28,37 @@ class device
 {
 public:
     device() = default;
-
     device(const device&) = delete;
+    device(device&& x) noexcept { swap(x); }
+
+    device(transport, protocol, unsigned number, const std::string& name= std::string());
+    virtual ~device();
+
     device& operator=(const device&) = delete;
+    device& operator=(device&& x) noexcept
+    {
+        swap(x);
+        return (*this);
+    }
 
-    device(device&&) = default;
-    device& operator=(device&&) = default;
+    void swap(device& x) noexcept
+    {
+        std::swap(_M_open,   x._M_open);
+        std::swap(_M_tran,   x._M_tran);
+        std::swap(_M_dev,    x._M_dev);
+        std::swap(_M_family, x._M_family);
+        std::swap(_M_type,   x._M_type);
+    }
 
-    virtual ~device() { close(); }
+    bool open() const noexcept { return _M_open; }
 
-    void open(transport, protocol, unsigned number, const std::string& name= std::string());
-    void close();
-    bool is_open() const { return _M_open; }
-
-    hei::family family() const { return _M_family; }
-    hei::module_type module_type() const { return _M_type; }
+    hei::family family() const noexcept { return _M_family; }
+    hei::module_type module_type() const noexcept { return _M_type; }
 
     void read_data(data_type, unsigned address, unsigned count, void* buffer);
     void write_data(data_type, unsigned address, unsigned count, void* buffer);
 
     bool read_input(unsigned offset, unsigned input);
-
-    static int count() { return _M_count; }
 
 private:
     bool _M_open= false;
@@ -59,11 +68,6 @@ private:
 
     hei::family _M_family= family::none;
     hei::module_type _M_type= module_type::none;
-
-    static void lib_open();
-    static void lib_close();
-
-    static int _M_count;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

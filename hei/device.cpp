@@ -10,14 +10,14 @@
 #include "hei_error.h"
 #include "stream.h"
 
-#include <string.h>
+#include <cstring>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace hei
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-constexpr unsigned MAX_MODULE_NUM= 999999999;
+constexpr unsigned max_number= 999999999;
 
 constexpr unsigned PLC_QUERY_TIMEOUT= 2000; // in milliseconds
 constexpr unsigned PLC_COMMAND_TIMEOUT= 300;
@@ -26,57 +26,37 @@ constexpr unsigned PLC_OPEN_TIMEOUT= 100;
 constexpr unsigned PLC_OPEN_RETRIES= 3;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-int device::_M_count=0;
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-void device::lib_open()
+struct interface
 {
-    HEIOpen(HEIAPIVERSION);
-    ++_M_count;
-}
+    static int count;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-void device::lib_close()
-{
-    if(_M_count)
+    static void open()
     {
-        HEIClose();
-        --_M_count;
+        HEIOpen(HEIAPIVERSION);
+        ++count;
     }
-}
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-void device::close()
-{
-    if(_M_open)
+    static void close()
     {
-        // close device
-        HEICloseDevice(&_M_dev);
-
-        // close transport
-        HEICloseTransport(&_M_tran);
-
-        // shutdown interface
-        lib_close();
-
-        _M_family= family::none;
-        _M_type= module_type::none;
-        _M_open= false;
+        if(count)
+        {
+            HEIClose();
+            --count;
+        }
     }
-}
+};
+
+int interface::count=0;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void device::open(transport tran, protocol proto, unsigned number, const std::string& name)
+device::device(transport tran, protocol proto, unsigned number, const std::string& name)
 {
-    // close device if it's already open
-    close();
-
     // initialize interface
-    lib_open();
+    interface::open();
 
     // open transport
     if(tran != transport::unix || proto != protocol::ip)
-        throw hei_error(errc::user_error, "Only UNIX/IP is supported");
+        throw std::invalid_argument("device::device(): transport/protocol not supported");
 
     memset(&_M_tran, 0, sizeof(_M_tran));
     _M_tran.Transport= int(tran);
@@ -91,21 +71,28 @@ void device::open(transport tran, protocol proto, unsigned number, const std::st
 
     HEISetQueryTimeout(PLC_QUERY_TIMEOUT);
 
-    if(number > MAX_MODULE_NUM)
-        throw hei_error(errc::user_error, std::string() << "Device number must be <= " << MAX_MODULE_NUM);
+    if(number > max_number)
+        throw std::invalid_argument(std::string() << "device::device(): number must be <= " << max_number);
 
     if(number == 0 && name.empty())
-        throw hei_error(errc::user_error, "Device name or number must be specified");
+        throw std::invalid_argument("device::device(): either name or number must be specified");
     else if(name.empty())
     {
         DWORD num= number;
-        err= HEIQueryDeviceData(&_M_tran, &_M_dev, &count, HEIAPIVERSION, DT_NODE_NUMBER, (BYTE*)&num, sizeof(num));
+        err= HEIQueryDeviceData(&_M_tran, &_M_dev, &count,
+                                HEIAPIVERSION,
+                                DT_NODE_NUMBER,
+        (BYTE*)(&num), sizeof(num));
     }
-    else err= HEIQueryDeviceData(&_M_tran, &_M_dev, &count, HEIAPIVERSION, DT_NODE_NAME, (BYTE*)name.data(), name.size());
+    else err= HEIQueryDeviceData(&_M_tran, &_M_dev, &count,
+                                 HEIAPIVERSION,
+                                 DT_NODE_NAME,
+         (BYTE*)(name.data()), name.size());
     if(err) throw hei_error(err);
 
     if(count == 0)
-        throw hei_error(errc::timeout, std::string() << "Device number=" << number << " name='" << name << "' not found");
+        throw hei_error(errc::timeout,
+    std::string() << "device::device(): device #" << number << " '" << name << "' not found");
 
     // open device
     err= HEIOpenDevice(&_M_tran, &_M_dev, HEIAPIVERSION, PLC_OPEN_TIMEOUT, PLC_OPEN_RETRIES, FALSE);
@@ -116,7 +103,7 @@ void device::open(transport tran, protocol proto, unsigned number, const std::st
     DeviceDef dd;
     memset(&dd, 0, sizeof(dd));
 
-    err= HEIReadDeviceDef(&_M_dev, (BYTE*)&dd, sizeof(dd));
+    err= HEIReadDeviceDef(&_M_dev, (BYTE*)(&dd), sizeof(dd));
     if(err) throw hei_error(err);
 
     _M_family= hei::family(dd.PLCFamily);
@@ -125,28 +112,38 @@ void device::open(transport tran, protocol proto, unsigned number, const std::st
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+device::~device()
+{
+    if(_M_open)
+    {
+        // close device
+        HEICloseDevice(&_M_dev);
+
+        // close transport
+        HEICloseTransport(&_M_tran);
+
+        // shutdown interface
+        interface::close();
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 void device::read_data(data_type type, unsigned address, unsigned count, void* buf)
 {
-    if(!_M_open) throw hei_error(errc::user_error, "Device not open");
-
-    int err= HEICCMRequest(&_M_dev, FALSE, int(type), address, count, (BYTE*)buf);
+    int err= HEICCMRequest(&_M_dev, FALSE, static_cast<int>(type), address, count, static_cast<BYTE*>(buf));
     if(err) throw hei_error(err);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void device::write_data(data_type type, unsigned address, unsigned count, void* buf)
 {
-    if(!_M_open) throw hei_error(errc::user_error, "Device not open");
-
-    int err= HEICCMRequest(&_M_dev, TRUE, int(type), address, count, (BYTE*)buf);
+    int err= HEICCMRequest(&_M_dev, TRUE, static_cast<int>(type), address, count, static_cast<BYTE*>(buf));
     if(err) throw hei_error(err);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 bool device::read_input(unsigned offset, unsigned input)
 {
-    if(!_M_open) throw hei_error(errc::user_error, "Device not open");
-
     unsigned address= offset+ (input-1)/8;
     BYTE bit_mask= 1 << ((input-1)%8);
     BYTE value;
