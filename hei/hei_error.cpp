@@ -118,8 +118,6 @@ std::string hei_category::message(int ev) const
     case errc::drive_trip             : return "Drive has tripped";
     case errc::command_pending        : return "HEIE_COMMAND_PENDING";
 
-    case errc::user_error             : return std::string();
-
     default                           : return "Unknown error";
     }
 }

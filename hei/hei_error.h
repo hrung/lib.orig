@@ -117,9 +117,7 @@ enum class errc
     abort                      = HEIE_ABORT,
     busy                       = HEIE_BUSY,
     drive_trip                 = HEIE_DRIVE_TRIP,
-    command_pending            = HEIE_COMMAND_PENDING,
-
-    user_error                 = 0x7fff
+    command_pending            = HEIE_COMMAND_PENDING
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
