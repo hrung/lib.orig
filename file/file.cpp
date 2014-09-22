@@ -7,6 +7,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "file.h"
+#include "errno_error.h"
 
 #include <memory>
 
@@ -85,7 +86,7 @@ ssize_t file::read(void* buffer, size_t max, bool wait)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 offset file::seek(offset value, storage::origin origin)
 {
-    off_t offset= ::lseek(_M_fd, value, int(origin));
+    off_t offset= ::lseek(_M_fd, value, static_cast<int>(origin));
     if(offset == -1) throw errno_error();
 
     return offset;
