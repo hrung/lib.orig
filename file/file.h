@@ -25,9 +25,6 @@ namespace storage
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-typedef int desc;
-constexpr desc invalid_desc= -1;
-
 typedef mode_t perm;
 typedef off_t offset;
 
@@ -58,19 +55,32 @@ enum class origin
 class file
 {
 public:
-    file() = default;
-    file(const file&) = delete;
-    file(file&&) = default;
+    typedef int id;
+    static constexpr id invalid= -1;
 
-    file& operator=(const file&) = delete;
-    file& operator=(file&&) = default;
+public:
+    file() noexcept = default;
+    file(const file&) = delete;
+    file(file&& x) noexcept { swap(x); }
 
     file(const std::string& name, open_flags flags) { open(name, flags); }
     virtual ~file() { close(); }
 
+    file& operator=(const file&) = delete;
+    file& operator=(file&& x) noexcept
+    {
+        swap(x);
+        return (*this);
+    }
+
+    void swap(file& x) noexcept
+    {
+        std::swap(_M_fd, x._M_fd);
+    }
+
     void open(const std::string& name, open_flags flags, perm = 0644);
     void close();
-    bool is_open() const { return _M_fd != invalid_desc; }
+    bool is_open() const { return _M_fd != invalid; }
 
     ssize_t write(const std::string& string)
         { return write(string.data(), string.size()); }
@@ -86,10 +96,10 @@ public:
     bool can_read(int wait_usec=0) { timeval tv= {0, wait_usec}; return can_read((wait_usec<0)? 0: &tv); }
     bool can_write(int wait_usec=0) { timeval tv= {0, wait_usec}; return can_write((wait_usec<0)? 0: &tv); }
 
-    storage::desc desc() const { return _M_fd; }
+    file::id get_id() const { return _M_fd; }
 
 protected:
-    storage::desc _M_fd= invalid_desc;
+    id _M_fd= invalid;
 
     bool can_read(timeval* tv);
     bool can_write(timeval* tv);

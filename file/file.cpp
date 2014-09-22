@@ -33,7 +33,7 @@ void file::open(const std::string& name, open_flags flags, perm perm)
     else mode|= O_RDONLY;
 
     _M_fd= ::open(name.data(), mode, perm);
-    if(_M_fd == invalid_desc) throw errno_error();
+    if(_M_fd == invalid) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -42,7 +42,7 @@ void file::close()
     if(!(_M_fd==0 || _M_fd==1 || _M_fd==2) && is_open())
     {
         ::close(_M_fd);
-        _M_fd= invalid_desc;
+        _M_fd= invalid;
     }
 }
 
