@@ -34,7 +34,7 @@ public:
     socket(const socket&) = delete;
     socket(socket&& x) noexcept { swap(x); }
 
-    socket(type);
+    socket(socket::type);
 
     socket& operator=(const socket&) = delete;
     socket& operator=(socket&& x) noexcept
