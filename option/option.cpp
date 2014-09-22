@@ -9,10 +9,8 @@
 #include "option.h"
 #include "utility.h"
 
-#include <iomanip>
 #include <sstream>
-#include <map>
-#include <memory>
+#include <iomanip>
 
 #include <getopt.h>
 
@@ -21,8 +19,15 @@ namespace app
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-constexpr int unique_code_min= 1000;
+int option::generate()
+{
+    static int code= name_max;
+    if(++code)
+        return code;
+    else throw std::runtime_error("option::get_rep(): overflow");
+}
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
 void options::parse(int argc, char* argv[], int& index)
 {
     std::vector<struct ::option> long_opt;
@@ -30,35 +35,28 @@ void options::parse(int argc, char* argv[], int& index)
 
     std::string short_opt(":");
 
-    int unique= unique_code_min;
-    std::map<int, pointer> map;
-
     ////////////////////
-    for(reference option: _M_c)
+    for(const_reference option: _M_c)
     {
-        int code;
-        if(option.name())
+
+        if(!option.generated())
         {
-            code= option.name();
             short_opt+= option.name();
 
-            if(option.arg()==uncertain)
+            if(option.need_arg() == uncertain)
                 short_opt+= "::";
-            else if(option.arg()==true)
+            else if(option.need_arg())
                 short_opt+= ":";
         }
-        else code= unique++;
 
         if(option.long_name().size())
         {
             long_opt_name.push_back(clone(option.long_name()));
 
             long_opt.push_back({ long_opt_name.back().get(),
-                option.arg()==uncertain? optional_argument: option.arg()? required_argument: no_argument,
-            nullptr, code });
+                option.need_arg() == uncertain? optional_argument: option.need_arg()? required_argument: no_argument,
+            nullptr, option.code() });
         }
-
-        map[code]= &option;
     }
     long_opt.push_back({ nullptr, 0, nullptr, 0 });
 
@@ -78,14 +76,22 @@ void options::parse(int argc, char* argv[], int& index)
             else if(c==':')
                 throw std::invalid_argument("Missing argument");
 
-            auto ri= map.find(c);
-                if(ri==map.end()) throw std::invalid_argument("Unexpected option");
-            pointer option= ri->second;
+            for(reference option: _M_c)
+            {
+                if(c == option.code())
+                {
+                    if(option.single() && option.count())
+                        throw std::invalid_argument("Duplicate option");
+                    option.inc_count();
 
-            ++option->_M_count;
-            if(option->once() && option->count()>1) throw std::invalid_argument("Extraneous option");
-
-            if(option->arg() != false && optarg) option->_M_assign(optarg);
+                    if(option.need_arg() != false && optarg)
+                    {
+                        option.assign(optarg);
+                        option.set_have();
+                    }
+                    break;
+                }
+            }
         }
     }
     catch(std::exception& e)
@@ -94,7 +100,9 @@ void options::parse(int argc, char* argv[], int& index)
 
         std::string message= e.what();
         message+= " '";
-            if(optopt && optopt < unique_code_min) message+= char(optopt); else message+= argv[--index];
+            if(optopt && optopt <= option::name_max)
+                message+= char(optopt);
+            else message+= argv[--index];
         message+= "'";
 
         throw std::invalid_argument(message);
@@ -118,7 +126,7 @@ std::string options::usage()
 
         stream << setw(20) << left;
         if(option.long_name().size())
-            stream << std::string("--")+ option.long_name()+ (option.arg()==uncertain? "[=arg]": option.arg()? "=<arg>": "");
+            stream << std::string("--")+ option.long_name()+ (option.need_arg() == uncertain? "[=arg]": option.need_arg()? "=<arg>": "");
         else stream << ' ';
 
         stream << option.description() << std::endl;
