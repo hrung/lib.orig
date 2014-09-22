@@ -45,7 +45,9 @@ public:
     context(context&& x) { swap(x); }
 
     context(const std::string& service, const std::string& username= std::string());
-    ~context();
+    ~context() { close(); }
+
+    void close() noexcept;
 
     context& operator=(const context&) = delete;
     context& operator=(context&& x)
