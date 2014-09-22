@@ -77,28 +77,17 @@ credentials::credentials(passwd* pwd)
     _M_home= pwd->pw_dir;
     _M_shell= get_shell(pwd);
 
-    _M_num=0;
-    getgrouplist(pwd->pw_name, pwd->pw_gid, nullptr, &_M_num);
+    int num=0;
+    getgrouplist(pwd->pw_name, pwd->pw_gid, nullptr, &num);
 
-    _M_group.reset(new app::gid[_M_num]);
-    getgrouplist(pwd->pw_name, pwd->pw_gid, _M_group.get(), &_M_num);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-app::groups credentials::groups() const
-{
-    app::groups x;
-
-    int num= _M_num;
-    for(app::gid* gi= _M_group.get(); num; --num, ++gi) x.insert(*gi);
-
-    return x;
+    _M_groups.resize(num, 0);
+    getgrouplist(pwd->pw_name, pwd->pw_gid, &_M_groups[0], &num);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void credentials::morph_into()
 {
-    if(setgroups(_M_num, _M_group.get())) throw errno_error();
+    if(setgroups(_M_groups.size(), &_M_groups[0])) throw errno_error();
     if(setgid(_M_gid)) throw errno_error();
     if(setuid(_M_uid)) throw errno_error();
 }
@@ -152,15 +141,13 @@ std::string shell() { return get_shell(get_pwd(uid())); }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 app::groups groups()
 {
-    app::groups x;
+    app::groups groups;
     if(int num= getgroups(0, nullptr))
     {
-        std::unique_ptr<app::gid[]> buffer(new app::gid[num]);
-        if(getgroups(num, buffer.get()) == -1) throw errno_error();
-
-        for(app::gid* gi= buffer.get(); num; --num, ++gi) x.insert(*gi);
+        groups.resize(num, 0);
+        if(getgroups(num, &groups[0]) == -1) throw errno_error();
     }
-    return x;
+    return groups;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

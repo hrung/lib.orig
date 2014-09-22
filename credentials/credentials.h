@@ -11,8 +11,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include <string>
-#include <set>
-#include <memory>
+#include <vector>
 #include <sys/types.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -25,7 +24,7 @@ namespace app
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 typedef uid_t uid;
 typedef gid_t gid;
-typedef std::set<gid> groups;
+typedef std::vector<gid> groups;
 
 constexpr uid invalid_uid= -1;
 constexpr gid invalid_gid= -1;
@@ -57,7 +56,7 @@ public:
     const std::string& home() const noexcept { return _M_home; }
     const std::string& shell() const noexcept { return _M_shell; }
 
-    app::groups groups() const;
+    const app::groups& groups() const noexcept { return _M_groups; }
 
     void morph_into();
 
@@ -74,8 +73,7 @@ private:
     std::string _M_home;
     std::string _M_shell;
 
-    std::unique_ptr<app::gid[]> _M_group;
-    int _M_num;
+    app::groups _M_groups;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
