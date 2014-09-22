@@ -64,7 +64,7 @@ public:
     file(file&& x) noexcept { swap(x); }
 
     file(const std::string& name, open_flags flags, perm = 0644);
-    virtual ~file() { close(); }
+    ~file() { close(); }
 
     void close() noexcept;
 
