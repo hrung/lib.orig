@@ -76,9 +76,9 @@ public:
     socket::id get_id() const noexcept { return _M_fd; }
 
 protected:
-    id _M_fd= invalid;
+    socket::id _M_fd= invalid;
 
-    socket(int family, type);
+    socket(int family, socket::type);
 
     bool can_recv(std::chrono::seconds, std::chrono::nanoseconds);
 

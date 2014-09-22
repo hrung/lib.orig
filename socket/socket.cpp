@@ -22,10 +22,10 @@ namespace app
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-socket::socket(int family, type x)
+socket::socket(int family, socket::type type)
 {
     int val;
-    switch(x)
+    switch(type)
     {
     case type::datagram:
         val= SOCK_DGRAM;
