@@ -48,7 +48,9 @@ public:
 
     server(const std::string& name, const std::string& server_auth, const app::arguments& args= {});
     explicit server(const std::string& server_auth, const app::arguments& args= {}): server(default_name, server_auth, args) { }
-    ~server();
+    ~server() { close(); }
+
+    void close();
 
     server& operator=(const server&) = delete;
     server& operator=(server&& x) noexcept

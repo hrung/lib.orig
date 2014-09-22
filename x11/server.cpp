@@ -80,7 +80,7 @@ server::server(const std::string& name, const std::string& server_auth, const ap
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-server::~server()
+void server::close()
 {
     if(_M_process.running())
     {
