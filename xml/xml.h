@@ -156,7 +156,7 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class element;
-typedef std::vector<element> elements;
+typedef std::vector<xml::element> elements;
 
 class element
 {
