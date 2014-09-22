@@ -112,7 +112,7 @@ device::device(transport tran, protocol proto, unsigned number, const std::strin
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-device::~device()
+void device::close() noexcept
 {
     if(_M_open)
     {
@@ -124,6 +124,8 @@ device::~device()
 
         // shutdown interface
         interface::close();
+
+        _M_open= false;
     }
 }
 

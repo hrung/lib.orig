@@ -32,7 +32,9 @@ public:
     device(device&& x) noexcept { swap(x); }
 
     device(transport, protocol, unsigned number, const std::string& name= std::string());
-    virtual ~device();
+    ~device() { close(); }
+
+    void close() noexcept;
 
     device& operator=(const device&) = delete;
     device& operator=(device&& x) noexcept
