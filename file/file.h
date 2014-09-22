@@ -38,8 +38,8 @@ enum class open
     write= 2,
     read_write= open::read | open::write,
 
-    create=   O_CREAT,
-    truncate= O_TRUNC
+    create= 4,
+    truncate= 8
 };
 DECLARE_FLAGS(open)
 

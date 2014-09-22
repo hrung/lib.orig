@@ -25,12 +25,18 @@ namespace storage
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 file::file(const std::string& name, open_flags flags, storage::perm perm)
 {
-    int mode= flags & ~open::read_write;
+    int mode;
     if(flags.contains(open::read_write))
-        mode|= O_RDWR;
+        mode= O_RDWR;
     else if(flags.contains(open::write))
-        mode|= O_WRONLY;
-    else mode|= O_RDONLY;
+        mode= O_WRONLY;
+    else mode= O_RDONLY;
+
+    if(flags.contains(open::create))
+        mode|= O_CREAT;
+
+    if(flags.contains(open::truncate))
+        mode|= O_TRUNC;
 
     _M_fd= ::open(name.data(), mode, perm);
     if(_M_fd == invalid) throw errno_error();
