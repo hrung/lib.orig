@@ -171,7 +171,7 @@ private:
     std::string _M_name;
     slap::operation _M_operation;
 
-    mod get_mod() const { return to_mod(static_cast<int>(_M_operation), _M_name, _M_c); }
+    slap::mod get_mod() const { return to_mod(static_cast<int>(_M_operation), _M_name, _M_c); }
     friend class entry;
 };
 
@@ -238,7 +238,7 @@ public:
     template<typename ToType>
     ToType attribute_to(const std::string& name, value_type::size_type n=0) const
     {
-        return _M_to<ToType>::func(*this, name, n);
+        return convert<ToType>::from(*this, name, n);
     }
 
     template<typename ToType>
@@ -272,23 +272,23 @@ public:
 private:
     std::string _M_dn;
 
-    std::vector<mod> get_mod() const;
+    std::vector<slap::mod> get_mod() const;
     friend class connection;
 
     ////////////////////
     template<typename ToType>
-    struct _M_to
+    struct convert
     {
-        static ToType func(const slap::entry& e, const std::string& name, value_type::size_type n=0)
+        static ToType from(const slap::entry& e, const std::string& name, typename value_type::size_type n=0)
         {
             return e.attribute(name).to<ToType>(n);
         }
     };
 
     template<typename ToType>
-    struct _M_to<optional<ToType>>
+    struct convert<optional<ToType>>
     {
-        static optional<ToType> func(const slap::entry& e, const std::string& name, value_type::size_type n=0)
+        static optional<ToType> from(const slap::entry& e, const std::string& name, typename value_type::size_type n=0)
         {
             const_iterator ri= e.find(name);
             if(ri != e.cend())
