@@ -48,6 +48,7 @@ public:
     ~context() { close(); }
 
     void close() noexcept;
+    bool is_open() const noexcept { return _M_pamh != nullptr; }
 
     context& operator=(const context&) = delete;
     context& operator=(context&& x)
