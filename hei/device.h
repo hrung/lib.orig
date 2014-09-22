@@ -35,6 +35,7 @@ public:
     ~device() { close(); }
 
     void close() noexcept;
+    bool is_open() const noexcept { return _M_open; }
 
     device& operator=(const device&) = delete;
     device& operator=(device&& x) noexcept
@@ -51,8 +52,6 @@ public:
         std::swap(_M_family, x._M_family);
         std::swap(_M_type,   x._M_type);
     }
-
-    bool open() const noexcept { return _M_open; }
 
     hei::family family() const noexcept { return _M_family; }
     hei::module_type module_type() const noexcept { return _M_type; }
