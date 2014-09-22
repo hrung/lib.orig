@@ -39,6 +39,7 @@ public:
     virtual ~socket() { close(); }
 
     void close() noexcept;
+    bool is_open() const noexcept { return _M_fd != invalid; }
 
     socket& operator=(const socket&) = delete;
     socket& operator=(socket&& x) noexcept
