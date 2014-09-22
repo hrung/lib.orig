@@ -325,7 +325,9 @@ public:
     connection(connection&& x) noexcept { swap(x); }
 
     connection(const std::string& uri, bool start_tls= true);
-   ~connection();
+    ~connection() { close(); }
+
+    void close() noexcept;
 
     connection& operator=(const connection&) = delete;
     connection& operator=(connection&& x) noexcept

@@ -86,9 +86,13 @@ connection::connection(const std::string& uri, bool start_tls)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-connection::~connection()
+void connection::close() noexcept
 {
-    if(_M_ldap) ldap_unbind_ext_s(_M_ldap, nullptr, nullptr);
+    if(_M_ldap)
+    {
+        ldap_unbind_ext_s(_M_ldap, nullptr, nullptr);
+        _M_ldap= nullptr;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
