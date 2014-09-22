@@ -23,7 +23,7 @@ namespace storage
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void file::open(const std::string& name, open_flags flags, perm perm)
+file::file(const std::string& name, open_flags flags, storage::perm perm)
 {
     int mode= flags & ~open::read_write;
     if(flags.contains(open::read_write))
@@ -37,9 +37,9 @@ void file::open(const std::string& name, open_flags flags, perm perm)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void file::close()
+void file::close() noexcept
 {
-    if(!(_M_fd==0 || _M_fd==1 || _M_fd==2) && is_open())
+    if(!(_M_fd==0 || _M_fd==1 || _M_fd==2) && open())
     {
         ::close(_M_fd);
         _M_fd= invalid;

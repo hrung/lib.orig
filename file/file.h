@@ -63,8 +63,10 @@ public:
     file(const file&) = delete;
     file(file&& x) noexcept { swap(x); }
 
-    file(const std::string& name, open_flags flags) { open(name, flags); }
+    file(const std::string& name, open_flags flags, perm = 0644);
     virtual ~file() { close(); }
+
+    void close() noexcept;
 
     file& operator=(const file&) = delete;
     file& operator=(file&& x) noexcept
@@ -78,9 +80,7 @@ public:
         std::swap(_M_fd, x._M_fd);
     }
 
-    void open(const std::string& name, open_flags flags, perm = 0644);
-    void close();
-    bool is_open() const { return _M_fd != invalid; }
+    bool open() const { return _M_fd != invalid; }
 
     ssize_t write(const std::string& string)
         { return write(string.data(), string.size()); }
