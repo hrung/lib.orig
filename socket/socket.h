@@ -36,7 +36,9 @@ public:
     socket() noexcept = default;
     socket(const socket&) = delete;
     socket(socket&& x) noexcept { swap(x); }
-    virtual ~socket();
+    virtual ~socket() { close(); }
+
+    void close() noexcept;
 
     socket& operator=(const socket&) = delete;
     socket& operator=(socket&& x) noexcept
