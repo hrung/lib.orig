@@ -47,10 +47,10 @@ public:
     flags& operator^=(flags x) noexcept { _M_value^= x._M_value; return (*this); }
     flags& operator^=(Enum y)  noexcept { return (*this)^= flags(y); }
 
+    constexpr explicit flags(int x) noexcept: _M_value(x) { }
+
 private:
     int _M_value;
-
-    constexpr explicit flags(int x) noexcept: _M_value(x) { }
 };
 
 #define DECLARE_FLAGS_TYPE(Enum) typedef flags<Enum> Enum##_flags;
