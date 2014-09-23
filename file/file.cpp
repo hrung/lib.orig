@@ -10,13 +10,15 @@
 #include "errno_error.h"
 
 #include <memory>
+#include <cstdlib>
 
 #include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/select.h>
 #include <limits.h> // PATH_MAX
+#include <sys/ioctl.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace storage
@@ -24,31 +26,38 @@ namespace storage
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-file::file(const std::string& name, open_flags flags, storage::perm perm)
+file::file(const std::string& name, storage::open open, open_opts opts, storage::perm perm)
 {
-    int mode;
-    if(flags.contains(open::read_write))
-        mode= O_RDWR;
-    else if(flags.contains(open::write))
-        mode= O_WRONLY;
-    else mode= O_RDONLY;
+    int val;
+/*  switch(open)
+    {
+    case open::read_write:
+        val= O_RDWR;
+        break;
+    case open::write:
+        val= O_WRONLY;
+        break;
+    default:
+        val= O_RDONLY;
+        break;
+    }
+*/  val= static_cast<int>(open);
 
-    if(flags.contains(open::create))
-        mode|= O_CREAT;
+    if(opts & open_opt::create) val|= O_CREAT;
+    if(opts & open_opt::trunc)  val|= O_TRUNC;
+    if(opts & open_opt::append) val|= O_APPEND;
 
-    if(flags.contains(open::truncate))
-        mode|= O_TRUNC;
-
-    _M_fd= ::open(name.data(), mode, perm);
+    _M_fd= ::open(name.data(), val, static_cast<mode_t>(perm));
     if(_M_fd == invalid) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void file::close() noexcept
 {
-    if(!(_M_fd==0 || _M_fd==1 || _M_fd==2) && open())
+    if(is_open())
     {
-        ::close(_M_fd);
+        if(!(_M_fd == STDIN_FILENO || _M_fd == STDOUT_FILENO || _M_fd == STDERR_FILENO))
+            ::close(_M_fd);
         _M_fd= invalid;
     }
 }
@@ -77,55 +86,83 @@ ssize_t file::read(std::string& string, size_t max, bool wait)
 ssize_t file::read(void* buffer, size_t max, bool wait)
 {
     ssize_t count=0;
-    if(wait || can_read()) count= ::read(_M_fd, buffer, max);
+    if(wait || can_read(std::chrono::seconds(0))) count= ::read(_M_fd, buffer, max);
 
     if(count == -1) throw errno_error();
     return count;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-offset file::seek(offset value, storage::origin origin)
+offset file::seek(storage::offset offset, storage::origin origin)
 {
-    off_t offset= ::lseek(_M_fd, value, static_cast<int>(origin));
-    if(offset == -1) throw errno_error();
+    int val;
+/*  switch(origin)
+    {
+    case origin::beg:
+        val= SEEK_SET;
+        break;
+    case origin::cur:
+        val= SEEK_CUR;
+        break;
+    case origin::end:
+        val= SEEK_END;
+        break;
+    }
+*/  val= static_cast<int>(origin);
 
-    return offset;
+    storage::offset n= ::lseek(_M_fd, offset, val);
+    if(n == -1) throw errno_error();
+
+    return n;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 offset file::size()
 {
-    off_t n= tell();
-    off_t e= seek(0, origin::end);
+    offset n= tell();
+    offset e= seek(0, origin::end);
 
     seek(n);
     return e;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool file::can_read(timeval* tv)
+bool file::can_read(std::chrono::seconds s, std::chrono::nanoseconds n)
 {
+    timespec time= { static_cast<std::time_t>(s.count()), static_cast<long>(n.count()) };
+
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(_M_fd, &fds);
 
-    int n= select(_M_fd+1, &fds, 0, 0, tv);
-    if(n == -1) throw errno_error();
+    int count= pselect(_M_fd+1, &fds, 0, 0, &time, nullptr);
+    if(count == -1) throw errno_error();
 
-    return n;
+    return count;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool file::can_write(timeval* tv)
+bool file::can_write(std::chrono::seconds s, std::chrono::nanoseconds n)
 {
+    timespec time= { static_cast<std::time_t>(s.count()), static_cast<long>(n.count()) };
+
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(_M_fd, &fds);
 
-    int n= select(_M_fd+1, 0, &fds, 0, tv);
-    if(n == -1) throw errno_error();
+    int count= pselect(_M_fd+1, 0, &fds, 0, &time, nullptr);
+    if(count == -1) throw errno_error();
 
-    return n;
+    return count;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+int file::control(int request, void* buffer)
+{
+    int val= ::ioctl(_M_fd, request, buffer);
+    if(val == -1) throw errno_error();
+
+    return val;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -155,22 +192,40 @@ std::string real_path(const std::string& path)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool stat(const std::string& name, struct stat& x)
-{
-    return ::stat(name.data(), &x)==0;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 void chown(const std::string& name, storage::uid uid, storage::gid gid, bool deref)
 {
     if( (deref? ::chown(name.data(), uid, gid): lchown(name.data(), uid, gid)) ) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-perm mode(const std::string& name)
+void chmod(const std::string& name, storage::perm perm)
 {
-    struct stat value;
-    return stat(name, value)? value.st_mode: 0;
+    if(::chmod(name.data(), static_cast<mode_t>(perm))) throw errno_error();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+bool exists(const std::string& name) noexcept
+{
+    struct stat x;
+    return !::stat(name.data(), &x);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+storage::type get_type(const std::string& name) noexcept
+{
+    struct stat x;
+    return ::stat(name.data(), &x)?
+        storage::type::none:
+    storage::type((x.st_mode & S_IFMT) >> 12);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+storage::offset size(const std::string& name)
+{
+    struct stat x;
+    if(::stat(name.data(), &x)) throw errno_error();
+
+    return x.st_size;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

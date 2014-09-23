@@ -10,21 +10,33 @@
 #define FILE_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+#include "perm.h"
 #include "flags.h"
 
+#include <chrono>
 #include <string>
-#include <ctime>
+#include <cstdint>
 
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace storage
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-typedef mode_t perm;
+enum class type
+{
+    none  = 000,
+    fifo  = 001,
+    chr   = 002,
+    dir   = 004,
+    block = 006,
+    file  = 010,
+    link  = 012,
+    sock  = 014
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 typedef off_t offset;
 
 typedef uid_t uid;
@@ -33,22 +45,24 @@ typedef gid_t gid;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum class open
 {
-    read= 1,
-    write= 2,
-    read_write= open::read | open::write,
-
-    create= 4,
-    truncate= 8
+    read,
+    write,
+    read_write
 };
-DECLARE_FLAGS(open)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-enum class origin
+enum class open_opt
 {
-    start= SEEK_SET,
-    current= SEEK_CUR,
-    end= SEEK_END
+    none,
+    create,
+    trunc,
+    append
 };
+DECLARE_FLAGS(open_opt)
+typedef open_opt_flags open_opts;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+enum class origin { beg, cur, end };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class file
@@ -62,10 +76,15 @@ public:
     file(const file&) = delete;
     file(file&& x) noexcept { swap(x); }
 
-    file(const std::string& name, open_flags flags, perm = 0644);
+    file(const std::string& name,
+         storage::open,
+         storage::open_opts = open_opt::none,
+    storage::perm = user_read_write | group_read | other_read);
+
     ~file() { close(); }
 
     void close() noexcept;
+    bool is_open() const noexcept { return _M_fd != invalid; }
 
     file& operator=(const file&) = delete;
     file& operator=(file&& x) noexcept
@@ -79,8 +98,6 @@ public:
         std::swap(_M_fd, x._M_fd);
     }
 
-    bool open() const { return _M_fd != invalid; }
-
     ssize_t write(const std::string& string)
         { return write(string.data(), string.size()); }
     ssize_t write(const void* buffer, size_t n);
@@ -88,20 +105,35 @@ public:
     ssize_t read(std::string& string, size_t max, bool wait= true);
     ssize_t read(void* buffer, size_t max, bool wait= true);
 
-    offset seek(offset value, origin = origin::start);
-    offset tell() { return seek(0, origin::current); }
-    offset size();
+    storage::offset seek(storage::offset, storage::origin = origin::beg);
+    storage::offset tell() { return seek(0, origin::cur); }
+    storage::offset size();
 
-    bool can_read(int wait_usec=0) { timeval tv= {0, wait_usec}; return can_read((wait_usec<0)? 0: &tv); }
-    bool can_write(int wait_usec=0) { timeval tv= {0, wait_usec}; return can_write((wait_usec<0)? 0: &tv); }
+    template<typename Rep, typename Period>
+    bool can_read(const std::chrono::duration<Rep, Period>& x)
+    {
+        std::chrono::seconds s= std::chrono::duration_cast<std::chrono::seconds>(x);
+        std::chrono::nanoseconds n= std::chrono::duration_cast<std::chrono::nanoseconds>(x - s);
+        return can_read(s, n);
+    }
+
+    template<typename Rep, typename Period>
+    bool can_write(const std::chrono::duration<Rep, Period>& x)
+    {
+        std::chrono::seconds s= std::chrono::duration_cast<std::chrono::seconds>(x);
+        std::chrono::nanoseconds n= std::chrono::duration_cast<std::chrono::nanoseconds>(x - s);
+        return can_write(s, n);
+    }
 
     file::id get_id() const { return _M_fd; }
 
-protected:
-    id _M_fd= invalid;
+    int control(int request, void* buffer);
 
-    bool can_read(timeval* tv);
-    bool can_write(timeval* tv);
+protected:
+    file::id _M_fd= invalid;
+
+    bool can_read(std::chrono::seconds, std::chrono::nanoseconds);
+    bool can_write(std::chrono::seconds, std::chrono::nanoseconds);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -110,18 +142,21 @@ void remove(const std::string& name);
 void rename(const std::string& prev, const std::string& name);
 std::string real_path(const std::string& path);
 
-bool stat(const std::string& name, struct stat&);
-void chown(const std::string& name, storage::uid uid, storage::gid gid, bool deref= true);
+void chown(const std::string& name, storage::uid, storage::gid, bool deref= true);
+void chmod(const std::string& name, storage::perm);
 
-perm mode(const std::string& name);
-inline bool exists   (const std::string& name) { return mode(name); }
-inline bool is_file  (const std::string& name) { return S_ISREG(mode(name)); }
-inline bool is_dir   (const std::string& name) { return S_ISDIR(mode(name)); }
-inline bool is_char  (const std::string& name) { return S_ISCHR(mode(name)); }
-inline bool is_block (const std::string& name) { return S_ISBLK(mode(name)); }
-inline bool is_fifo  (const std::string& name) { return S_ISFIFO(mode(name)); }
-inline bool is_link  (const std::string& name) { return S_ISLNK(mode(name)); }
-inline bool is_socket(const std::string& name) { return S_ISSOCK(mode(name)); }
+bool exists(const std::string& name) noexcept;
+storage::type get_type(const std::string& name) noexcept;
+
+inline bool is_fifo (const std::string& name) noexcept { return get_type(name) == storage::type::fifo ; }
+inline bool is_chr  (const std::string& name) noexcept { return get_type(name) == storage::type::chr  ; }
+inline bool is_dir  (const std::string& name) noexcept { return get_type(name) == storage::type::dir  ; }
+inline bool is_block(const std::string& name) noexcept { return get_type(name) == storage::type::block; }
+inline bool is_file (const std::string& name) noexcept { return get_type(name) == storage::type::file ; }
+inline bool is_link (const std::string& name) noexcept { return get_type(name) == storage::type::link ; }
+inline bool is_sock (const std::string& name) noexcept { return get_type(name) == storage::type::sock ; }
+
+storage::offset size(const std::string& name);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
