@@ -13,7 +13,7 @@
 #include "environ.h"
 #include "arguments.h"
 #include "basic_filebuf.h"
-#include "flags.h"
+#include "enum.h"
 
 #include <fstream>
 #include <functional>
@@ -83,7 +83,7 @@ enum class redir
     cerr=4,
     all= cout | cin | cerr
 };
-DECLARE_FLAGS(redir)
+ENUM_OPERATOR(redir)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class process
@@ -101,15 +101,9 @@ public:
 
     ////////////////////
     template<typename Callable, typename... Args>
-    process(group_t, redir_flags flags, Callable&& func, Args&&... args)
+    process(group_t, app::redir redir, Callable&& func, Args&&... args)
     {
-        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), true, flags);
-    }
-
-    template<typename Callable, typename... Args>
-    process(group_t, redir flags, Callable&& func, Args&&... args)
-    {
-        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), true, flags);
+        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), true, redir);
     }
 
     ////////////////////
@@ -121,15 +115,9 @@ public:
 
     ////////////////////
     template<typename Callable, typename... Args>
-    process(redir_flags flags, Callable&& func, Args&&... args)
+    process(app::redir redir, Callable&& func, Args&&... args)
     {
-        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), false, flags);
-    }
-
-    template<typename Callable, typename... Args>
-    process(redir flags, Callable&& func, Args&&... args)
-    {
-        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), false, flags);
+        _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), false, redir);
     }
 
     ////////////////////
@@ -197,7 +185,7 @@ protected:
     app::exit_code _M_code;
     filebuf _M_cin, _M_cout, _M_cerr;
 
-    void _M_process(std::function<int()>, bool group, redir_flags flags);
+    void _M_process(std::function<int()>, bool group, app::redir);
 
     bool can_join(std::chrono::seconds, std::chrono::nanoseconds);
     void set_code(int code);
