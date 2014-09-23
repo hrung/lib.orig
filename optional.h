@@ -21,66 +21,79 @@ struct optional
 {
     typedef T value_type;
 
-    optional(): _M_none(true) { }
-
-    ////////////////////
-    optional(const optional& x) = default;
-    optional& operator=(const optional& x) = default;
-
-    ////////////////////
-    optional(optional&& x): _M_value(std::move(x._M_value)), _M_none(x._M_none) { x= none; }
-    optional& operator=(optional&& x)
-    {
-        _M_value= std::move(x._M_value); _M_none= x._M_none;
-        x= none;
-        return *this;
-    }
-
-    ////////////////////
-    optional(const value_type& x): _M_value(x), _M_none(false) { }
-    optional& operator=(const value_type& x)
-    {
-        _M_value= x; _M_none= false;
-        return *this;
-    }
-
-    ////////////////////
-    optional(value_type&& x): _M_value(std::move(x)), _M_none(false) { }
-    optional& operator=(value_type&& x)
-    {
-        _M_value= std::move(x); _M_none= false;
-        return *this;
-    }
-
-    ////////////////////
-    optional(none_t): _M_none(true) { }
-    optional& operator=(none_t)
-    {
-        _M_value= value_type(); _M_none= true;
-        return *this;
-    }
+    optional() = default;
 
     ////////////////////
     template<typename U>
-    explicit optional(const optional<U>& x): _M_value(x._M_value), _M_none(x._M_none) { }
+    explicit optional(const optional<U>& x) { swap(x); }
 
     template<typename U>
     optional& operator=(const optional<U>& x)
     {
-        _M_value= x._M_value; _M_none= false;
-        return *this;
+        swap(x);
+        return (*this);
     }
 
     ////////////////////
     template<typename U>
-    explicit optional(optional<U>&& x): _M_value(std::move(x._M_value)), _M_none(x._M_none) { x= none; }
+    explicit optional(optional<U>&& x) { swap(x); }
 
     template<typename U>
     optional& operator=(optional<U>&& x)
     {
-        _M_value= std::move(x._M_value); _M_none= false;
-        x= none;
-        return *this;
+        swap(x);
+        return (*this);
+    }
+
+    ////////////////////
+    optional(const value_type& x) { copy(x); }
+
+    optional& operator=(const value_type& x)
+    {
+        copy(x);
+        return (*this);
+    }
+
+    ////////////////////
+    optional(value_type&& x) { swap(x); }
+    optional& operator=(value_type&& x)
+    {
+        swap(x);
+        return (*this);
+    }
+
+    ////////////////////
+    optional(none_t) { clear(); }
+    optional& operator=(none_t)
+    {
+        clear();
+        return (*this);
+    }
+
+    ////////////////////
+    template<typename U>
+    void swap(optional<U>& x)
+    {
+        std::swap(_M_value, x._M_value);
+        std::swap(_M_none, x._M_none);
+    }
+    void swap(value_type& x) { std::swap(_M_value, x); }
+
+    template<typename U>
+    void copy(optional<U>& x)
+    {
+        _M_value= x._M_value;
+        _M_none= x._M_none;
+    }
+    void copy(const value_type& x)
+    {
+        _M_value= x;
+        _M_none= false;
+    }
+    void clear()
+    {
+        _M_value= value_type();
+        _M_none= true;
     }
 
     ////////////////////
@@ -94,7 +107,7 @@ struct optional
 
 private:
     value_type _M_value;
-    bool _M_none;
+    bool _M_none= true;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
