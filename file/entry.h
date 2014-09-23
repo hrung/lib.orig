@@ -11,12 +11,12 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "file.h"
-#include "errno_error.h"
 
 #include <functional>
 #include <vector>
 #include <string>
-#include <dirent.h>
+
+#include <sys/types.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace storage
@@ -24,7 +24,7 @@ namespace storage
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct entry;
-typedef std::vector<entry> entries;
+typedef std::vector<storage::entry> entries;
 
 typedef std::function<bool(const entry&)> filter_func;
 typedef std::function<int(const entry&, const entry&)> compare_func;
@@ -33,21 +33,6 @@ typedef std::function<int(const entry&, const entry&)> compare_func;
 extern const filter_func filter_all;
 extern const compare_func compare_version;
 extern const compare_func compare_alpha;
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-enum class type
-{
-    block=   DT_BLK,
-    chr=     DT_CHR,
-    dir=     DT_DIR,
-    fifo=    DT_FIFO,
-    link=    DT_LNK,
-    file=    DT_REG,
-    sock=    DT_SOCK,
-    unknown= DT_UNKNOWN
-};
-
-inline type get_type(const std::string& name) { return static_cast<type>((mode(name) & S_IFMT) >> 12); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct entry
