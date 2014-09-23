@@ -26,19 +26,19 @@ enum perm: uint32_t
     other_write = 00002,
     other_read  = 00004,
     other_read_write = other_read | other_write,
-    other_rwx = other_read | other_write | other_exec,
+    other_all = other_read | other_write | other_exec,
 
     group_exec  = 00010,
     group_write = 00020,
     group_read  = 00040,
     group_read_write  = group_read | group_write,
-    group_rwx = group_read | group_write | group_exec,
+    group_all = group_read | group_write | group_exec,
 
     user_exec   = 00100,
     user_write  = 00200,
     user_read   = 00400,
     user_read_write = user_read | user_write,
-    user_rwx = user_read | user_write | user_exec
+    user_all = user_read | user_write | user_exec
 };
 ENUM_OPERATOR(perm)
 
