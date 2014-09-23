@@ -37,7 +37,10 @@ entries entry::get(const std::string& path, const filter_func& filter, const com
     _M_compare= compare;
 
     int n= scandir(path.data(), &names,
-        [] (const dirent* e) -> int { return _M_filter({ e->d_name, static_cast<storage::type>(e->d_type), e->d_ino }); },
+        [] (const dirent* e) -> int
+        {
+            return _M_filter({ e->d_name, static_cast<storage::type>(e->d_type), e->d_ino });
+        },
         [] (const dirent** e1, const dirent** e2) -> int
         {
             return _M_compare( { (*e1)->d_name, static_cast<storage::type>((*e1)->d_type), (*e1)->d_ino },
