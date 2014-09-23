@@ -34,7 +34,7 @@ socket::socket(int family, socket::type type)
         val= SOCK_STREAM;
         break;
     default:
-        throw std::runtime_error("socket_base::socket_base(): unsupported type");
+        throw std::runtime_error("socket::socket(): unsupported type");
     }
 
     _M_fd= ::socket(family, val, 0);
