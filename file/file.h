@@ -11,7 +11,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "perm.h"
-#include "flags.h"
+#include "enum.h"
 
 #include <chrono>
 #include <string>
@@ -58,8 +58,7 @@ enum class open_opt
     trunc,
     append
 };
-DECLARE_FLAGS(open_opt)
-typedef open_opt_flags open_opts;
+ENUM_OPERATOR(open_opt)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum class origin { beg, cur, end };
@@ -78,7 +77,7 @@ public:
 
     file(const std::string& name,
          storage::open,
-         storage::open_opts = open_opt::none,
+         storage::open_opt = open_opt::none,
     storage::perm = user_read_write | group_read | other_read);
 
     ~file() { close(); }

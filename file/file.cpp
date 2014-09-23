@@ -26,7 +26,7 @@ namespace storage
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-file::file(const std::string& name, storage::open open, open_opts opts, storage::perm perm)
+file::file(const std::string& name, storage::open open, open_opt opt, storage::perm perm)
 {
     int val;
 /*  switch(open)
@@ -43,9 +43,9 @@ file::file(const std::string& name, storage::open open, open_opts opts, storage:
     }
 */  val= static_cast<int>(open);
 
-    if(opts & open_opt::create) val|= O_CREAT;
-    if(opts & open_opt::trunc)  val|= O_TRUNC;
-    if(opts & open_opt::append) val|= O_APPEND;
+    if(opt && open_opt::create) val|= O_CREAT;
+    if(opt && open_opt::trunc)  val|= O_TRUNC;
+    if(opt && open_opt::append) val|= O_APPEND;
 
     _M_fd= ::open(name.data(), val, static_cast<mode_t>(perm));
     if(_M_fd == invalid) throw errno_error();
