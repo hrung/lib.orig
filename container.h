@@ -26,10 +26,10 @@ struct is_vector<std::vector<T, Alloc>, Alloc>: public std::true_type
 { };
 
 template<typename T>
-using if_vector = typename std::enable_if<is_vector<T>::value>::type;
+using if_vector = std::enable_if<is_vector<T>::value>;
 
 template<typename T>
-using if_not_vector = typename std::enable_if<!is_vector<T>::value>::type;
+using if_not_vector = std::enable_if<!is_vector<T>::value>;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T>
@@ -80,29 +80,29 @@ public:
     const_reverse_iterator crend() const noexcept { return _M_c.rend(); }
 
     ////////////////////
-    template<typename U = T, if_not_vector<U>* = nullptr>
+    template<typename U = T, typename if_not_vector<U>::type* = nullptr>
     void insert(const value_type& x) { _M_c.insert(x); }
 
-    template<typename U = T, if_not_vector<U>* = nullptr>
+    template<typename U = T, typename if_not_vector<U>::type* = nullptr>
     void insert(value_type&& x) { _M_c.insert(std::move(x)); }
 
-    template<typename U = T, if_not_vector<U>* = nullptr>
+    template<typename U = T, typename if_not_vector<U>::type* = nullptr>
     void insert(std::initializer_list<value_type> x) { _M_c.insert(x); }
 
-    template<typename U = T, if_not_vector<U>* = nullptr>
+    template<typename U = T, typename if_not_vector<U>::type* = nullptr>
     void insert(const container& x) { _M_c.insert(x.begin(), x.end()); }
 
     ////////////////////
-    template<typename U = T, if_vector<U>* = nullptr>
+    template<typename U = T, typename if_vector<U>::type* = nullptr>
     void insert(const value_type& x) { _M_c.push_back(x); }
 
-    template<typename U = T, if_vector<U>* = nullptr>
+    template<typename U = T, typename if_vector<U>::type* = nullptr>
     void insert(value_type&& x) { _M_c.push_back(std::move(x)); }
 
-    template<typename U = T, if_vector<U>* = nullptr>
+    template<typename U = T, typename if_vector<U>::type* = nullptr>
     void insert(std::initializer_list<value_type> x) { _M_c.insert(end(), x); }
 
-    template<typename U = T, if_vector<U>* = nullptr>
+    template<typename U = T, typename if_vector<U>::type* = nullptr>
     void insert(const container& x) { _M_c.insert(end(), x.begin(), x.end()); }
 
     ////////////////////
