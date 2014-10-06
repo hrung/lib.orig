@@ -204,6 +204,12 @@ void chmod(const std::string& name, storage::perm perm)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+void mkdir(const std::string& name, storage::perm perm)
+{
+    if(::mkdir(name.data(), static_cast<mode_t>(perm))) throw errno_error();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 bool exists(const std::string& name) noexcept
 {
     struct stat x;
