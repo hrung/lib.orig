@@ -12,6 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include <fstream>
 #include <cstdio>
+#include <cstring>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace app
@@ -165,8 +166,8 @@ basic_filebuf<CharT, Traits>::basic_filebuf(basic_filebuf&& rhs)
     rhs._M_file = nullptr;
     rhs._M_st = state_type();
     rhs._M_st_last = state_type();
-    rhs._M_om = 0;
-    rhs._M_cm = 0;
+    rhs._M_om = std::ios_base::openmode(0);
+    rhs._M_cm = std::ios_base::openmode(0);
     rhs._M_owns_eb = false;
     rhs._M_owns_ib = false;
     rhs.setg(0, 0, 0);
