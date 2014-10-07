@@ -19,14 +19,15 @@ constexpr bool operator==(Enum x, Enum y) noexcept { return                  ( s
 constexpr bool operator!=(Enum x, Enum y) noexcept { return                  ( static_cast<int>(y)!=static_cast<int>(x) ); } \
 constexpr bool operator&&(Enum x, Enum y) noexcept { return                  ( static_cast<int>(y)& static_cast<int>(x) ); } \
 
-/// NOTE: since scoped enumerations are not implicitely convertible to bool,
+/// NOTE: since scoped enumerations are not implicitly convertible to bool,
 /// the following will not compile:
 ///
 /// enum class foo { bar, baz };
 /// foo x= foo::bar | foo::baz;
-/// if(x & foo::bar) do_something(); // error: value of type 'foo' is not contextually convertible to 'bool'
+/// if(x & foo::bar) do_something(); // clang++ : error: value of type 'foo' is not contextually convertible to 'bool'
+///                                  //     g++ : error: could not convert ‘operator&(...)' from 'foo' to 'bool'
 ///
-/// Bjarne's Printer_flags example in 8.4.1 of The C++ Programming Language, 4th ed. is wrong.
+/// Bjarne's Printer_flags example in 8.4.1 of The C++ Programming Language, 4th ed. is incorrect.
 ///
 /// To overcome this, we add operator&&, which does the same thing as operator&,
 /// but returns bool. Those who find this confusing, can use the following:
