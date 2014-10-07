@@ -25,12 +25,12 @@ struct optional
 
     ////////////////////
     template<typename U>
-    explicit optional(const optional<U>& x) { swap(x); }
+    explicit optional(const optional<U>& x) { copy(x); }
 
     template<typename U>
     optional& operator=(const optional<U>& x)
     {
-        swap(x);
+        copy(x);
         return (*this);
     }
 
@@ -77,7 +77,11 @@ struct optional
         std::swap(_M_value, x._M_value);
         std::swap(_M_none, x._M_none);
     }
-    void swap(value_type& x) { std::swap(_M_value, x); }
+    void swap(value_type& x)
+    {
+        std::swap(_M_value, x);
+        _M_none= false;
+    }
 
     template<typename U>
     void copy(optional<U>& x)
