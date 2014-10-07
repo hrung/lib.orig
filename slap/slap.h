@@ -251,6 +251,10 @@ public:
     {
         /* do nothing*/
     }
+    catch(std::out_of_range&)
+    {
+        /* do nothing*/
+    }
 
     ////////////////////
     using container::insert;
