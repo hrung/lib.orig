@@ -86,32 +86,32 @@ static void open_if(bool cond,
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void process::_M_process(std::function<int()> func, bool group, app::redir redir)
+void process::_M_process(std::function<int()> func, bool group, app::redir x)
 {
     int out_fd[2]= {-1, -1}, in_fd[2]= {-1, -1}, err_fd[2]= {-1, -1};
 
     try
     {
-        pipe_if(redir && redir::cout, out_fd);
-        pipe_if(redir && redir::cin, in_fd);
-        pipe_if(redir && redir::cerr, err_fd);
+        pipe_if(x && redir::cout, out_fd);
+        pipe_if(x && redir::cin, in_fd);
+        pipe_if(x && redir::cerr, err_fd);
 
         _M_id= fork();
         if(_M_id == -1) throw errno_error();
 
         if(_M_id == 0)
         {
-            dup_if(redir && redir::cout, STDOUT_FILENO, out_fd, 1);
-            dup_if(redir && redir::cin, STDIN_FILENO, in_fd, 0);
-            dup_if(redir && redir::cerr, STDERR_FILENO, err_fd, 1);
+            dup_if(x && redir::cout, STDOUT_FILENO, out_fd, 1);
+            dup_if(x && redir::cin, STDIN_FILENO, in_fd, 0);
+            dup_if(x && redir::cerr, STDERR_FILENO, err_fd, 1);
 
             int code= func();
             exit(code);
         }
 
-        open_if(redir && redir::cout, cout, _M_cout, std::ios_base::in, out_fd, 0);
-        open_if(redir && redir::cin, cin, _M_cin, std::ios_base::out, in_fd, 1);
-        open_if(redir && redir::cerr, cerr, _M_cerr, std::ios_base::in, err_fd, 0);
+        open_if(x && redir::cout, cout, _M_cout, std::ios_base::in, out_fd, 0);
+        open_if(x && redir::cin, cin, _M_cin, std::ios_base::out, in_fd, 1);
+        open_if(x && redir::cerr, cerr, _M_cerr, std::ios_base::in, err_fd, 0);
 
         if(group)
         {
