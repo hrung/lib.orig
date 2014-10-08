@@ -111,18 +111,24 @@ public:
 
     ////////////////////
     template<typename U>
-    friend bool operator==(const container<U>& x, const container<U>& y)
-    { return x._M_c == y._M_c; }
+    friend bool operator==(const container<U>& x, const container<U>& y);
 
     template<typename U>
-    friend bool operator!=(const container<U>& x, const container<U>& y)
-    { return x._M_c != y._M_c; }
+    friend bool operator!=(const container<U>& x, const container<U>& y);
 
 protected:
     container_type _M_c;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+template<typename U>
+inline bool operator==(const container<U>& x, const container<U>& y)
+{ return x._M_c == y._M_c; }
+
+template<typename U>
+inline bool operator!=(const container<U>& x, const container<U>& y)
+{ return x._M_c != y._M_c; }
+
 template<typename T>
 inline void swap(container<T>& x, container<T>& y) { x.swap(y); }
 
