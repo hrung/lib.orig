@@ -90,7 +90,7 @@ void server::close()
             _M_display= nullptr;
         }
 
-        _M_process.signal(signal::hangup);
+        _M_process.signal(app::signal::hangup);
     }
 }
 
