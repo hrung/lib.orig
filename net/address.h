@@ -35,14 +35,30 @@ public:
     address& operator=(const address&) noexcept = default;
     address& operator=(address&&) noexcept = default;
 
-    address(in_addr x) noexcept: _M_addr(x) { }
-    address(in_addr_t x) noexcept: _M_addr({x}) { }
+    ////////////////////
+    ///
+    /// \brief address constructor
+    /// \param x in host byte order (!)
+    ///
+    address(in_addr x) noexcept: address(x.s_addr) { }
+
+    ////////////////////
+    ///
+    /// \brief address constructor
+    /// \param x in host byte order (!)
+    ///
+    address(in_addr_t x) noexcept;
 
     address(const std::string&);
     address(const char* x): address(std::string(x)) { }
 
     std::string to_string() const;
 
+    ////////////////////
+    ///
+    /// \brief value
+    /// \return in host byte order (!)
+    ///
     in_addr_t value() const;
 
 private:

@@ -22,6 +22,12 @@ const address address::any(INADDR_ANY);
 const address address::broadcast(INADDR_BROADCAST);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+address::address(in_addr_t x) noexcept
+{
+    _M_addr.s_addr= htonl(x);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 address::address(const std::string& x)
 {
     if(!inet_aton(x.data(), &_M_addr)) throw errno_error();
