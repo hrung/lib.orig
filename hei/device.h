@@ -35,7 +35,7 @@ public:
     ~device() { close(); }
 
     void close() noexcept;
-    bool is_open() const noexcept { return _M_open; }
+    bool is_open() const noexcept { return _M_dev; }
 
     device& operator=(const device&) = delete;
     device& operator=(device&& x) noexcept
@@ -46,7 +46,6 @@ public:
 
     void swap(device& x) noexcept
     {
-        std::swap(_M_open,   x._M_open);
         std::swap(_M_tran,   x._M_tran);
         std::swap(_M_dev,    x._M_dev);
         std::swap(_M_family, x._M_family);
@@ -62,10 +61,8 @@ public:
     bool read_input(unsigned offset, unsigned input);
 
 private:
-    bool _M_open= false;
-
-    HEITransport _M_tran;
-    HEIDevice _M_dev;
+    HEITransport* _M_tran= nullptr;
+    HEIDevice* _M_dev= nullptr;
 
     hei::family _M_family= family::none;
     hei::module_type _M_type= module_type::none;
