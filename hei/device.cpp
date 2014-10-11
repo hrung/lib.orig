@@ -54,10 +54,6 @@ device::device(transport tran, protocol proto, unsigned number, const std::strin
     // initialize interface
     interface::open();
 
-    // open transport
-    if(tran != transport::unix || proto != protocol::ip)
-        throw std::invalid_argument("device::device(): transport/protocol not supported");
-
     memset(&_M_tran, 0, sizeof(_M_tran));
     _M_tran.Transport= int(tran);
     _M_tran.Protocol= int(proto);
