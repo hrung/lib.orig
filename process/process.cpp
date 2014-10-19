@@ -105,8 +105,15 @@ void process::_M_process(std::function<int()> func, bool group, app::redir x)
             dup_if(x && redir::cin, STDIN_FILENO, in_fd, 0);
             dup_if(x && redir::cerr, STDERR_FILENO, err_fd, 1);
 
-            int code= func();
-            exit(code);
+            try
+            {
+                int code= func();
+                exit(code);
+            }
+            catch(...)
+            {
+                exit(EXIT_FAILURE);
+            }
         }
 
         open_if(x && redir::cout, cout, _M_cout, std::ios_base::in, out_fd, 0);
