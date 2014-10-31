@@ -91,9 +91,7 @@ inline std::string trim_right(String&& x)
     static_assert(std::is_convertible<String, std::string>::value, "String must be convertible to std::string");
 
     std::string s(std::forward<std::string>(x));
-
-    // std::next(reverse_iterator).base() == iterator
-    s.erase(std::next(std::find_if_not(s.rbegin(), s.rend(), app::isspace)).base(), s.end());
+    s.erase(std::find_if_not(s.rbegin(), s.rend(), app::isspace).base(), s.end());
 
     return s;
 }
