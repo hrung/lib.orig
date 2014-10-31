@@ -208,26 +208,26 @@ public:
     reference operator()(const std::string& long_name)
     {
         iterator ri= find(long_name);
-        if(ri == end()) throw std::out_of_range("option::operator[]");
+        if(ri == end()) throw std::out_of_range("option::operator()");
         return *ri;
     }
     const_reference operator()(const std::string& long_name) const
     {
         const_iterator ri= find(long_name);
-        if(ri == end()) throw std::out_of_range("option::operator[]");
+        if(ri == end()) throw std::out_of_range("option::operator()");
         return *ri;
     }
 
     reference operator()(char name)
     {
         iterator ri= find(name);
-        if(ri == end()) throw std::out_of_range("option::operator[]");
+        if(ri == end()) throw std::out_of_range("option::operator()");
         return *ri;
     }
     const_reference operator()(char name) const
     {
         const_iterator ri= find(name);
-        if(ri == end()) throw std::out_of_range("option::operator[]");
+        if(ri == end()) throw std::out_of_range("option::operator()");
         return *ri;
     }
 
