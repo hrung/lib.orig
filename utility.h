@@ -73,9 +73,11 @@ inline bool isspace(char c)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-template<typename T, typename = typename std::is_convertible<T, std::string>>
-inline std::string trim_left(T&& x)
+template<typename String>
+inline std::string trim_left(String&& x)
 {
+    static_assert(std::is_convertible<String, std::string>::value, "String must be convertible to std::string");
+
     std::string s(std::forward<std::string>(x));
     s.erase(s.begin(), std::find_if_not(s.begin(), s.end(), app::isspace));
 
@@ -83,9 +85,11 @@ inline std::string trim_left(T&& x)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-template<typename T, typename = typename std::is_convertible<T, std::string>>
-inline std::string trim_right(T&& x)
+template<typename String>
+inline std::string trim_right(String&& x)
 {
+    static_assert(std::is_convertible<String, std::string>::value, "String must be convertible to std::string");
+
     std::string s(std::forward<std::string>(x));
 
     // std::next(reverse_iterator).base() == iterator
@@ -95,9 +99,10 @@ inline std::string trim_right(T&& x)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-template<typename T, typename = typename std::is_convertible<T, std::string>>
-inline std::string trim(T&& x)
+template<typename String>
+inline std::string trim(String&& x)
 {
+    static_assert(std::is_convertible<String, std::string>::value, "String must be convertible to std::string");
     return trim_left(trim_right(x));
 }
 
