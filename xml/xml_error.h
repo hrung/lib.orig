@@ -82,10 +82,10 @@ const std::error_category& xml_category();
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline std::error_code make_error_code(xml::errc e)
-{ return std::error_code(int(e), xml_category()); }
+{ return std::error_code(static_cast<int>(e), xml_category()); }
 
 inline std::error_condition make_error_condition(xml::errc e)
-{ return std::error_condition(int(e), xml_category()); }
+{ return std::error_condition(static_cast<int>(e), xml_category()); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class xml_error: public std::system_error
@@ -94,7 +94,7 @@ public:
     xml_error(int code): std::system_error(std::error_code(code, xml::xml_category())) { }
     xml_error(int code, const std::string& message): std::system_error(std::error_code(code, xml::xml_category()), message) { }
 
-    xml_error(xml::errc code): std::system_error(std::error_code(int(code), xml::xml_category())) { }
+    xml_error(xml::errc code): std::system_error(std::error_code(static_cast<int>(code), xml::xml_category())) { }
     xml_error(xml::errc code, const std::string& message): std::system_error(std::error_code(static_cast<int>(code), xml::xml_category()), message) { }
 };
 
