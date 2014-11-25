@@ -144,7 +144,7 @@ std::string real_path(const std::string& path);
 void chown(const std::string& name, storage::uid, storage::gid, bool deref= true);
 void chmod(const std::string& name, storage::perm);
 
-void mkdir(const std::string& name, storage::perm);
+void mkdir(const std::string& name, storage::perm = perm::user_all | perm::group_read | perm::group_exec | perm::other_read | perm::other_exec);
 
 bool exists(const std::string& name) noexcept;
 storage::type get_type(const std::string& name) noexcept;
