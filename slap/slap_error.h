@@ -136,10 +136,10 @@ const std::error_category& slap_category();
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline std::error_code make_error_code(slap::errc e)
-{ return std::error_code(int(e), slap_category()); }
+{ return std::error_code(static_cast<int>(e), slap_category()); }
 
 inline std::error_condition make_error_condition(slap::errc e)
-{ return std::error_condition(int(e), slap_category()); }
+{ return std::error_condition(static_cast<int>(e), slap_category()); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class slap_error: public std::system_error
