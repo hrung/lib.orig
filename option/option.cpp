@@ -114,7 +114,7 @@ void options::parse(int argc, char* argv[], int& index)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 using std::setw; using std::left; using std::right; using std::endl;
 
-std::string options::usage()
+std::string options::usage() const
 {
     std::ostringstream stream;
     for(const_reference option: _M_c)
