@@ -132,10 +132,10 @@ const std::error_category& hei_category();
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline std::error_code make_error_code(hei::errc e)
-{ return std::error_code(int(e), hei_category()); }
+{ return std::error_code(static_cast<int>(e), hei_category()); }
 
 inline std::error_condition make_error_condition(hei::errc e)
-{ return std::error_condition(int(e), hei_category()); }
+{ return std::error_condition(static_cast<int>(e), hei_category()); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class hei_error: public std::system_error
