@@ -69,10 +69,10 @@ const std::error_category& pam_category();
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline std::error_code make_error_code(pam::errc e)
-{ return std::error_code(int(e), pam_category()); }
+{ return std::error_code(static_cast<int>(e), pam_category()); }
 
 inline std::error_condition make_error_condition(pam::errc e)
-{ return std::error_condition(int(e), pam_category()); }
+{ return std::error_condition(static_cast<int>(e), pam_category()); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class pam_error: public std::system_error
