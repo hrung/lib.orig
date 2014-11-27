@@ -131,6 +131,9 @@ public:
 
     void set_params(alsa::format format, alsa::access access, unsigned channels, unsigned rate, bool resample = true, unsigned latency = 100000);
 
+    int read(void* buffer, unsigned frames);
+    int write(void* buffer, unsigned frames);
+
 protected:
     snd_pcm_t* _M_pcm = nullptr;
 };

@@ -45,4 +45,22 @@ void device::set_params(alsa::format format, alsa::access access, unsigned chann
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+int device::read(void* buffer, unsigned frames)
+{
+    int n = snd_pcm_readi(_M_pcm, buffer, frames);
+    if(n < 0) throw alsa_error(n, "snd_pcm_readi");
+
+    return n;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+int device::write(void* buffer, unsigned frames)
+{
+    int n = snd_pcm_writei(_M_pcm, buffer, frames);
+    if(n < 0) throw alsa_error(n, "snd_pcm_writei");
+
+    return n;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 }
