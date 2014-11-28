@@ -103,6 +103,11 @@ enum class access
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+typedef snd_pcm_uframes_t frames;
+typedef unsigned int channels;
+typedef unsigned int rate;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 class device
 {
 public:
@@ -127,15 +132,59 @@ public:
     void swap(device& x) noexcept
     {
         std::swap(_M_pcm, x._M_pcm);
+        std::swap(_M_params, x._M_params);
     }
 
-    void set_params(alsa::format format, alsa::access access, unsigned channels, unsigned rate, bool resample = true, unsigned latency = 100000);
+    ////////////////////
+    void set_access(alsa::access);
+    alsa::access access();
 
+    void set_format(alsa::format);
+    alsa::format format();
+
+    int set_rate(alsa::rate x)
+    {
+        alsa::rate rate = x;
+        set_rate(&rate);
+        return rate;
+    }
+    void set_rate(alsa::rate*);
+    alsa::rate rate();
+
+    void set_channels(alsa::channels);
+    alsa::channels channels();
+
+    void set_resample(bool);
+    bool resample();
+
+    alsa::frames set_period(alsa::frames x)
+    {
+        alsa::frames frames = x;
+        set_period(&frames);
+        return frames;
+    }
+    void set_period(alsa::frames*);
+    alsa::frames period();
+
+    int set_periods(unsigned x)
+    {
+        unsigned periods = x;
+        set_periods(&periods);
+        return periods;
+    }
+    void set_periods(unsigned*);
+    unsigned periods();
+
+    int size(alsa::frames) noexcept;
+    alsa::frames frames(int count) noexcept;
+
+    ////////////////////
     int read(void* buffer, unsigned frames);
     int write(void* buffer, unsigned frames);
 
 protected:
     snd_pcm_t* _M_pcm = nullptr;
+    snd_pcm_hw_params_t* _M_params = nullptr;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
