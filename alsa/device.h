@@ -13,7 +13,6 @@
 #include "enum.h"
 
 #include <string>
-#include <memory>
 #include <utility>
 
 #include <alsa/asoundlib.h>
