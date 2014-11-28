@@ -84,10 +84,9 @@ alsa::frames device::write(void* buffer, alsa::frames frames)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void device::recover(int code, bool silent)
+bool device::recover(int code, bool silent) noexcept
 {
-    code = snd_pcm_recover(_M_pcm, code, silent);
-    if(code) throw alsa_error(code, "snd_pcm_recover");
+    return !snd_pcm_recover(_M_pcm, code, silent);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

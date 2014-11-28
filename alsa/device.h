@@ -139,7 +139,8 @@ public:
 
     alsa::frames read(void* buffer, alsa::frames);
     alsa::frames write(void* buffer, alsa::frames);
-    void recover(int code, bool silent = true);
+
+    bool recover(int code, bool silent = true) noexcept;
 
 protected:
     snd_pcm_t* _M_pcm = nullptr;
