@@ -56,7 +56,9 @@ enum class open_opt
     none,
     create,
     trunc,
-    append
+    append,
+    sync,
+    direct,
 };
 ENUM_OPERATOR(open_opt)
 

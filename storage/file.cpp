@@ -46,6 +46,8 @@ file::file(const std::string& name, storage::open open, open_opt opt, storage::p
     if(opt && open_opt::create) val|= O_CREAT;
     if(opt && open_opt::trunc)  val|= O_TRUNC;
     if(opt && open_opt::append) val|= O_APPEND;
+    if(opt && open_opt::sync)   val|= O_SYNC;
+    if(opt && open_opt::direct) val|= O_DIRECT;
 
     _M_fd= ::open(name.data(), val, static_cast<mode_t>(perm));
     if(_M_fd == invalid) throw errno_error();
