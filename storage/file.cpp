@@ -12,10 +12,6 @@
 #include <memory>
 #include <cstdlib>
 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <sys/select.h>
 #include <limits.h> // PATH_MAX
 #include <sys/ioctl.h>
@@ -28,26 +24,7 @@ namespace storage
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 file::file(const std::string& name, storage::open open, open_opt opt, storage::perm perm)
 {
-    int val;
-/*  switch(open)
-    {
-    case open::read_write:
-        val= O_RDWR;
-        break;
-    case open::write:
-        val= O_WRONLY;
-        break;
-    default:
-        val= O_RDONLY;
-        break;
-    }
-*/  val= static_cast<int>(open);
-
-    if(opt && open_opt::create) val|= O_CREAT;
-    if(opt && open_opt::trunc)  val|= O_TRUNC;
-    if(opt && open_opt::append) val|= O_APPEND;
-    if(opt && open_opt::sync)   val|= O_SYNC;
-    if(opt && open_opt::direct) val|= O_DIRECT;
+    int val= static_cast<int>(open) | static_cast<int>(opt);
 
     _M_fd= ::open(name.data(), val, static_cast<mode_t>(perm));
     if(_M_fd == invalid) throw errno_error();
@@ -97,22 +74,7 @@ ssize_t file::read(void* buffer, size_t max, bool wait)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 offset file::seek(storage::offset offset, storage::origin origin)
 {
-    int val;
-/*  switch(origin)
-    {
-    case origin::beg:
-        val= SEEK_SET;
-        break;
-    case origin::cur:
-        val= SEEK_CUR;
-        break;
-    case origin::end:
-        val= SEEK_END;
-        break;
-    }
-*/  val= static_cast<int>(origin);
-
-    storage::offset n= ::lseek(_M_fd, offset, val);
+    storage::offset n= ::lseek(_M_fd, offset, static_cast<int>(origin));
     if(n == -1) throw errno_error();
 
     return n;

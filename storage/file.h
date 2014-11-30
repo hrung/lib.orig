@@ -17,7 +17,10 @@
 #include <string>
 #include <cstdint>
 
+#include <unistd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace storage
@@ -45,25 +48,30 @@ typedef gid_t gid;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum class open
 {
-    read,
-    write,
-    read_write
+    read = O_RDONLY,
+    write = O_WRONLY,
+    read_write = O_RDWR,
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum class open_opt
 {
-    none,
-    create,
-    trunc,
-    append,
-    sync,
-    direct,
+    none   = 0,
+    create = O_CREAT,
+    trunc  = O_TRUNC,
+    append = O_APPEND,
+    sync   = O_SYNC,
+    direct = O_DIRECT,
 };
 ENUM_OPERATOR(open_opt)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-enum class origin { beg, cur, end };
+enum class origin
+{
+    beg = SEEK_SET,
+    cur = SEEK_CUR,
+    end = SEEK_END,
+};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class file
