@@ -42,7 +42,7 @@ void file::close() noexcept
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-ssize_t file::write(const void* buffer, size_t n)
+size_t file::write(const void* buffer, size_t n)
 {
     ssize_t count= ::write(_M_fd, buffer, n);
     if(count == -1) throw errno_error();
@@ -51,10 +51,10 @@ ssize_t file::write(const void* buffer, size_t n)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-ssize_t file::read(std::string& string, size_t max, bool wait)
+size_t file::read(std::string& string, size_t max, bool wait)
 {
     std::unique_ptr<char[]> buffer(new char[max+1]);
-    ssize_t count= read(buffer.get(), max, wait);
+    size_t count= read(buffer.get(), max, wait);
     buffer[count]=0;
 
     string.assign(buffer.get(), count);
@@ -62,7 +62,7 @@ ssize_t file::read(std::string& string, size_t max, bool wait)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-ssize_t file::read(void* buffer, size_t max, bool wait)
+size_t file::read(void* buffer, size_t max, bool wait)
 {
     ssize_t count=0;
     if(wait || can_read(std::chrono::seconds(0))) count= ::read(_M_fd, buffer, max);

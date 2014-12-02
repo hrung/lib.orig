@@ -107,12 +107,12 @@ public:
         std::swap(_M_fd, x._M_fd);
     }
 
-    ssize_t write(const std::string& string)
+    size_t write(const std::string& string)
         { return write(string.data(), string.size()); }
-    ssize_t write(const void* buffer, size_t n);
+    size_t write(const void* buffer, size_t n);
 
-    ssize_t read(std::string& string, size_t max, bool wait= true);
-    ssize_t read(void* buffer, size_t max, bool wait= true);
+    size_t read(std::string& string, size_t max, bool wait= true);
+    size_t read(void* buffer, size_t max, bool wait= true);
 
     storage::offset seek(storage::offset, storage::origin = origin::beg);
     storage::offset tell() { return seek(0, origin::cur); }
