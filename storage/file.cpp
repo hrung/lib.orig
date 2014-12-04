@@ -91,6 +91,13 @@ offset file::size()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+void file::truncate(storage::offset length)
+{
+    int val = ftruncate(_M_fd, length);
+    if(val == -1) throw errno_error();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 bool file::can_read(std::chrono::seconds s, std::chrono::nanoseconds n)
 {
     timespec time= { static_cast<std::time_t>(s.count()), static_cast<long>(n.count()) };

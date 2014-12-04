@@ -118,6 +118,8 @@ public:
     storage::offset tell() { return seek(0, origin::cur); }
     storage::offset size();
 
+    void truncate(storage::offset length);
+
     template<typename Rep, typename Period>
     bool can_read(const std::chrono::duration<Rep, Period>& x)
     {
