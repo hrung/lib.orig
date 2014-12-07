@@ -114,6 +114,10 @@ public:
     size_t read(std::string& string, size_t max, bool wait= true);
     size_t read(void* buffer, size_t max, bool wait= true);
 
+    std::string readline(bool wait = true, char delim= '\n');
+    bool getline(std::string& string, bool wait = true, char delim = '\n');
+    bool eof();
+
     storage::offset seek(storage::offset, storage::origin = origin::beg);
     storage::offset tell() { return seek(0, origin::cur); }
     storage::offset size();

@@ -72,6 +72,45 @@ size_t file::read(void* buffer, size_t max, bool wait)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+std::string file::readline(bool wait, char delim)
+{
+    std::string string;
+
+    for(char c;;)
+    {
+        size_t n= read(&c, sizeof(c), wait);
+        if(n == 0 || c == delim) break;
+        string+= c;
+    }
+
+    return string;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+bool file::getline(std::string& string, bool wait, char delim)
+{
+    string.clear();
+
+    for(char c;;)
+    {
+        size_t n= read(&c, sizeof(c), wait);
+        if(n == 0) return string.size();
+        if(c == delim) return true;
+        string+= c;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+bool file::eof()
+{
+    offset n= tell();
+    offset e= seek(0, origin::end);
+
+    seek(n);
+    return n == e;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 offset file::seek(storage::offset offset, storage::origin origin)
 {
     storage::offset n= ::lseek(_M_fd, offset, static_cast<int>(origin));
