@@ -8,7 +8,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "device.h"
 #include "hei_error.h"
-#include "stream.hpp"
 
 #include <cstring>
 
@@ -55,7 +54,7 @@ device::device(transport tran, protocol proto, unsigned number, const std::strin
     interface::open();
 
     _M_tran= new HEITransport;
-    memset(_M_tran, 0, sizeof(HEITransport));
+    std::memset(_M_tran, 0, sizeof(HEITransport));
 
     _M_tran->Transport= static_cast<int>(tran);
     _M_tran->Protocol= static_cast<int>(proto);
@@ -67,12 +66,12 @@ device::device(transport tran, protocol proto, unsigned number, const std::strin
     WORD count=1;
 
     _M_dev= new HEIDevice;
-    memset(_M_dev, 0, sizeof(HEIDevice));
+    std::memset(_M_dev, 0, sizeof(HEIDevice));
 
     HEISetQueryTimeout(PLC_QUERY_TIMEOUT);
 
     if(number > max_number)
-        throw std::invalid_argument(std::string() << "device::device(): number must be <= " << max_number);
+        throw std::invalid_argument("device::device(): number must be <= " + std::to_string(max_number));
 
     if(number == 0 && name.empty())
         throw std::invalid_argument("device::device(): either name or number must be specified");
@@ -92,7 +91,7 @@ device::device(transport tran, protocol proto, unsigned number, const std::strin
 
     if(count == 0)
         throw hei_error(errc::timeout,
-    std::string() << "device::device(): device #" << number << " '" << name << "' not found");
+    "device::device(): device #" + std::to_string(number) + " '" + name + "' not found");
 
     // open device
     err= HEIOpenDevice(_M_tran, _M_dev, HEIAPIVERSION, PLC_OPEN_TIMEOUT, PLC_OPEN_RETRIES, FALSE);
@@ -101,7 +100,7 @@ device::device(transport tran, protocol proto, unsigned number, const std::strin
 
     // get device data
     DeviceDef dd;
-    memset(&dd, 0, sizeof(dd));
+    std::memset(&dd, 0, sizeof(dd));
 
     err= HEIReadDeviceDef(_M_dev, (BYTE*)(&dd), sizeof(dd));
     if(err) throw hei_error(err);
