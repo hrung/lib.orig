@@ -40,7 +40,7 @@ enum perm: uint32_t
     user_read_write = user_read | user_write,
     user_all = user_read | user_write | user_exec
 };
-ENUM_OPERATOR(perm)
+DECLARE_OPERATOR(perm)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }

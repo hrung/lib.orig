@@ -63,7 +63,7 @@ enum class open_opt
     sync   = O_SYNC,
     direct = O_DIRECT,
 };
-ENUM_OPERATOR(open_opt)
+DECLARE_OPERATOR(open_opt)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum class origin

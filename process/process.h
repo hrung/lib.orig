@@ -83,7 +83,7 @@ enum class redir
     cerr=4,
     all= cout | cin | cerr
 };
-ENUM_OPERATOR(redir)
+DECLARE_OPERATOR(redir)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class process

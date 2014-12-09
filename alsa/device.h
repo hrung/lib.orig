@@ -35,7 +35,7 @@ enum class mode
     non_block   = SND_PCM_NONBLOCK,
     async       = SND_PCM_ASYNC,
 };
-ENUM_OPERATOR(mode)
+DECLARE_OPERATOR(mode)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum class format
