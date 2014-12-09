@@ -6,8 +6,8 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef TERN_H
-#define TERN_H
+#ifndef TERN_HPP
+#define TERN_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum uncertain_t { uncertain };
@@ -16,7 +16,7 @@ enum uncertain_t { uncertain };
 struct tern
 {
     constexpr tern() noexcept: value(uncertain_value) { }
-    constexpr tern(bool x) noexcept: value(x? true_value: false_value) { }
+    constexpr tern(bool x) noexcept: value(x ? true_value : false_value) { }
     constexpr tern(uncertain_t) noexcept: value(uncertain_value) { }
 
     constexpr operator bool() const noexcept { return value == true_value; }
@@ -36,8 +36,8 @@ struct tern
 ///
 constexpr inline tern operator!(tern x) noexcept
 {
-    return x.value == tern::false_value? tern(true):
-        x.value == tern::true_value? tern(false):
+    return x.value == tern::false_value ? tern(true) :
+        x.value == tern::true_value ? tern(false) :
     tern(uncertain);
 }
 
@@ -63,11 +63,11 @@ inline tern operator&&(tern x, tern y) noexcept
     else return tern(uncertain);
 }
 
-constexpr inline tern operator&&(tern x, bool y) noexcept { return y? x: tern(false); }
-constexpr inline tern operator&&(bool x, tern y) noexcept { return x? y: tern(false); }
+constexpr inline tern operator&&(tern x, bool y) noexcept { return y ? x : tern(false); }
+constexpr inline tern operator&&(bool x, tern y) noexcept { return x ? y : tern(false); }
 
-constexpr inline tern operator&&(uncertain_t, tern x) noexcept { return x.value == tern::false_value? tern(false): tern(uncertain); }
-constexpr inline tern operator&&(tern x, uncertain_t) noexcept { return x.value == tern::false_value? tern(false): tern(uncertain); }
+constexpr inline tern operator&&(uncertain_t, tern x) noexcept { return x.value == tern::false_value ? tern(false) : tern(uncertain); }
+constexpr inline tern operator&&(tern x, uncertain_t) noexcept { return x.value == tern::false_value ? tern(false) : tern(uncertain); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /// x           y           x || y
@@ -91,11 +91,11 @@ inline tern operator||(tern x, tern y) noexcept
     else return tern(uncertain);
 }
 
-constexpr inline tern operator||(tern x, bool y) noexcept { return y? tern(true): x; }
-constexpr inline tern operator||(bool x, tern y) noexcept { return x? tern(true): y; }
+constexpr inline tern operator||(tern x, bool y) noexcept { return y ? tern(true) : x; }
+constexpr inline tern operator||(bool x, tern y) noexcept { return x ? tern(true) : y; }
 
-constexpr inline tern operator||(uncertain_t, tern x) noexcept { return x.value == tern::true_value? tern(true): tern(uncertain); }
-constexpr inline tern operator||(tern x, uncertain_t) noexcept { return x.value == tern::true_value? tern(true): tern(uncertain); }
+constexpr inline tern operator||(uncertain_t, tern x) noexcept { return x.value == tern::true_value ? tern(true) : tern(uncertain); }
+constexpr inline tern operator||(tern x, uncertain_t) noexcept { return x.value == tern::true_value ? tern(true) : tern(uncertain); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /// x           y           x == y
@@ -136,4 +136,4 @@ constexpr inline bool operator!=(uncertain_t, tern y) noexcept { return !y.uncer
 constexpr inline bool operator!=(tern x, uncertain_t) noexcept { return !x.uncertain(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#endif // TERN_H
+#endif // TERN_HPP
