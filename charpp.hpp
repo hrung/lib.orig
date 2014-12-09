@@ -6,45 +6,45 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef ARGUMENTS_H
-#define ARGUMENTS_H
+#ifndef CHARPP_HPP
+#define CHARPP_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "container.h"
-#include "charpp.hpp"
-
-#include <initializer_list>
-#include <string>
-#include <vector>
+#include <memory>
+#include <cstdlib>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace app
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class arguments: public container<std::vector<std::string>>
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct charpp_deleter
 {
-public:
-    arguments() = default;
-    arguments(const arguments&) = default;
-    arguments(arguments&&) = default;
-
-    arguments(std::initializer_list<value_type> x) { insert(x); }
-
-    arguments& operator=(const arguments&) = default;
-    arguments& operator=(arguments&&) = default;
-
-    ////////////////////
-    using container::insert;
-    using container::erase;
-
-    ////////////////////
-    charpp_ptr to_charpp() const;
-    charpp_ptr to_charpp(const std::string& prepend) const;
+    void operator()(char* args[]) noexcept
+    {
+        if(args)
+        {
+            for(char** ri = args; *ri; ++ri) std::free(*ri);
+            std::free(args);
+        }
+    }
 };
+
+///
+/// \brief charpp_ptr
+///
+/// Smart pointer to a NULL-terminated array of char* pointers.
+/// These pointers are used, for example, by execve to pass arguments
+/// and environment.
+///
+/// app::arguments and app::environ classes can return charpp_ptr through
+/// to_charpp function.
+///
+typedef std::unique_ptr<char*[], charpp_deleter> charpp_ptr;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#endif // ARGUMENTS_H
+#endif // CHARPP_HPP

@@ -8,7 +8,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "pam.h"
 #include "pam_error.h"
-#include "utility.h"
+#include "charpp.hpp"
 
 #include <security/pam_appl.h>
 #include <cstdlib>

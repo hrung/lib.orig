@@ -9,7 +9,7 @@
 #include "slap.h"
 #include "slap_error.h"
 #include "slap_type.h"
-#include "utility.h"
+#include "string.hpp"
 
 #include <memory>
 #include <ldap.h>
