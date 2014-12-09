@@ -6,8 +6,8 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef STREAM_H
-#define STREAM_H
+#ifndef STREAM_HPP
+#define STREAM_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "convert.hpp"
@@ -24,7 +24,7 @@
 template<typename T>
 std::string& operator<<(std::string& stream, const T& value)
 {
-    stream+= convert::to<std::string>(value);
+    stream += convert::to(value);
     return stream;
 }
 
@@ -37,9 +37,9 @@ std::string& operator<<(std::string& stream, const T& value)
 template<typename T>
 std::string&& operator<<(std::string&& stream, const T& value)
 {
-    stream+= convert::to<std::string>(value);
+    stream += convert::to(value);
     return std::move(stream);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#endif
+#endif // STREAM_HPP
