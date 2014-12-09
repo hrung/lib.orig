@@ -13,7 +13,7 @@
 #include "environ.h"
 #include "arguments.h"
 #include "basic_filebuf.h"
-#include "enum.h"
+#include "enum.hpp"
 
 #include <fstream>
 #include <functional>
