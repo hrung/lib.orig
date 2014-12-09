@@ -12,7 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "slap_type.h"
 #include "optional.h"
-#include "convert.h"
+#include "convert.hpp"
 #include "container.h"
 
 #include <functional>
