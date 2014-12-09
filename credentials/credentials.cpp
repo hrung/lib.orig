@@ -7,7 +7,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "credentials.h"
-#include "errno_error.h"
+#include "errno_error.hpp"
 
 #include <unistd.h>
 #include <sys/types.h>

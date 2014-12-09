@@ -8,7 +8,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "environ.h"
 #include "string.hpp"
-#include "errno_error.h"
+#include "errno_error.hpp"
 
 #include <cstdlib>
 #include <cstring>
