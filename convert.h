@@ -10,10 +10,11 @@
 #define CONVERT_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include <stdexcept>
-#include <type_traits>
-#include <sstream>
 #include <iomanip>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
 
 #ifdef QT_CORE_LIB
 #  include <QString>
@@ -24,7 +25,7 @@ namespace convert
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-template<typename ToType, typename FromType, typename= void>
+template<typename ToType, typename FromType, typename = void>
 struct _M_convert
 {
     static ToType to(FromType&& source)
@@ -32,7 +33,7 @@ struct _M_convert
         std::stringstream stream;
         ToType value;
 
-        if((stream << source) && (stream >> value) && stream.eof())
+        if((stream << std::forward<FromType>(source)) && (stream >> value) && stream.eof())
             return value;
         else throw std::invalid_argument("Conversion failed");
     }
@@ -46,14 +47,14 @@ using enable_if_int = typename std::enable_if< std::is_integral<T>::value &&
 template<typename ToType, typename FromType>
 struct _M_convert<ToType, FromType, enable_if_int<ToType>>
 {
-    static ToType to(FromType&& source, int base=0)
+    static ToType to(FromType&& source, int base = 0)
     {
         std::stringstream stream;
         ToType value;
 
         stream >> std::setbase(base);
 
-        if((stream << source) && (stream >> std::ws >> value) && (stream >> std::ws).eof())
+        if((stream << std::forward<FromType>(source)) && (stream >> std::ws >> value) && (stream >> std::ws).eof())
             return value;
         else throw std::invalid_argument("Conversion failed");
     }
@@ -63,14 +64,14 @@ struct _M_convert<ToType, FromType, enable_if_int<ToType>>
 template<typename FromType>
 struct _M_convert<bool, FromType, void>
 {
-    static bool to(FromType&& source, bool text= false)
+    static bool to(FromType&& source, bool text = false)
     {
         std::stringstream stream;
         bool value;
 
-        stream >> (text? std::boolalpha: std::noboolalpha);
+        stream >> (text ? std::boolalpha : std::noboolalpha);
 
-        if((stream << source) && (stream >> std::ws >> value) && (stream >> std::ws).eof())
+        if((stream << std::forward<FromType>(source)) && (stream >> std::ws >> value) && (stream >> std::ws).eof())
             return value;
         else throw std::invalid_argument("Conversion failed");
     }
@@ -84,7 +85,7 @@ struct _M_convert<std::string, FromType, void>
     {
         std::stringstream stream;
 
-        if(stream << source)
+        if(stream << std::forward<FromType>(source))
             return stream.str();
         else throw std::invalid_argument("Conversion failed");
     }
@@ -111,10 +112,10 @@ struct _M_convert<QString, FromType, void>
 ///
 /// Convert source from FromType to ToType.
 ///
-/// \example        auto n= convert::to<int>("123");
+/// \example        auto n = convert::to<int>("123");
 /// \example        std::string s(convert::to(567));
 ///
-template<typename ToType= std::string, typename FromType>
+template<typename ToType = std::string, typename FromType>
 ToType to(FromType&& source)
 {
     return _M_convert<ToType, FromType>::to(std::forward<FromType>(source));
@@ -129,7 +130,7 @@ ToType to(FromType&& source)
 /// Convert source from QString to ToType.
 ///
 #ifdef QT_CORE_LIB
-template<typename ToType= std::string>
+template<typename ToType = std::string>
 ToType to(const QString& source)
 {
     return _M_convert<ToType, std::string>::to(source.toStdString());
@@ -147,7 +148,7 @@ ToType to(const QString& source)
 ///
 /// \example        auto n= convert::to<long>("deadbeef", 16);
 ///
-template<typename ToType= int, typename FromType, enable_if_int<ToType>* = nullptr>
+template<typename ToType = int, typename FromType, enable_if_int<ToType>* = nullptr>
 ToType to(FromType&& source, int base)
 {
     return _M_convert<ToType, FromType>::to(std::forward<FromType>(source), base);
@@ -181,12 +182,12 @@ bool to_bool(FromType&& source, bool text)
 /// \example        std::string o= convert::to_oct<long>(1234567890);
 /// \example        std::string o= convert::to_oct("0x123");
 ///
-template<typename ViaType= int, typename FromType, enable_if_int<ViaType>* = nullptr>
+template<typename ViaType = int, typename FromType, enable_if_int<ViaType>* = nullptr>
 std::string to_oct(FromType&& source)
 {
     std::stringstream stream;
 
-    if(stream << std::oct << to<ViaType>(std::forward<FromType>(source)))
+    if(stream << std::oct << convert::to<ViaType>(std::forward<FromType>(source)))
         return stream.str();
     else throw std::invalid_argument("Conversion failed");
 }
@@ -202,12 +203,12 @@ std::string to_oct(FromType&& source)
 /// \example        std::string h= convert::to_hex<long>(1234567890);
 /// \example        std::string h= convert::to_hex("0123");
 ///
-template<typename ViaType= int, typename FromType, enable_if_int<ViaType>* = nullptr>
+template<typename ViaType = int, typename FromType, enable_if_int<ViaType>* = nullptr>
 std::string to_hex(FromType&& source)
 {
     std::stringstream stream;
 
-    if(stream << std::hex << to<ViaType>(std::forward<FromType>(source)))
+    if(stream << std::hex << convert::to<ViaType>(std::forward<FromType>(source)))
         return stream.str();
     else throw std::invalid_argument("Conversion failed");
 }
