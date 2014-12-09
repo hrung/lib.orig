@@ -6,8 +6,8 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef OPTIONAL_H
-#define OPTIONAL_H
+#ifndef OPTIONAL_HPP
+#define OPTIONAL_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include <utility>
@@ -80,24 +80,24 @@ struct optional
     void swap(value_type& x)
     {
         std::swap(_M_value, x);
-        _M_none= false;
+        _M_none = false;
     }
 
     template<typename U>
     void copy(optional<U>& x)
     {
-        _M_value= x._M_value;
-        _M_none= x._M_none;
+        _M_value = x._M_value;
+        _M_none = x._M_none;
     }
     void copy(const value_type& x)
     {
-        _M_value= x;
-        _M_none= false;
+        _M_value = x;
+        _M_none = false;
     }
     void clear()
     {
-        _M_value= value_type();
-        _M_none= true;
+        _M_value = value_type();
+        _M_none = true;
     }
 
     ////////////////////
@@ -125,18 +125,18 @@ template<typename T> inline bool operator!=(const optional<T>& x, none_t) noexce
 template<typename T>
 inline bool operator==(const optional<T>& x, const optional<T>& y)
 {
-    return ( x==none && y==none ) || ( x!=none && y!=none && *x == *y );
+    return ( x == none && y == none ) || ( x != none && y != none && *x == *y );
 }
 
 template<typename T>
-inline bool operator!=(const optional<T>& x, const optional<T>& y) { return !(x==y); }
+inline bool operator!=(const optional<T>& x, const optional<T>& y) { return !(x == y); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-template<typename T> inline bool operator==(const optional<T>& x, const T& y) { return x==optional<T>(y); }
-template<typename T> inline bool operator==(const T& x, const optional<T>& y) { return optional<T>(x)==y; }
+template<typename T> inline bool operator==(const optional<T>& x, const T& y) { return x == optional<T>(y); }
+template<typename T> inline bool operator==(const T& x, const optional<T>& y) { return optional<T>(x) == y; }
 
-template<typename T> inline bool operator!=(const T& x, const optional<T>& y) { return optional<T>(x)!=y; }
-template<typename T> inline bool operator!=(const optional<T>& x, const T& y) { return x!=optional<T>(y); }
+template<typename T> inline bool operator!=(const T& x, const optional<T>& y) { return optional<T>(x) != y; }
+template<typename T> inline bool operator!=(const optional<T>& x, const T& y) { return x != optional<T>(y); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#endif // OPTIONAL_H
+#endif // OPTIONAL_HPP
