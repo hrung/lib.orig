@@ -6,21 +6,21 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef OPTION_H
-#define OPTION_H
+#ifndef OPTION_HPP
+#define OPTION_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+#include "container.hpp"
 #include "convert.hpp"
 #include "tern.hpp"
-#include "container.hpp"
 
 #include <functional>
-#include <stdexcept>
-#include <type_traits>
-#include <vector>
-#include <string>
 #include <initializer_list>
 #include <limits>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace app
@@ -55,7 +55,7 @@ public:
     /// \example option('b', "Option baz", false);
     ///
     template<typename LongNameType, typename DescriptionType>
-    option(LongNameType&& long_name, char name, DescriptionType&& description, bool single= true):
+    option(LongNameType&& long_name, char name, DescriptionType&& description, bool single = true):
         _M_long_name(std::forward<LongNameType>(long_name)),
         _M_code(name),
         _M_description(std::forward<DescriptionType>(description)),
@@ -63,7 +63,7 @@ public:
     { }
 
     template<typename LongNameType, typename DescriptionType>
-    option(LongNameType&& long_name, DescriptionType&& description, bool single= true):
+    option(LongNameType&& long_name, DescriptionType&& description, bool single = true):
         _M_long_name(std::forward<LongNameType>(long_name)),
         _M_code(generate()),
         _M_description(std::forward<DescriptionType>(description)),
@@ -71,7 +71,7 @@ public:
     { }
 
     template<typename DescriptionType>
-    option(char name, DescriptionType&& description, bool single= true):
+    option(char name, DescriptionType&& description, bool single = true):
         _M_code(name),
         _M_description(std::forward<DescriptionType>(description)),
         _M_single(single)
@@ -96,7 +96,7 @@ public:
     /// \example string arg3;      option('b', "Option baz", arg3, optional);
     ///
     template<typename LongNameType, typename DescriptionType, typename ValueType>
-    option(LongNameType&& long_name, char name, DescriptionType&& description, ValueType& value, tern need_arg= true):
+    option(LongNameType&& long_name, char name, DescriptionType&& description, ValueType& value, tern need_arg = true):
         _M_long_name(std::forward<LongNameType>(long_name)),
         _M_code(name),
         _M_description(std::forward<DescriptionType>(description)),
@@ -106,7 +106,7 @@ public:
     { }
 
     template<typename LongNameType, typename DescriptionType, typename ValueType>
-    option(LongNameType&& long_name, DescriptionType&& description, ValueType& value, tern need_arg= true):
+    option(LongNameType&& long_name, DescriptionType&& description, ValueType& value, tern need_arg = true):
         _M_long_name(std::forward<LongNameType>(long_name)),
         _M_code(generate()),
         _M_description(std::forward<DescriptionType>(description)),
@@ -116,7 +116,7 @@ public:
     { }
 
     template<typename DescriptionType, typename ValueType>
-    option(char name, DescriptionType&& description, ValueType& value, tern need_arg= true):
+    option(char name, DescriptionType&& description, ValueType& value, tern need_arg = true):
         _M_code(name),
         _M_description(std::forward<DescriptionType>(description)),
         _M_need(need_arg? need_arg: uncertain),
@@ -134,7 +134,7 @@ public:
 
     ///////////////////
     const std::string& long_name() const noexcept { return _M_long_name; }
-    char name() const noexcept { return static_cast<char>(_M_code > name_max? 0: _M_code); }
+    char name() const noexcept { return static_cast<char>(_M_code > name_max ? 0 : _M_code); }
 
     tern need_arg() const noexcept { return _M_need; }
     bool single() const noexcept { return _M_single; }
@@ -149,22 +149,22 @@ private:
     int _M_code;
     std::string _M_description;
 
-    tern _M_need= false;
+    tern _M_need = false;
     bool _M_single;
 
-    int _M_count=0;
-    bool _M_have= false;
+    int _M_count = 0;
+    bool _M_have = false;
 
-    std::function<void(const std::string&)> assign= nullptr;
+    std::function<void(const std::string&)> assign = nullptr;
 
     ///////////////////
     void inc_count() noexcept { ++_M_count; }
-    void set_have() noexcept { _M_have= true; }
+    void set_have() noexcept { _M_have = true; }
 
     int code() const noexcept { return _M_code; }
     bool generated() const noexcept { return _M_code > name_max; }
 
-    static constexpr int name_max= std::numeric_limits<char>::max();
+    static constexpr int name_max = std::numeric_limits<char>::max();
     static int generate();
 
     friend class options;
@@ -175,9 +175,9 @@ private:
     {
         static void assign(T& value, const std::string& source)
         {
-            value= convert::to<T>(source);
+            value = convert::to<T>(source);
         }
-        static constexpr bool single= true;
+        static constexpr bool single = true;
     };
 
     template<typename T>
@@ -187,7 +187,7 @@ private:
         {
             value.insert(value.end(), convert::to<typename T::value_type>(source));
         }
-        static constexpr bool single= false;
+        static constexpr bool single = false;
     };
 };
 
@@ -207,26 +207,26 @@ public:
     ////////////////////
     reference operator()(const std::string& long_name)
     {
-        iterator ri= find(long_name);
+        iterator ri = find(long_name);
         if(ri == end()) throw std::out_of_range("option::operator()");
         return *ri;
     }
     const_reference operator()(const std::string& long_name) const
     {
-        const_iterator ri= find(long_name);
+        const_iterator ri = find(long_name);
         if(ri == end()) throw std::out_of_range("option::operator()");
         return *ri;
     }
 
     reference operator()(char name)
     {
-        iterator ri= find(name);
+        iterator ri = find(name);
         if(ri == end()) throw std::out_of_range("option::operator()");
         return *ri;
     }
     const_reference operator()(char name) const
     {
-        const_iterator ri= find(name);
+        const_iterator ri = find(name);
         if(ri == end()) throw std::out_of_range("option::operator()");
         return *ri;
     }
@@ -241,26 +241,26 @@ public:
     ////////////////////
     iterator find(const std::string& long_name)
     {
-        for(auto ri= begin(); ri!=end(); ++ri)
+        for(auto ri = begin(); ri != end(); ++ri)
             if(ri->long_name() == long_name) return ri;
         return end();
     }
     const_iterator find(const std::string& long_name) const
     {
-        for(auto ri= begin(); ri!=end(); ++ri)
+        for(auto ri = begin(); ri != end(); ++ri)
             if(ri->long_name() == long_name) return ri;
         return end();
     }
 
     iterator find(char name)
     {
-        for(auto ri= begin(); ri!=end(); ++ri)
+        for(auto ri = begin(); ri != end(); ++ri)
             if(ri->name() == name) return ri;
         return end();
     }
     const_iterator find(char name) const
     {
-        for(auto ri= begin(); ri!=end(); ++ri)
+        for(auto ri = begin(); ri != end(); ++ri)
             if(ri->name() == name) return ri;
         return end();
     }
@@ -274,4 +274,4 @@ public:
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#endif // OPTION_H
+#endif // OPTION_HPP

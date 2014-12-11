@@ -6,11 +6,11 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "option.h"
+#include "option.hpp"
 #include "string.hpp"
 
-#include <sstream>
 #include <iomanip>
+#include <sstream>
 
 #include <getopt.h>
 
@@ -21,10 +21,10 @@ namespace app
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int option::generate()
 {
-    static int code= name_max;
+    static int code = name_max;
     if(++code)
         return code;
-    else throw std::runtime_error("option::get_rep(): overflow");
+    else throw std::runtime_error("option::generate(): overflow");
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -41,12 +41,12 @@ void options::parse(int argc, char* argv[], int& index)
 
         if(!option.generated())
         {
-            short_opt+= option.name();
+            short_opt += option.name();
 
             if(option.need_arg() == uncertain)
-                short_opt+= "::";
+                short_opt += "::";
             else if(option.need_arg())
-                short_opt+= ":";
+                short_opt += ":";
         }
 
         if(option.long_name().size())
@@ -54,7 +54,7 @@ void options::parse(int argc, char* argv[], int& index)
             long_opt_name.push_back(clone(option.long_name()));
 
             long_opt.push_back({ long_opt_name.back().get(),
-                option.need_arg() == uncertain? optional_argument: option.need_arg()? required_argument: no_argument,
+                option.need_arg() == uncertain ? optional_argument : option.need_arg() ? required_argument : no_argument,
             nullptr, option.code() });
         }
     }
@@ -63,17 +63,17 @@ void options::parse(int argc, char* argv[], int& index)
     ////////////////////
     try
     {
-        optind=1;
-        opterr=0;
+        optind = 1;
+        opterr = 0;
 
         while(true)
         {
-            int c= getopt_long(argc, argv, short_opt.data(), &long_opt[0], nullptr);
-            if(c==-1) break;
+            int c = getopt_long(argc, argv, short_opt.data(), &long_opt[0], nullptr);
+            if(c == -1) break;
 
-            if(c=='?')
+            if(c == '?')
                 throw std::invalid_argument("Invalid option");
-            else if(c==':')
+            else if(c == ':')
                 throw std::invalid_argument("Missing argument");
 
             for(reference option: _M_c)
@@ -96,19 +96,19 @@ void options::parse(int argc, char* argv[], int& index)
     }
     catch(std::exception& e)
     {
-        index= optind;
+        index = optind;
 
-        std::string message= e.what();
-        message+= " '";
+        std::string message = e.what();
+        message += " '";
             if(optopt && optopt <= option::name_max)
-                message+= char(optopt);
-            else message+= argv[--index];
-        message+= "'";
+                message += char(optopt);
+            else message += argv[--index];
+        message += "'";
 
         throw std::invalid_argument(message);
     }
 
-    index= optind;
+    index = optind;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -121,12 +121,12 @@ std::string options::usage() const
     {
         stream << setw(8) << right;
         if(option.name())
-            stream << std::string("-")+ option.name()+ (option.long_name().size()? ", ": "  ");
+            stream << std::string("-") + option.name() + (option.long_name().size() ? ", " : "  ");
         else stream << ' ';
 
         stream << setw(20) << left;
         if(option.long_name().size())
-            stream << std::string("--")+ option.long_name()+ (option.need_arg() == uncertain? "[=arg]": option.need_arg()? "=<arg>": "");
+            stream << std::string("--") + option.long_name() + (option.need_arg() == uncertain ? "[=arg]" : option.need_arg() ? "=<arg>" : "");
         else stream << ' ';
 
         stream << option.description() << std::endl;
