@@ -10,8 +10,10 @@
 #define HEI_ERROR_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include <system_error>
 #include <string>
+#include <system_error>
+
+#define HEIUNIX
 #include <hei.h>
 
 #undef min

@@ -10,7 +10,8 @@
 #define DEVICE_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "hei_type.h"
+#include "hei_type.hpp"
+
 #include <string>
 
 #define HEIUNIX
@@ -31,7 +32,7 @@ public:
     device(const device&) = delete;
     device(device&& x) noexcept { swap(x); }
 
-    device(transport, protocol, unsigned number, const std::string& name= std::string());
+    device(transport, protocol, unsigned number, const std::string& name = std::string());
     ~device() { close(); }
 
     void close() noexcept;
@@ -61,11 +62,11 @@ public:
     bool read_input(unsigned offset, unsigned input);
 
 private:
-    HEITransport* _M_tran= nullptr;
-    HEIDevice* _M_dev= nullptr;
+    HEITransport* _M_tran = nullptr;
+    HEIDevice* _M_dev = nullptr;
 
-    hei::family _M_family= family::none;
-    hei::module_type _M_type= module_type::none;
+    hei::family _M_family = family::none;
+    hei::module_type _M_type = module_type::none;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
