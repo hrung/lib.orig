@@ -12,7 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "environ.h"
 #include "arguments.h"
-#include "basic_filebuf.h"
+#include "filebuf.hpp"
 #include "enum.hpp"
 
 #include <fstream>
@@ -23,6 +23,24 @@
 
 #include <signal.h>
 #include <sys/types.h>
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///
+/// GNU libstdc++ currently does not support move semantics for streams (see gcc bug 53626),
+/// which will only be available in gcc 5. Therefore, the only way to take advantage of
+/// the I/O redirection feature of the process class is to use LLVM's libc++ with the clang++
+/// compiler (add -stdlib=libc++ flag). Or wait until gcc 5 is released with new version of the
+/// libstdc++.
+///
+#if !defined(disable_process_redir)
+#  if defined(__GNUC__)
+#    if !defined(_LIBCPP_VERSION) && (__GNUC__ < 5)
+#      define disable_process_redir
+#    endif
+#  else
+#    define disable_process_redir
+#  endif
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace app
@@ -92,19 +110,19 @@ public:
     typedef pid_t id;
     enum group_t { group };
 
-    typedef basic_filebuf<char> filebuf;
-
 public:
     process() = default;
     process(const process&) = delete;
     process(process&& x) noexcept { swap(x); }
 
     ////////////////////
+#if !defined(disable_process_redir)
     template<typename Callable, typename... Args>
     process(group_t, app::redir redir, Callable&& func, Args&&... args)
     {
         _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), true, redir);
     }
+#endif
 
     ////////////////////
     template<typename Callable, typename... Args>
@@ -114,11 +132,13 @@ public:
     }
 
     ////////////////////
+#if !defined(disable_process_redir)
     template<typename Callable, typename... Args>
     process(app::redir redir, Callable&& func, Args&&... args)
     {
         _M_process(std::bind(std::forward<Callable>(func), std::forward<Args>(args)...), false, redir);
     }
+#endif
 
     ////////////////////
     template<typename Callable, typename... Args>
@@ -143,7 +163,7 @@ public:
         std::swap(_M_group, x._M_group);
         std::swap(_M_code, x._M_code);
 
-#if !defined(NO_PROCESS_STREAM)
+#if !defined(disable_process_redir)
         std::swap(cin, x.cin);
         std::swap(_M_cin, x._M_cin);
 
@@ -176,7 +196,7 @@ public:
     }
     void join();
 
-#if !defined(NO_PROCESS_STREAM)
+#if !defined(disable_process_redir)
     std::ofstream cin;
     std::ifstream cout, cerr;
 #endif
@@ -187,7 +207,7 @@ protected:
     bool _M_group= false;
 
     app::exit_code _M_code;
-#if !defined(NO_PROCESS_STREAM)
+#if !defined(disable_process_redir)
     filebuf _M_cin, _M_cout, _M_cerr;
 #endif
 

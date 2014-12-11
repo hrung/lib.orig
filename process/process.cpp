@@ -34,7 +34,7 @@ process::~process()
     }
 }
 
-#if !defined(NO_PROCESS_STREAM)
+#if !defined(disable_process_redir)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 static inline void discard(int fd) noexcept
 {
@@ -67,7 +67,7 @@ static void dup_if(bool cond, int fd_io, int fd[2], int idx)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 static void open_if(bool cond,
                     std::basic_ios<char>& stream,
-                    process::filebuf& buf, std::ios_base::openmode mode,
+                    filebuf& buf, std::ios_base::openmode mode,
                     int fd[2], int idx)
 {
     if(cond)
@@ -78,7 +78,8 @@ static void open_if(bool cond,
         f= fcntl(fd[idx], F_SETFL, f | O_NONBLOCK);
         if(f == -1) throw errno_error();
 
-        if(!buf.open(fd[idx], mode)) throw errno_error();
+        buf = filebuf(fd[idx], mode);
+        if(!buf.is_open()) throw errno_error();
         stream.rdbuf(&buf);
     }
     else discard(fd[idx]);
@@ -90,13 +91,13 @@ static void open_if(bool cond,
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void process::_M_process(std::function<int()> func, bool group, app::redir x)
 {
-#if !defined(NO_PROCESS_STREAM)
+#if !defined(disable_process_redir)
     int out_fd[2]= {-1, -1}, in_fd[2]= {-1, -1}, err_fd[2]= {-1, -1};
 #endif
 
     try
     {
-#if !defined(NO_PROCESS_STREAM)
+#if !defined(disable_process_redir)
         pipe_if(x && redir::cout, out_fd);
         pipe_if(x && redir::cin, in_fd);
         pipe_if(x && redir::cerr, err_fd);
@@ -107,7 +108,7 @@ void process::_M_process(std::function<int()> func, bool group, app::redir x)
 
         if(_M_id == 0)
         {
-#if !defined(NO_PROCESS_STREAM)
+#if !defined(disable_process_redir)
             dup_if(x && redir::cout, STDOUT_FILENO, out_fd, 1);
             dup_if(x && redir::cin, STDIN_FILENO, in_fd, 0);
             dup_if(x && redir::cerr, STDERR_FILENO, err_fd, 1);
@@ -124,7 +125,7 @@ void process::_M_process(std::function<int()> func, bool group, app::redir x)
             }
         }
 
-#if !defined(NO_PROCESS_STREAM)
+#if !defined(disable_process_redir)
         open_if(x && redir::cout, cout, _M_cout, std::ios_base::in, out_fd, 0);
         open_if(x && redir::cin, cin, _M_cin, std::ios_base::out, in_fd, 1);
         open_if(x && redir::cerr, cerr, _M_cerr, std::ios_base::in, err_fd, 0);
@@ -140,7 +141,7 @@ void process::_M_process(std::function<int()> func, bool group, app::redir x)
     }
     catch(...)
     {
-#if !defined(NO_PROCESS_STREAM)
+#if !defined(disable_process_redir)
         discard(out_fd);
         discard(in_fd);
         discard(err_fd);
