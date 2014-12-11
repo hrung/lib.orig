@@ -16,6 +16,8 @@
 
 #include <syslog.h>
 
+constexpr char _n = '\n';
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace app
 {
@@ -27,36 +29,35 @@ namespace log
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum level
 {
-    emergency   = LOG_EMERG,
-    alert       = LOG_ALERT,
-    critical    = LOG_CRIT,
-    error       = LOG_ERR,
-    warning     = LOG_WARNING,
-    notice      = LOG_NOTICE,
-    info        = LOG_INFO,
-    debug       = LOG_DEBUG
+    emergency = LOG_EMERG,
+    alert     = LOG_ALERT,
+    critical  = LOG_CRIT,
+    error     = LOG_ERR,
+    warning   = LOG_WARNING,
+    notice    = LOG_NOTICE,
+    info      = LOG_INFO,
+    debug     = LOG_DEBUG
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class logger_base
 {
 protected:
-    void putchar(char c);
-    void set_level(level x) noexcept { _M_level= x; }
+    void putchar(char c) noexcept;
+    void set_level(app::log::level x) noexcept { level = x; }
 
     ~logger_base();
 
 private:
-    static constexpr level default_level= info;
-    level _M_level= default_level;
+    static constexpr app::log::level default_level = info;
+    app::log::level level = default_level;
 
-    static constexpr char endl= '\n';
-    std::string _M_buffer;
+    std::string buffer;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-template< typename CharT, typename Traits= std::char_traits<CharT> >
-class basic_streambuf: public std::basic_streambuf<CharT, Traits>, public logger_base
+template< typename CharT, typename Traits = std::char_traits<CharT> >
+class logger_streambuf: public std::basic_streambuf<CharT, Traits>, public logger_base
 {
 public:
     typedef CharT                            char_type;
@@ -67,41 +68,38 @@ public:
     typedef typename traits_type::state_type state_type;
 
 protected:
-    int_type overflow(int_type c= traits_type::eof()) override
+    int_type overflow(int_type c = traits_type::eof()) override
     {
         if(!traits_type::eq_int_type(c, traits_type::eof()))
             putchar(traits_type::to_char_type(c));
         return c;
     }
 
-    template<typename, typename> friend class basic_stream;
+    template<typename, typename> friend class logger_stream;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-template< typename CharT, typename Traits= std::char_traits<CharT> >
-class basic_stream: public std::basic_ostream<CharT, Traits>
+template< typename CharT, typename Traits = std::char_traits<CharT> >
+class logger_stream: public std::basic_ostream<CharT, Traits>
 {
 public:
-    basic_stream(): std::ostream(&_M_buffer) { }
+    logger_stream(): std::ostream(&buffer) { }
 
-    basic_stream& operator<<(level x)
+    logger_stream& operator<<(log::level x) noexcept
     {
-        _M_buffer.set_level(x);
+        buffer.set_level(x);
         return (*this);
     }
 
 protected:
-    basic_streambuf<CharT, Traits> _M_buffer;
+    logger_streambuf<CharT, Traits> buffer;
 };
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-typedef basic_stream<char> stream;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-extern log::stream logger;
+extern thread_local log::logger_stream<char> logger;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
