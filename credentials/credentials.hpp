@@ -6,12 +6,13 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef CREDENTIALS_H
-#define CREDENTIALS_H
+#ifndef CREDENTIALS_HPP
+#define CREDENTIALS_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include <string>
 #include <vector>
+
 #include <sys/types.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -26,11 +27,11 @@ typedef uid_t uid;
 typedef gid_t gid;
 typedef std::vector<gid> groups;
 
-constexpr uid invalid_uid= -1;
-constexpr gid invalid_gid= -1;
+constexpr uid invalid_uid = -1;
+constexpr gid invalid_gid = -1;
 
-constexpr uid root_uid= 0;
-constexpr gid root_gid= 0;
+constexpr uid root_uid = 0;
+constexpr gid root_gid = 0;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class credentials
@@ -67,8 +68,8 @@ private:
     std::string _M_fullname;
     std::string _M_password;
 
-    app::uid _M_uid= invalid_uid;
-    app::gid _M_gid= invalid_gid;
+    app::uid _M_uid = invalid_uid;
+    app::gid _M_gid = invalid_gid;
 
     std::string _M_home;
     std::string _M_shell;
@@ -102,8 +103,8 @@ std::string shell();
 
 app::groups groups();
 
-void morph_into(app::uid, bool perm= true);
-void morph_into(app::uid, app::gid, bool perm= true);
+void morph_into(app::uid, bool perm = true);
+void morph_into(app::uid, app::gid, bool perm = true);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
@@ -112,4 +113,4 @@ void morph_into(app::uid, app::gid, bool perm= true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#endif // CREDENTIALS_H
+#endif // CREDENTIALS_HPP
