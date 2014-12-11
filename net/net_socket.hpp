@@ -10,8 +10,8 @@
 #define NET_SOCKET_H
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "socket/socket.h"
-#include "address.h"
+#include "socket/socket.hpp"
+#include "address.hpp"
 
 #include <string>
 #include <netinet/in.h>
@@ -56,12 +56,12 @@ public:
     void add_membership(net::address group);
     void drop_membership(net::address group);
 
-    ssize_t send_to(net::address address, net::port port, const std::string& string, bool wait= true)
+    size_t send_to(net::address address, net::port port, const std::string& string, bool wait = true)
         { return send_to(address, port, string.data(), string.size(), wait); }
-    ssize_t send_to(net::address address, net::port port, const void* buffer, size_t n, bool wait= true);
+    size_t send_to(net::address address, net::port port, const void* buffer, size_t n, bool wait = true);
 
-    ssize_t recv_from(net::address& address, net::port& port, std::string& string, size_t max, bool wait= true);
-    ssize_t recv_from(net::address& address, net::port& port, void* buffer, size_t n, bool wait= true);
+    size_t recv_from(net::address& address, net::port& port, std::string& string, size_t max, bool wait = true);
+    size_t recv_from(net::address& address, net::port& port, void* buffer, size_t n, bool wait = true);
 
 private:
     sockaddr_in from(net::address, net::port);

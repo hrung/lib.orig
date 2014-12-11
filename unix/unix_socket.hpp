@@ -6,11 +6,11 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef UNIX_SOCKET_H
-#define UNIX_SOCKET_H
+#ifndef UNIX_SOCKET_HPP
+#define UNIX_SOCKET_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "socket/socket.h"
+#include "socket/socket.hpp"
 
 #include <string>
 #include <sys/un.h>
@@ -46,12 +46,12 @@ public:
     void bind(const std::string& path);
     void connect(const std::string& path);
 
-    ssize_t send_to(const std::string& path, const std::string& string, bool wait= true)
+    size_t send_to(const std::string& path, const std::string& string, bool wait = true)
         { return send_to(path, string.data(), string.size(), wait); }
-    ssize_t send_to(const std::string& path, const void* buffer, size_t n, bool wait= true);
+    size_t send_to(const std::string& path, const void* buffer, size_t n, bool wait = true);
 
-    ssize_t recv_from(std::string& path, std::string& string, size_t max, bool wait= true);
-    ssize_t recv_from(std::string& path, void* buffer, size_t n, bool wait= true);
+    size_t recv_from(std::string& path, std::string& string, size_t max, bool wait = true);
+    size_t recv_from(std::string& path, void* buffer, size_t n, bool wait = true);
 
 private:
     sockaddr_un from(const std::string&);

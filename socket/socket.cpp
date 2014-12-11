@@ -6,16 +6,15 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "socket.h"
 #include "errno_error.hpp"
+#include "socket.hpp"
 
-#include <memory>
 #include <ctime>
+#include <memory>
 
-#include <unistd.h>
 #include <fcntl.h>
-
 #include <sys/select.h>
+#include <unistd.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace app
@@ -28,16 +27,16 @@ socket::socket(int family, socket::type type)
     switch(type)
     {
     case type::datagram:
-        val= SOCK_DGRAM;
+        val = SOCK_DGRAM;
         break;
     case type::stream:
-        val= SOCK_STREAM;
+        val = SOCK_STREAM;
         break;
     default:
-        throw std::runtime_error("socket::socket(): unsupported type");
+        throw std::runtime_error("socket::socket_base(): unsupported type");
     }
 
-    _M_fd= ::socket(family, val, 0);
+    _M_fd = ::socket(family, val, 0);
     if(_M_fd == invalid) throw errno_error();
 }
 
@@ -47,7 +46,7 @@ void socket::close() noexcept
     if(_M_fd != invalid)
     {
         ::close(_M_fd);
-        _M_fd= invalid;
+        _M_fd = invalid;
     }
 }
 
@@ -70,22 +69,22 @@ void socket::listen(int max)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void socket::accept(app::socket& socket)
+void socket::accept(socket::socket& socket)
 {
-    socket._M_fd= ::accept(_M_fd, 0, 0);
+    socket._M_fd = ::accept(_M_fd, 0, 0);
     if(socket._M_fd <= 0) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void socket::set_non_blocking(bool value)
 {
-    int opt= fcntl(_M_fd, F_GETFL);
+    int opt = fcntl(_M_fd, F_GETFL);
     if(opt < 0) throw errno_error();
 
     if(value)
-        opt|= O_NONBLOCK;
+        opt |= O_NONBLOCK;
     else
-        opt&= ~O_NONBLOCK;
+        opt &= ~O_NONBLOCK;
 
     if(fcntl(_M_fd, F_SETFL, opt)) throw errno_error();
 }
@@ -93,25 +92,25 @@ void socket::set_non_blocking(bool value)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 bool socket::can_recv(std::chrono::seconds s, std::chrono::nanoseconds n)
 {
-    timespec time= { static_cast<std::time_t>(s.count()), static_cast<long>(n.count()) };
+    timespec time = { static_cast<std::time_t>(s.count()), static_cast<long>(n.count()) };
 
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(_M_fd, &fds);
 
-    int count= pselect(_M_fd+1, &fds, nullptr, nullptr, &time, nullptr);
+    int count = pselect(_M_fd+1, &fds, nullptr, nullptr, &time, nullptr);
     if(count == -1) throw errno_error();
 
     return count;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-ssize_t socket::send(const void* buffer, size_t n, bool wait)
+size_t socket::send(const void* buffer, size_t n, bool wait)
 {
-    ssize_t count= ::send(_M_fd, buffer, n, wait? 0: MSG_DONTWAIT);
+    ssize_t count = ::send(_M_fd, buffer, n, wait ? 0 : MSG_DONTWAIT);
     if(count == -1)
     {
-        if(!wait && (errno==EAGAIN || errno==EWOULDBLOCK))
+        if(!wait && (errno == EAGAIN || errno == EWOULDBLOCK))
             return 0;
         else throw errno_error();
     }
@@ -119,12 +118,12 @@ ssize_t socket::send(const void* buffer, size_t n, bool wait)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-ssize_t socket::send_to(sockaddr* addr, socklen_t addr_len, const void* buffer, size_t n, bool wait)
+size_t socket::send_to(sockaddr* addr, socklen_t addr_len, const void* buffer, size_t n, bool wait)
 {
-    ssize_t count= ::sendto(_M_fd, buffer, n, wait? 0: MSG_DONTWAIT, addr, addr_len);
+    ssize_t count = ::sendto(_M_fd, buffer, n, wait ? 0 : MSG_DONTWAIT, addr, addr_len);
     if(count == -1)
     {
-        if(!wait && (errno==EAGAIN || errno==EWOULDBLOCK))
+        if(!wait && (errno == EAGAIN || errno == EWOULDBLOCK))
             return 0;
         else throw errno_error();
     }
@@ -132,24 +131,24 @@ ssize_t socket::send_to(sockaddr* addr, socklen_t addr_len, const void* buffer, 
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-ssize_t socket::recv(std::string& string, size_t max, bool wait)
+size_t socket::recv(std::string& string, size_t max, bool wait)
 {
-    std::unique_ptr<char[]> buffer(new char[max+1]);
+    std::unique_ptr<char[]> buffer(new char[max + 1]);
 
-    ssize_t count= recv(buffer.get(), max, wait);
-    buffer[count]=0;
+    ssize_t count = recv(buffer.get(), max, wait);
+    buffer[count] = '\0';
 
     string.assign(buffer.get(), count);
     return count;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-ssize_t socket::recv(void* buffer, size_t max, bool wait)
+size_t socket::recv(void* buffer, size_t max, bool wait)
 {
-    ssize_t count= ::recv(_M_fd, buffer, max, wait? 0: MSG_DONTWAIT);
+    ssize_t count = ::recv(_M_fd, buffer, max, wait ? 0 : MSG_DONTWAIT);
     if(count == -1)
     {
-        if(!wait && (errno==EAGAIN || errno==EWOULDBLOCK))
+        if(!wait && (errno == EAGAIN || errno == EWOULDBLOCK))
             return 0;
         else throw errno_error();
     }
@@ -157,12 +156,12 @@ ssize_t socket::recv(void* buffer, size_t max, bool wait)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-ssize_t socket::recv_from(sockaddr* addr, socklen_t& addr_len, void* buffer, size_t n, bool wait)
+size_t socket::recv_from(sockaddr* addr, socklen_t& addr_len, void* buffer, size_t n, bool wait)
 {
-    ssize_t count= ::recvfrom(_M_fd, buffer, n, wait? 0: MSG_DONTWAIT, addr, &addr_len);
+    ssize_t count = ::recvfrom(_M_fd, buffer, n, wait ? 0 : MSG_DONTWAIT, addr, &addr_len);
     if(count == -1)
     {
-        if(!wait && (errno==EAGAIN || errno==EWOULDBLOCK))
+        if(!wait && (errno == EAGAIN || errno == EWOULDBLOCK))
             return 0;
         else throw errno_error();
     }
