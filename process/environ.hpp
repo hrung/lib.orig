@@ -6,18 +6,18 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef ENVIRON_H
-#define ENVIRON_H
+#ifndef ENVIRON_HPP
+#define ENVIRON_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "container.hpp"
 #include "charpp.hpp"
+#include "container.hpp"
 
-#include <string>
-#include <map>
-#include <utility>
-#include <iterator>
 #include <cstddef>
+#include <iterator>
+#include <map>
+#include <string>
+#include <utility>
 
 #include <unistd.h>
 
@@ -64,7 +64,7 @@ public:
 
     ////////////////////
     charpp_ptr to_charpp() const;
-    static environ from_charpp(char*[], bool free= false);
+    static environ from_charpp(char*[], bool free = false);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -87,10 +87,10 @@ name_type name(char*, bool* found);
 value_type value(char*, bool* found);
 
 template<typename Iterator>
-name_type name(Iterator ri, bool* found= nullptr) { return name(*ri, found); }
+name_type name(Iterator ri, bool* found = nullptr) { return name(*ri, found); }
 
 template<typename Iterator>
-value_type value(Iterator ri, bool* found= nullptr) { return value(*ri, found); }
+value_type value(Iterator ri, bool* found = nullptr) { return value(*ri, found); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class iterator: public std::iterator<std::bidirectional_iterator_tag, char*, ptrdiff_t, char**, char*>
@@ -99,13 +99,13 @@ public:
     iterator() noexcept: _M_p(nullptr) { }
     iterator(pointer x) noexcept: _M_p(x) { }
 
-    iterator(const iterator& x) noexcept { _M_p= x._M_p; }
-    iterator& operator=(const iterator& x) noexcept { _M_p= x._M_p; return (*this); }
+    iterator(const iterator& x) noexcept { _M_p = x._M_p; }
+    iterator& operator=(const iterator& x) noexcept { _M_p = x._M_p; return (*this); }
 
-    reference operator*() const noexcept { return _M_p? *_M_p: nullptr; }
+    reference operator*() const noexcept { return _M_p ? *_M_p : nullptr; }
 
-    this_environ::name_type name(bool* found= nullptr) const { return this_environ::name(*this, found); }
-    this_environ::value_type value(bool* found= nullptr) const { return this_environ::value(*this, found); }
+    this_environ::name_type name(bool* found = nullptr) const { return this_environ::name(*this, found); }
+    this_environ::value_type value(bool* found = nullptr) const { return this_environ::value(*this, found); }
 
     iterator& operator++() noexcept { ++_M_p; return (*this); }
     iterator operator++(int) noexcept
@@ -132,15 +132,15 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-value_type get(const name_type& name, bool* found= nullptr) noexcept;
-void insert(const name_type& name, const value_type& value, bool over= true);
+value_type get(const name_type& name, bool* found = nullptr) noexcept;
+void insert(const name_type& name, const value_type& value, bool over = true);
 void erase(const std::string& name);
 
 ////////////////////
 inline iterator begin() noexcept { return iterator(::environ); }
 inline iterator end() noexcept
 {
-    iterator ri= begin(); while(*ri) ++ri;
+    iterator ri = begin(); while(*ri) ++ri;
     return ri;
 }
 
@@ -168,4 +168,4 @@ inline app::environ environ() { return app::environ::from_charpp(::environ); }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#endif // ENVIRON_H
+#endif // ENVIRON_HPP

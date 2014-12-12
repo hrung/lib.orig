@@ -6,20 +6,20 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef PROCESS_H
-#define PROCESS_H
+#ifndef PROCESS_HPP
+#define PROCESS_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "environ.h"
-#include "arguments.h"
-#include "filebuf.hpp"
+#include "arguments.hpp"
 #include "enum.hpp"
+#include "environ.hpp"
+#include "filebuf.hpp"
 
+#include <chrono>
 #include <fstream>
 #include <functional>
 #include <stdexcept>
 #include <string>
-#include <chrono>
 
 #include <signal.h>
 #include <sys/types.h>
@@ -74,7 +74,7 @@ enum class signal
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct exit_code
 {
-    static constexpr int none= -1;
+    static constexpr int none = -1;
 
     exit_code() noexcept = default;
     exit_code(int code) noexcept: _M_code(code) { }
@@ -88,20 +88,22 @@ struct exit_code
     bool is_term() const noexcept { return _M_code == none && _M_term != app::signal::none; }
 
 private:
-    int _M_code= none;
-    signal _M_term= signal::none;
+    int _M_code = none;
+    signal _M_term = signal::none;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+#if !defined(disable_process_redir)
 enum class redir
 {
-    none=0,
-    cout=1,
-    cin=2,
-    cerr=4,
-    all= cout | cin | cerr
+    none = 0x00,
+    cout = 0x01,
+    cin  = 0x02,
+    cerr = 0x04,
+    all  = redir::cout | redir::cin | redir::cerr
 };
 DECLARE_OPERATOR(redir)
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class process
@@ -184,13 +186,13 @@ public:
     bool terminate() { return signal(app::signal::terminate); }
     bool kill() { return signal(app::signal::kill); }
 
-    void detach() noexcept { _M_active= false; }
+    void detach() noexcept { _M_active = false; }
 
     template<typename Rep, typename Period>
     bool can_join(const std::chrono::duration<Rep, Period>& x)
     {
-        std::chrono::seconds s= std::chrono::duration_cast<std::chrono::seconds>(x);
-        std::chrono::nanoseconds n= std::chrono::duration_cast<std::chrono::nanoseconds>(x - s);
+        std::chrono::seconds s = std::chrono::duration_cast<std::chrono::seconds>(x);
+        std::chrono::nanoseconds n = std::chrono::duration_cast<std::chrono::nanoseconds>(x - s);
 
         return can_join(s, n);
     }
@@ -202,9 +204,9 @@ public:
 #endif
 
 protected:
-    id _M_id=0;
-    bool _M_active= false;
-    bool _M_group= false;
+    id _M_id = 0;
+    bool _M_active = false;
+    bool _M_group = false;
 
     app::exit_code _M_code;
 #if !defined(disable_process_redir)
@@ -233,8 +235,8 @@ process::id get_id() noexcept;
 process::id parent_id() noexcept;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-int replace(const std::string& path, const arguments& args= {});
-int replace_e(const environ&, const std::string& path, const arguments& args= {});
+int replace(const std::string& path, const arguments& args = {});
+int replace_e(const environ&, const std::string& path, const arguments& args = {});
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 exit_code execute(const std::string& command);
@@ -245,8 +247,8 @@ namespace internal { void sleep_for(std::chrono::seconds, std::chrono::nanosecon
 template<typename Rep, typename Period>
 inline void sleep_for(const std::chrono::duration<Rep, Period>& x)
 {
-    std::chrono::seconds s= std::chrono::duration_cast<std::chrono::seconds>(x);
-    std::chrono::nanoseconds n= std::chrono::duration_cast<std::chrono::nanoseconds>(x - s);
+    std::chrono::seconds s = std::chrono::duration_cast<std::chrono::seconds>(x);
+    std::chrono::nanoseconds n = std::chrono::duration_cast<std::chrono::nanoseconds>(x - s);
 
     internal::sleep_for(s, n);
 }
@@ -261,4 +263,4 @@ inline void sleep_until(const std::chrono::time_point<Clock, Duration>& t) { sle
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#endif // PROCESS_H
+#endif // PROCESS_HPP

@@ -6,9 +6,9 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "environ.h"
-#include "string.hpp"
+#include "environ.hpp"
 #include "errno_error.hpp"
+#include "string.hpp"
 
 #include <cstdlib>
 #include <cstring>
@@ -20,13 +20,13 @@ namespace app
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 charpp_ptr environ::to_charpp() const
 {
-    char** rp= static_cast<char**>(calloc(size()+1, sizeof(char*)));
+    char** rp = static_cast<char**>(calloc(size() + 1, sizeof(char*)));
     if(rp == nullptr) throw std::bad_alloc();
 
     charpp_ptr x(rp);
-    for(auto ri= cbegin(); ri != cend(); ++ri, ++rp) *rp= strdup((ri->first+ "="+ ri->second).data());
+    for(auto ri = cbegin(); ri != cend(); ++ri, ++rp) *rp = strdup((ri->first + "=" + ri->second).data());
 
-    *rp= nullptr;
+    *rp = nullptr;
     return x;
 }
 
@@ -36,12 +36,12 @@ environ environ::from_charpp(char* args[], bool free)
     environ e;
     if(args)
     {
-        for(char** ri= args; *ri; ++ri)
+        for(char** ri = args; *ri; ++ri)
         {
-            std::string x= *ri;
-            auto pos= x.find_first_of('=');
+            std::string x = *ri;
+            auto pos = x.find_first_of('=');
 
-            if(pos != std::string::npos) e.insert(x.substr(0, pos), x.substr(pos+1));
+            if(pos != std::string::npos) e.insert(x.substr(0, pos), x.substr(pos + 1));
             if(free) ::free(*ri);
         }
         if(free) ::free(args);
@@ -56,16 +56,16 @@ namespace this_environ
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 value_type get(const name_type& name, bool* found) noexcept
 {
-    char* x= getenv(name.data());
+    char* x = getenv(name.data());
 
-    if(found) *found= x;
-    return x? std::string(x): std::string();
+    if(found) *found = x;
+    return x ? std::string(x) : std::string();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void insert(const name_type& name, const value_type& value, bool over)
 {
-    auto n= clone(name), v= clone(value);
+    auto n = clone(name), v = clone(value);
     if(setenv(n.get(), v.get(), over)) throw errno_error();
 }
 
@@ -78,7 +78,7 @@ void erase(const std::string& name)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 size_type count(const name_type& name) noexcept
 {
-    return getenv(name.data())? 1: 0;
+    return getenv(name.data()) ? 1 : 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -87,10 +87,10 @@ name_type name(char* v, bool* found)
     name_type n;
     if(v)
     {
-        n=v;
+        n = v;
         n.erase(n.find_first_of('='));
     }
-    if(found) *found= v;
+    if(found) *found = v;
     return n;
 }
 
@@ -100,10 +100,10 @@ value_type value(char* x, bool* found)
     value_type v;
     if(x)
     {
-        v=x;
+        v = x;
         v.erase(0, v.find_first_of('=')+1);
     }
-    if(found) *found= x;
+    if(found) *found = x;
     return v;
 }
 

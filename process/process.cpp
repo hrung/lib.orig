@@ -6,19 +6,19 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "process.h"
-#include "errno_error.hpp"
 #include "charpp.hpp"
+#include "errno_error.hpp"
+#include "process.hpp"
 
 #include <cstdlib>
-#include <ctime>
 #include <cstring>
+#include <ctime>
 
 #include <fcntl.h>
-#include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace app
@@ -41,7 +41,7 @@ static inline void discard(int fd) noexcept
     if(fd != -1)
     {
         close(fd);
-        fd= -1;
+        fd = -1;
     }
 }
 
@@ -72,10 +72,10 @@ static void open_if(bool cond,
 {
     if(cond)
     {
-        int f= fcntl(fd[idx], F_GETFL);
+        int f = fcntl(fd[idx], F_GETFL);
         if(f == -1) throw errno_error();
 
-        f= fcntl(fd[idx], F_SETFL, f | O_NONBLOCK);
+        f = fcntl(fd[idx], F_SETFL, f | O_NONBLOCK);
         if(f == -1) throw errno_error();
 
         buf = filebuf(fd[idx], mode);
@@ -84,7 +84,7 @@ static void open_if(bool cond,
     }
     else discard(fd[idx]);
 
-    discard(fd[1-idx]);
+    discard(fd[1 - idx]);
 }
 #endif
 
@@ -92,7 +92,7 @@ static void open_if(bool cond,
 void process::_M_process(std::function<int()> func, bool group, app::redir x)
 {
 #if !defined(disable_process_redir)
-    int out_fd[2]= {-1, -1}, in_fd[2]= {-1, -1}, err_fd[2]= {-1, -1};
+    int out_fd[2] = { -1, -1 }, in_fd[2] = { -1, -1 }, err_fd[2] = { -1, -1 };
 #endif
 
     try
@@ -103,7 +103,7 @@ void process::_M_process(std::function<int()> func, bool group, app::redir x)
         pipe_if(x && redir::cerr, err_fd);
 #endif
 
-        _M_id= fork();
+        _M_id = fork();
         if(_M_id == -1) throw errno_error();
 
         if(_M_id == 0)
@@ -116,7 +116,7 @@ void process::_M_process(std::function<int()> func, bool group, app::redir x)
 
             try
             {
-                int code= func();
+                int code = func();
                 exit(code);
             }
             catch(...)
@@ -157,11 +157,11 @@ bool process::running()
     while(_M_active)
     {
         int code;
-        id x= waitpid(_M_group? -_M_id: _M_id, &code, WNOHANG);
+        id x = waitpid(_M_group ? -_M_id : _M_id, &code, WNOHANG);
         if(x == -1)
         {
             if(std::errc(errno) == std::errc::no_child_process)
-                _M_active= false;
+                _M_active = false;
             else throw errno_error();
         }
         else if(x == 0)
@@ -175,9 +175,9 @@ bool process::running()
 void process::set_code(int code)
 {
     if(WIFEXITED(code))
-        _M_code= app::exit_code(WEXITSTATUS(code));
+        _M_code = app::exit_code(WEXITSTATUS(code));
     else if(WIFSIGNALED(code))
-        _M_code= app::exit_code(static_cast<app::signal>(WTERMSIG(code)));
+        _M_code = app::exit_code(static_cast<app::signal>(WTERMSIG(code)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -185,7 +185,7 @@ bool process::signal(app::signal x)
 {
     if(_M_active)
     {
-        int code= ::kill(_M_group? -_M_id: _M_id, int(x));
+        int code = ::kill(_M_group ? -_M_id : _M_id, int(x));
         if(code == -1)
         {
             if(std::errc(errno) == std::errc::no_such_process)
@@ -209,22 +209,22 @@ bool process::can_join(std::chrono::seconds s, std::chrono::nanoseconds n)
     if(running())
     {
         struct sigaction sa_old, sa_new;
-        sa_new.sa_handler= handler;
+        sa_new.sa_handler = handler;
         sigemptyset(&sa_new.sa_mask);
-        sa_new.sa_flags=0;
+        sa_new.sa_flags = 0;
 
         if(sigaction(int(app::signal::child), &sa_new, &sa_old)) throw errno_error();
 
-        timespec time= { static_cast<std::time_t>(s.count()), static_cast<long>(n.count()) };
+        timespec time = { static_cast<std::time_t>(s.count()), static_cast<long>(n.count()) };
 
-        bool value= false;
+        bool value = false;
         while(nanosleep(&time, &time) == -1)
         {
             if(std::errc(errno) == std::errc::interrupted)
             {
                 if(!running())
                 {
-                    value= true;
+                    value = true;
                     break;
                 }
             }
@@ -243,11 +243,11 @@ void process::join()
     while(_M_active)
     {
         int code;
-        id x= waitpid(_M_group? -_M_id: _M_id, &code, 0);
+        id x = waitpid(_M_group ? -_M_id : _M_id, &code, 0);
         if(x == -1)
         {
             if(std::errc(errno) == std::errc::no_child_process)
-                _M_active= false;
+                _M_active = false;
             else throw errno_error();
         }
         else if(x == _M_id) set_code(code);
@@ -274,7 +274,7 @@ process::id parent_id() noexcept
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int replace(const std::string& path, const arguments& args)
 {
-    charpp_ptr x= args.to_charpp(path);
+    charpp_ptr x = args.to_charpp(path);
 
     if(execv(x[0], x.get())) throw errno_error();
     return 0;
@@ -283,8 +283,8 @@ int replace(const std::string& path, const arguments& args)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int replace_e(const environ& e, const std::string& path, const arguments& args)
 {
-    charpp_ptr x= args.to_charpp(path);
-    charpp_ptr y= e.to_charpp();
+    charpp_ptr x = args.to_charpp(path);
+    charpp_ptr y = e.to_charpp();
 
     if(execve(x[0], x.get(), y.get())) throw errno_error();
     return 0;
@@ -293,7 +293,7 @@ int replace_e(const environ& e, const std::string& path, const arguments& args)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 exit_code execute(const std::string& command)
 {
-    int code= system(command.data());
+    int code = system(command.data());
     switch(code)
     {
     case  -1: throw execute_error("app::execute failed");
@@ -311,7 +311,7 @@ exit_code execute(const std::string& command)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void internal::sleep_for(std::chrono::seconds s, std::chrono::nanoseconds n)
 {
-    timespec time= { static_cast<std::time_t>(s.count()), static_cast<long>(n.count()) };
+    timespec time = { static_cast<std::time_t>(s.count()), static_cast<long>(n.count()) };
 
     nanosleep(&time, nullptr);
 }
