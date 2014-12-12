@@ -6,13 +6,13 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "pam.h"
-#include "pam_error.h"
 #include "charpp.hpp"
+#include "pam.hpp"
+#include "pam_error.hpp"
 
-#include <security/pam_appl.h>
 #include <cstdlib>
 #include <cstring>
+#include <security/pam_appl.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace pam
@@ -28,8 +28,8 @@ const std::error_category& pam_category()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int context::despatch(int num, const pam_message** msg, pam_response** resp, void* data)
 {
-    context* instance= static_cast<context*>(data);
-    (*resp)= (pam_response*)calloc(num, sizeof(pam_response));
+    context* instance = static_cast<context*>(data);
+    *resp = (pam_response*)calloc(num, sizeof(pam_response));
 
     int idx=0;
     bool success= true;

@@ -6,12 +6,12 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef PAM_H
-#define PAM_H
+#ifndef PAM_HPP
+#define PAM_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "process/environ.h"
-#include "pam_type.h"
+#include "pam_type.hpp"
+#include "process/environ.hpp"
 
 #include <functional>
 #include <string>
@@ -44,7 +44,7 @@ public:
     context(const context&) = delete;
     context(context&& x) { swap(x); }
 
-    context(const std::string& service, const std::string& username= std::string());
+    context(const std::string& service, const std::string& username = std::string());
     ~context() { close(); }
 
     void close() noexcept;
@@ -75,7 +75,7 @@ public:
     pam::handle handle() const noexcept { return _M_pamh; }
     bool valid() const noexcept { return _M_pamh; }
 
-    std::string get(pam::item, bool* found= nullptr);
+    std::string get(pam::item, bool* found = nullptr);
     void insert(pam::item, const std::string& value);
     void erase(pam::item);
 
@@ -84,7 +84,7 @@ public:
     void set_info_func(info_func x)   noexcept { _M_info=x; }
     void set_error_func(error_func x) noexcept { _M_error=x; }
 
-    std::string get(const std::string& name, bool* found= nullptr);
+    std::string get(const std::string& name, bool* found = nullptr);
     void insert(const std::string& name, const std::string& value);
     void erase(const std::string& name);
 
@@ -98,7 +98,7 @@ public:
     void change_pass();
 
 private:
-    pam::handle _M_pamh= nullptr;
+    pam::handle _M_pamh = nullptr;
 
     user_func _M_user;
     pass_func _M_pass;
@@ -108,7 +108,7 @@ private:
 
     void set_conv();
 
-    bool _M_cred= false;
+    bool _M_cred = false;
     int setcred();
     int rmcred();
 
@@ -119,4 +119,4 @@ private:
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#endif // PAM_H
+#endif // PAM_HPP

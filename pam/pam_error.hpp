@@ -6,8 +6,8 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef PAM_ERROR_H
-#define PAM_ERROR_H
+#ifndef PAM_ERROR_HPP
+#define PAM_ERROR_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include <system_error>
@@ -24,38 +24,38 @@ namespace pam
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum class errc
 {
-    success                 = PAM_SUCCESS,
-    open_err                = PAM_OPEN_ERR,
-    symbol_err              = PAM_SYMBOL_ERR,
-    service_err             = PAM_SERVICE_ERR,
-    system_err              = PAM_SYSTEM_ERR,
-    buf_err                 = PAM_BUF_ERR,
-    perm_denied             = PAM_PERM_DENIED,
-    auth_err                = PAM_AUTH_ERR,
-    cred_insufficient       = PAM_CRED_INSUFFICIENT,
-    authinfo_unavail        = PAM_AUTHINFO_UNAVAIL,
-    user_unknown            = PAM_USER_UNKNOWN,
-    maxtries                = PAM_MAXTRIES,
-    new_authtok_reqd        = PAM_NEW_AUTHTOK_REQD,
-    acct_expired            = PAM_ACCT_EXPIRED,
-    session_err             = PAM_SESSION_ERR,
-    cred_unavail            = PAM_CRED_UNAVAIL,
-    cred_expired            = PAM_CRED_EXPIRED,
-    cred_err                = PAM_CRED_ERR,
-    no_module_data          = PAM_NO_MODULE_DATA,
-    conv_err                = PAM_CONV_ERR,
-    authtok_err             = PAM_AUTHTOK_ERR,
-    authtok_recovery_err    = PAM_AUTHTOK_RECOVERY_ERR,
-    authtok_lock_busy       = PAM_AUTHTOK_LOCK_BUSY,
-    authtok_disable_aging   = PAM_AUTHTOK_DISABLE_AGING,
-    try_again               = PAM_TRY_AGAIN,
-    ignore                  = PAM_IGNORE,
-    abort                   = PAM_ABORT,
-    authtok_expired         = PAM_AUTHTOK_EXPIRED,
-    module_unknown          = PAM_MODULE_UNKNOWN,
-    bad_item                = PAM_BAD_ITEM,
-    conv_again              = PAM_CONV_AGAIN,
-    incomplete              = PAM_INCOMPLETE
+    success               = PAM_SUCCESS,
+    open_err              = PAM_OPEN_ERR,
+    symbol_err            = PAM_SYMBOL_ERR,
+    service_err           = PAM_SERVICE_ERR,
+    system_err            = PAM_SYSTEM_ERR,
+    buf_err               = PAM_BUF_ERR,
+    perm_denied           = PAM_PERM_DENIED,
+    auth_err              = PAM_AUTH_ERR,
+    cred_insufficient     = PAM_CRED_INSUFFICIENT,
+    authinfo_unavail      = PAM_AUTHINFO_UNAVAIL,
+    user_unknown          = PAM_USER_UNKNOWN,
+    maxtries              = PAM_MAXTRIES,
+    new_authtok_reqd      = PAM_NEW_AUTHTOK_REQD,
+    acct_expired          = PAM_ACCT_EXPIRED,
+    session_err           = PAM_SESSION_ERR,
+    cred_unavail          = PAM_CRED_UNAVAIL,
+    cred_expired          = PAM_CRED_EXPIRED,
+    cred_err              = PAM_CRED_ERR,
+    no_module_data        = PAM_NO_MODULE_DATA,
+    conv_err              = PAM_CONV_ERR,
+    authtok_err           = PAM_AUTHTOK_ERR,
+    authtok_recovery_err  = PAM_AUTHTOK_RECOVERY_ERR,
+    authtok_lock_busy     = PAM_AUTHTOK_LOCK_BUSY,
+    authtok_disable_aging = PAM_AUTHTOK_DISABLE_AGING,
+    try_again             = PAM_TRY_AGAIN,
+    ignore                = PAM_IGNORE,
+    abort                 = PAM_ABORT,
+    authtok_expired       = PAM_AUTHTOK_EXPIRED,
+    module_unknown        = PAM_MODULE_UNKNOWN,
+    bad_item              = PAM_BAD_ITEM,
+    conv_again            = PAM_CONV_AGAIN,
+    incomplete            = PAM_INCOMPLETE
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
