@@ -6,11 +6,12 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef SERVER_HPP
+#define SERVER_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "process/process.h"
+#include "process/process.hpp"
+
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -46,8 +47,10 @@ public:
 
     server(server&& x) noexcept { swap(x); }
 
-    server(const std::string& name, const std::string& server_auth, const app::arguments& args= {});
-    explicit server(const std::string& server_auth, const app::arguments& args= {}): server(default_name, server_auth, args) { }
+    server(const std::string& name, const std::string& server_auth, const app::arguments& args = {});
+    explicit server(const std::string& server_auth, const app::arguments& args = {}):
+        server(default_name, server_auth, args)
+    { }
     ~server() { close(); }
 
     void close();
@@ -82,11 +85,11 @@ private:
     x11::cookie _M_cookie;
 
     app::process _M_process;
-    x11::display _M_display= nullptr;
+    x11::display _M_display = nullptr;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#endif // SERVER_H
+#endif // SERVER_HPP

@@ -6,13 +6,13 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "x11/server.h"
+#include "x11/server.hpp"
 
 #include <algorithm>
-#include <utility>
 #include <chrono>
 #include <random>
 #include <stdexcept>
+#include <utility>
 
 #include <X11/Xlib.h>
 
@@ -30,27 +30,27 @@ cookie::cookie()
     std::default_random_engine dre(system_clock::now().time_since_epoch().count());
     std::uniform_int_distribution<char> uni;
 
-    for(size_t ri=0; ri < sizeof(_M_value); ++ri) _M_value[ri]= uni(dre);
+    for(size_t ri = 0; ri < sizeof(_M_value); ++ri) _M_value[ri] = uni(dre);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 std::string cookie::value() const noexcept
 {
     std::string value;
-    for(size_t ri=0; ri < sizeof(_M_value); ++ri)
+    for(size_t ri = 0; ri < sizeof(_M_value); ++ri)
     {
-        char lo= _M_value[ri] & 0xf, hi= (_M_value[ri] >> 4) & 0xf;
-        value+= hi+ (hi < 10? '0': 'a' - 10);
-        value+= lo+ (lo < 10? '0': 'a' - 10);
+        char lo = _M_value[ri] & 0xf, hi = (_M_value[ri] >> 4) & 0xf;
+        value += hi+ (hi < 10? '0': 'a' - 10);
+        value += lo+ (lo < 10? '0': 'a' - 10);
     }
     return value;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-const std::string server::default_name= ":0";
+const std::string server::default_name = ":0";
 
-const std::string xorg_path= "/usr/bin/X";
-const std::string xauth_path= "/usr/bin/xauth";
+const std::string xorg_path = "/usr/bin/X";
+const std::string xauth_path = "/usr/bin/xauth";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 server::server(const std::string& name, const std::string& server_auth, const app::arguments& args):
@@ -66,7 +66,7 @@ server::server(const std::string& name, const std::string& server_auth, const ap
 
     _M_process= process(process::group, this_process::replace, xorg_path, xorg_args);
 
-    for(int ri=0; ri<10; ++ri)
+    for(int ri = 0; ri < 10; ++ri)
     {
         this_process::sleep_for(std::chrono::seconds(1));
 
@@ -87,7 +87,7 @@ void server::close()
         if(_M_display)
         {
             XCloseDisplay(_M_display);
-            _M_display= nullptr;
+            _M_display = nullptr;
         }
 
         _M_process.signal(app::signal::hangup);
