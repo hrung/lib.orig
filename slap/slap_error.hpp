@@ -6,12 +6,13 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef SLAP_ERROR_H
-#define SLAP_ERROR_H
+#ifndef SLAP_ERROR_HPP
+#define SLAP_ERROR_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include <system_error>
 #include <string>
+#include <system_error>
+
 #include <ldap.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -129,7 +130,7 @@ class slap_category: public std::error_category
 {
 public:
     const char* name() const noexcept override { return "ldap"; }
-    std::string message(int ev) const override { return ev==int(errc::user_error)? std::string(): ldap_err2string(ev); }
+    std::string message(int ev) const override { return ev == static_cast<int>(errc::user_error) ? std::string() : ldap_err2string(ev); }
 };
 
 const std::error_category& slap_category();
@@ -164,4 +165,4 @@ namespace std
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#endif // SLAP_ERROR_H
+#endif // SLAP_ERROR_HPP

@@ -6,22 +6,22 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef SLAP_H
-#define SLAP_H
+#ifndef SLAP_HPP
+#define SLAP_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "slap_type.h"
-#include "optional.hpp"
-#include "convert.hpp"
 #include "container.hpp"
+#include "convert.hpp"
+#include "optional.hpp"
+#include "slap_type.hpp"
 
 #include <functional>
 #include <initializer_list>
+#include <set>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
-#include <set>
-#include <string>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace slap
@@ -44,11 +44,11 @@ public:
 
 public:
     ////////////////////
-    explicit attribute(const std::string& name, slap::operation mod= operation::add):
+    explicit attribute(const std::string& name, slap::operation mod = operation::add):
         _M_name(name),
         _M_operation(mod)
     { }
-    explicit attribute(std::string&& name, slap::operation mod= operation::add):
+    explicit attribute(std::string&& name, slap::operation mod = operation::add):
         _M_name(std::move(name)),
         _M_operation(mod)
     { }
@@ -113,29 +113,29 @@ public:
     slap::operation operation() const noexcept { return _M_operation; }
 
     ////////////////////
-    reference value(size_type n=0) { return _M_c.at(n); }
-    const_reference value(size_type n=0) const { return _M_c.at(n); }
+    reference value(size_type n = 0) { return _M_c.at(n); }
+    const_reference value(size_type n = 0) const { return _M_c.at(n); }
 
     reference operator[](size_type n) { return _M_c[n]; }
     const_reference operator[](size_type n) const { return _M_c[n]; }
 
     ////////////////////
-    template<typename ToType, typename std::enable_if< !std::is_same<ToType, bool>::value, int >::type=0>
-    ToType to(size_type n=0) const
+    template<typename ToType, typename std::enable_if< !std::is_same<ToType, bool>::value, int >::type = 0>
+    ToType to(size_type n = 0) const
     {
         return convert::to<ToType>(value(n));
     }
-    template<typename ToType, typename std::enable_if< std::is_same<ToType, bool>::value, int >::type=0>
-    ToType to(size_type n=0) const
+    template<typename ToType, typename std::enable_if< std::is_same<ToType, bool>::value, int >::type = 0>
+    ToType to(size_type n = 0) const
     {
-        return (value(n)=="TRUE")? true: false;
+        return (value(n) == "TRUE") ? true : false;
     }
 
     template<typename ToType>
-    void get(ToType& value, size_type n=0) const noexcept
+    void get(ToType& value, size_type n = 0) const noexcept
     try
     {
-        value= to<ToType>(n);
+        value = to<ToType>(n);
     }
     catch(std::invalid_argument&)
     {
@@ -144,7 +144,7 @@ public:
 
     ////////////////////
     using container::insert;
-    void insert(bool value) { insert(value? "TRUE": "FALSE"); }
+    void insert(bool value) { insert(value ? "TRUE" : "FALSE"); }
 
     template<typename T>
     void insert(const T& value) { insert(convert::to<value_type>(value)); }
@@ -155,14 +155,14 @@ public:
     ////////////////////
     iterator find(const value_type& value, iterator from)
     {
-        for(iterator ri= from; ri != end(); ++ri) if(value == *ri) return ri;
+        for(iterator ri = from; ri != end(); ++ri) if(value == *ri) return ri;
         return end();
     }
     iterator find(const value_type& value) { return find(value, begin()); }
 
     const_iterator find(const value_type& value, const_iterator from) const
     {
-        for(const_iterator ri= from; ri!=end(); ++ri) if(value == *ri) return ri;
+        for(const_iterator ri = from; ri != end(); ++ri) if(value == *ri) return ri;
         return end();
     }
     const_iterator find(const value_type& value) const { return find(value, begin()); }
@@ -211,13 +211,13 @@ public:
     ////////////////////
     reference attribute(const std::string& name)
     {
-        iterator ri= find(name);
+        iterator ri = find(name);
         if(ri == end()) throw std::out_of_range("entry::attribute()");
         return const_cast<reference>(*ri); // o.O
     }
     const_reference attribute(const std::string& name) const
     {
-        const_iterator ri= find(name);
+        const_iterator ri = find(name);
         if(ri == cend()) throw std::out_of_range("entry::attribute()");
         return *ri;
     }
@@ -225,24 +225,24 @@ public:
     reference operator[](const std::string& name) { return attribute(name); }
     const_reference operator[](const std::string& name) const { return attribute(name); }
 
-    value_type::reference attribute_value(const std::string& name, value_type::size_type n=0)
+    value_type::reference attribute_value(const std::string& name, value_type::size_type n = 0)
     {
         return attribute(name).value(n);
     }
-    value_type::const_reference attribute_value(const std::string& name, value_type::size_type n=0) const
+    value_type::const_reference attribute_value(const std::string& name, value_type::size_type n = 0) const
     {
         return attribute(name).value(n);
     }
 
     ////////////////////
     template<typename ToType>
-    ToType attribute_to(const std::string& name, value_type::size_type n=0) const
+    ToType attribute_to(const std::string& name, value_type::size_type n = 0) const
     {
         return convert<ToType>::from(*this, name, n);
     }
 
     template<typename ToType>
-    void attribute_get(ToType& value, const std::string& name, value_type::size_type n=0) const noexcept
+    void attribute_get(ToType& value, const std::string& name, value_type::size_type n = 0) const noexcept
     try
     {
         value= attribute_to<ToType>(name, n);
@@ -283,7 +283,7 @@ private:
     template<typename ToType>
     struct convert
     {
-        static ToType from(const slap::entry& e, const std::string& name, typename value_type::size_type n=0)
+        static ToType from(const slap::entry& e, const std::string& name, typename value_type::size_type n = 0)
         {
             return e.attribute(name).to<ToType>(n);
         }
@@ -292,9 +292,9 @@ private:
     template<typename ToType>
     struct convert<optional<ToType>>
     {
-        static optional<ToType> from(const slap::entry& e, const std::string& name, typename value_type::size_type n=0)
+        static optional<ToType> from(const slap::entry& e, const std::string& name, typename value_type::size_type n = 0)
         {
-            const_iterator ri= e.find(name);
+            const_iterator ri = e.find(name);
             if(ri != e.cend())
                 return ri->to<ToType>(n);
             else return optional<ToType>();
@@ -328,7 +328,7 @@ public:
 
     connection(connection&& x) noexcept { swap(x); }
 
-    connection(const std::string& uri, bool start_tls= true);
+    connection(const std::string& uri, bool start_tls = true);
     ~connection() { close(); }
 
     void close() noexcept;
@@ -343,7 +343,7 @@ public:
     void swap(connection& x) noexcept { std::swap(_M_ldap, x._M_ldap); }
 
     ////////////////////
-    void bind(const std::string& dn, const std::string& passwd= std::string());
+    void bind(const std::string& dn, const std::string& passwd = std::string());
 
     void add(const entry& e);
     void remove(const std::string& dn);
@@ -351,20 +351,20 @@ public:
 
     void rename(const std::string& dn,
                 const std::string& new_rdn,
-                bool remove_old= true,
-    const std::string& new_parent= std::string());
+                bool remove_old = true,
+    const std::string& new_parent = std::string());
 
     bool compare(const std::string& dn, const attribute&);
 
     entries search(const std::string& base,
                    scope = scope::base,
-                   const std::string& filter= "objectClass=*",
-                   const order_func& func= order_none,
+                   const std::string& filter = "objectClass=*",
+                   const order_func& func = order_none,
                    const names& = names(),
-    bool get_value= true);
+    bool get_value = true);
 
 private:
-    ldap _M_ldap= nullptr;
+    ldap _M_ldap = nullptr;
 
     modpp get_mod(std::vector<mod>&);
 };
