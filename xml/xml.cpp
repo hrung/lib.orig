@@ -6,8 +6,8 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "xml.h"
-#include "xml_error.h"
+#include "xml.hpp"
+#include "xml_error.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace xml
@@ -25,18 +25,18 @@ const std::error_category& xml_category()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void validate_name(const std::string& name)
 {
-    auto ri= name.begin();
-    if( ri==name.end() || !(isalpha(*ri) || *ri==':' || *ri=='_') ) throw xml_error(errc::syntax);
+    auto ri = name.begin();
+    if( ri == name.end() || !(isalpha(*ri) || *ri == ':' || *ri == '_') ) throw xml_error(errc::syntax);
 
-    for(++ri; ri!=name.end(); ++ri)
-        if( !(isalnum(*ri) || *ri==':' || *ri=='_' || *ri=='.' || *ri=='-') )
+    for(++ri; ri != name.end(); ++ri)
+        if( !(isalnum(*ri) || *ri == ':' || *ri == '_' || *ri == '.' || *ri == '-') )
     throw xml_error(errc::syntax);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void validate_value(const std::string& value)
 {
-    if(std::string::npos != value.find_first_of(R"('")")) throw xml_error(errc::syntax);
+    if(std::string::npos != value.find_first_of("'\"")) throw xml_error(errc::syntax);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -49,11 +49,11 @@ void validate_content(const std::string& value)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 bool parse_name(std::string& source, std::string& name)
 {
-    auto ri= source.begin();
-    if( !(isalpha(*ri) || *ri==':' || *ri=='_') ) return false;
+    auto ri = source.begin();
+    if( !(isalpha(*ri) || *ri == ':' || *ri == '_') ) return false;
 
-    for(++ri; ri!=source.end(); ++ri)
-        if( !(isalnum(*ri) || *ri==':' || *ri=='_' || *ri=='.' || *ri=='-') )
+    for(++ri; ri != source.end(); ++ri)
+        if( !(isalnum(*ri) || *ri == ':' || *ri == '_' || *ri == '.' || *ri == '-') )
     break;
 
     name.assign(source.begin(), ri); source.erase(source.begin(), ri);
@@ -63,7 +63,7 @@ bool parse_name(std::string& source, std::string& name)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void parse_space(std::string& source)
 {
-    for(auto ri= source.begin(); ri!=source.end(); ++ri)
+    for(auto ri = source.begin(); ri != source.end(); ++ri)
         if(!isspace(*ri))
         {
             source.erase(source.begin(), ri);
@@ -79,7 +79,7 @@ std::string attribute::to_string() const
 {
     if(_M_name.empty())
         return std::string();
-    else return " "+ _M_name+ "=\""+ _M_value+ "\"";
+    else return " " + _M_name + "=\"" + _M_value + "\"";
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,12 +94,12 @@ void attribute::parse(std::string& source)
     chop(source);
 
     parse_space(source);
-    char quote= source[0];
-    if( !(quote=='"' || quote=='\'') ) throw xml_error(errc::invalid_token);
+    char quote = source[0];
+    if( !(quote == '"' || quote == '\'') ) throw xml_error(errc::invalid_token);
     chop(source);
 
-    size_t pos= source.find(quote);
-    if(pos==std::string::npos) throw xml_error(errc::invalid_token);
+    size_t pos = source.find(quote);
+    if(pos == std::string::npos) throw xml_error(errc::invalid_token);
     _M_value.assign(source, 0, pos);
     source.erase(0, ++pos);
 
@@ -110,22 +110,22 @@ void attribute::parse(std::string& source)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline std::string decorate(const std::string& value, bool nice, int ix)
 {
-    return nice? std::string(2*ix, ' ')+ value+ '\n': value;
+    return nice ? std::string(2 * ix, ' ') + value + '\n' : value;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 std::string tag::to_string(tag_type type, bool nice, int ix) const
 {
-    std::string value("<");
-        if(type==tag_end) value+= "/";
-    value+= _M_name;
+    std::string value = "<";
+        if(type == tag_end) value += "/";
+    value += _M_name;
 
-    if(type==tag_start || type==tag_empty)
-        for(auto ri= begin(); ri != end(); ++ri)
-    value+= ri->to_string();
+    if(type == tag_start || type == tag_empty)
+        for(auto ri = begin(); ri != end(); ++ri)
+    value += ri->to_string();
 
-    if(type==tag_empty) value+= "/";
-    value+= ">";
+    if(type == tag_empty) value += "/";
+    value += ">";
 
     return decorate(value, nice, ix);
 }
@@ -136,7 +136,7 @@ void tag::parse(std::string& source, tag_type type, bool& empty)
     if(source[0] != '<') throw xml_error(errc::invalid_token);
     chop(source);
 
-    if(type==tag_end)
+    if(type == tag_end)
     {
         if(source[0] != '/') throw xml_error(errc::invalid_token);
         chop(source);
@@ -145,15 +145,15 @@ void tag::parse(std::string& source, tag_type type, bool& empty)
     std::string name;
     if(!parse_name(source, name)) throw xml_error(errc::syntax);
 
-    if(type==tag_end)
+    if(type == tag_end)
     {
-        if(name!=_M_name) throw xml_error(errc::tag_mismatch);
+        if(name != _M_name) throw xml_error(errc::tag_mismatch);
     }
     else _M_name.assign(name);
 
     parse_space(source);
 
-    if(type!=tag_end) while(true)
+    if(type != tag_end) while(true)
     {
         xml::attribute x;
         x.parse(source);
@@ -166,10 +166,10 @@ void tag::parse(std::string& source, tag_type type, bool& empty)
 
     if(source[0] == '/')
     {
-        if(type==tag_end) throw xml_error(errc::invalid_token);
+        if(type == tag_end) throw xml_error(errc::invalid_token);
 
         chop(source);
-        empty= true;
+        empty = true;
     }
     if(source[0] != '>') throw xml_error(errc::unclosed_token);
     chop(source);
@@ -182,7 +182,7 @@ std::string element::value() const
     if(complex())
     {
         std::string x;
-        for(auto& e: _M_children) x+= e.to_string();
+        for(auto& e: _M_children) x += e.to_string();
         return x;
     }
     else return _M_value;
@@ -191,13 +191,13 @@ std::string element::value() const
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 bool element::make_simple()
 {
-    if(_M_tag.empty_tag() && _M_children.size()==1)
+    if(_M_tag.empty_tag() && _M_children.size() == 1)
     {
-        element e= std::move(_M_children[0]);
+        element e = std::move(_M_children[0]);
 
-        _M_tag=      std::move(e._M_tag);
-        _M_value=    std::move(e._M_value);
-        _M_children= std::move(e._M_children);
+        _M_tag      = std::move(e._M_tag);
+        _M_value    = std::move(e._M_value);
+        _M_children = std::move(e._M_children);
 
         return true;
     }
@@ -232,18 +232,18 @@ void element::insert(element&& x)
 std::string element::to_string(bool nice, int ix) const
 {
     if(_M_value.empty() && _M_children.empty())
-        return _M_tag.empty_tag()?
-    std::string(): _M_tag.to_string(tag::tag_empty, nice, ix++);
+        return _M_tag.empty_tag() ?
+    std::string() : _M_tag.to_string(tag::tag_empty, nice, ix++);
 
     std::string value;
-    if(!_M_tag.empty_tag()) value+= _M_tag.to_string(tag::tag_start, nice, ix++);
+    if(!_M_tag.empty_tag()) value += _M_tag.to_string(tag::tag_start, nice, ix++);
 
     if(complex())
-        for(auto ri= _M_children.begin(); ri != _M_children.end(); ++ri)
-            value+= ri->to_string(nice, ix);
-    else value+= decorate(_M_value, nice, ix);
+        for(auto ri = _M_children.begin(); ri != _M_children.end(); ++ri)
+            value += ri->to_string(nice, ix);
+    else value += decorate(_M_value, nice, ix);
 
-    if(!_M_tag.empty_tag()) value+= _M_tag.to_string(tag::tag_end, nice, --ix);
+    if(!_M_tag.empty_tag()) value += _M_tag.to_string(tag::tag_end, nice, --ix);
     return value;
 }
 
@@ -252,13 +252,13 @@ void element::parse(std::string& source)
 {
     while(source.size())
     {
-        if(size_t pos= source.find('<'))
+        if(size_t pos = source.find('<'))
         {
             std::string value(source, 0, pos);
             source.erase(0, pos);
             insert(std::move(value));
         }
-        else if(source[1]=='/') // end tag
+        else if(source[1] == '/') // end tag
         {
             bool empty;
             _M_tag.parse(source, tag::tag_end, empty);
@@ -269,7 +269,7 @@ void element::parse(std::string& source)
         {
             element e;
 
-            bool empty= false;
+            bool empty = false;
             e.tag().parse(source, tag::tag_start, empty);
 
             if(!empty) e.parse(source);

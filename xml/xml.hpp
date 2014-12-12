@@ -6,16 +6,16 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef XML_H
-#define XML_H
+#ifndef XML_HPP
+#define XML_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "container.hpp"
 
 #include <initializer_list>
-#include <vector>
 #include <set>
 #include <string>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace xml
@@ -37,10 +37,10 @@ public:
     attribute& operator=(const attribute&) = default;
     attribute& operator=(attribute&&) = default;
 
-    explicit attribute(const std::string& name, const std::string& value= std::string()):
+    explicit attribute(const std::string& name, const std::string& value = std::string()):
         _M_name(name), _M_value(value)
     { }
-    explicit attribute(std::string&& name, std::string&& value= std::string()):
+    explicit attribute(std::string&& name, std::string&& value = std::string()):
         _M_name(std::move(name)), _M_value(std::move(value))
     { }
 
@@ -106,13 +106,13 @@ public:
     ////////////////////
     reference attribute(const std::string& name)
     {
-        iterator ri= find(name);
+        iterator ri = find(name);
         if(ri == end()) throw std::out_of_range("tag::attribute()");
         return const_cast<reference>(*ri); // o.O
     }
     const_reference attribute(const std::string& name) const
     {
-        const_iterator ri= find(name);
+        const_iterator ri = find(name);
         if(ri == cend()) throw std::out_of_range("tag::attribute()");
         return *ri;
     }
@@ -168,20 +168,20 @@ public:
     element& operator=(const element&) = default;
     element& operator=(element&&) = default;
 
-    explicit element(const std::string& name, const std::string& value= std::string()):
+    explicit element(const std::string& name, const std::string& value = std::string()):
         _M_tag(name),
         _M_value(value)
     { }
-    explicit element(std::string&& name, std::string&& value= std::string()):
+    explicit element(std::string&& name, std::string&& value = std::string()):
         _M_tag(std::move(name)),
         _M_value(std::move(value))
     { }
 
-    element(const std::string& name, std::initializer_list<attribute> attributes, const std::string& value= std::string()):
+    element(const std::string& name, std::initializer_list<attribute> attributes, const std::string& value = std::string()):
         _M_tag(name, attributes),
         _M_value(value)
     { }
-    element(std::string&& name, std::initializer_list<attribute> attributes, std::string&& value= std::string()):
+    element(std::string&& name, std::initializer_list<attribute> attributes, std::string&& value = std::string()):
         _M_tag(std::move(name), attributes),
         _M_value(std::move(value))
     { }
@@ -205,13 +205,13 @@ public:
     void insert(const std::string& value)
     {
         if(!complex())
-            _M_value+= value;
+            _M_value += value;
         else insert(element(std::string(), value));
     }
     void insert(std::string&& value)
     {
         if(!complex())
-            _M_value+= value;
+            _M_value += value;
         else insert(element(std::string(), std::move(value)));
     }
 
@@ -228,7 +228,7 @@ public:
     }
 
     ////////////////////
-    std::string to_string(bool nice= false) const { return to_string(nice, 0); }
+    std::string to_string(bool nice = false) const { return to_string(nice, 0); }
 
 private:
     xml::tag _M_tag;
@@ -247,7 +247,7 @@ private:
 inline element parse(const std::string& source)
 {
     element e;
-    std::string x= source;
+    std::string x = source;
 
     e.parse(x);
     return e;
@@ -257,7 +257,7 @@ inline element parse(const std::string& source)
 inline element parse(std::string&& source)
 {
     element e;
-    std::string x= std::move(source);
+    std::string x = std::move(source);
 
     e.parse(x);
     return e;
@@ -267,4 +267,4 @@ inline element parse(std::string&& source)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#endif // XML_H
+#endif // XML_HPP
