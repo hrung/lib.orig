@@ -6,11 +6,12 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "entry.h"
+#include "entry.hpp"
 #include "errno_error.hpp"
 
 #include <cstdlib>
 #include <cstring>
+
 #include <dirent.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -18,13 +19,17 @@ namespace storage
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-const filter_func filter_all= [](const entry&) -> bool { return true; };
+const filter_func filter_all = [](const entry&) -> bool { return true; };
 
-const compare_func compare_version= [](const entry& e1, const entry& e2) -> int
-    { return strverscmp(e1.name.data(), e2.name.data()); };
+const compare_func compare_version = [](const entry& e1, const entry& e2) -> int
+{
+    return strverscmp(e1.name.data(), e2.name.data());
+};
 
-const compare_func compare_alpha= [](const entry& e1, const entry& e2) -> int
-    { return strcoll(e1.name.data(), e2.name.data()); };
+const compare_func compare_alpha = [](const entry& e1, const entry& e2) -> int
+{
+    return strcoll(e1.name.data(), e2.name.data());
+};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 entries entry::get(const std::string& path, const filter_func& filter, const compare_func& compare)
@@ -32,9 +37,9 @@ entries entry::get(const std::string& path, const filter_func& filter, const com
     static filter_func _M_filter;
     static compare_func _M_compare;
 
-    dirent** names= nullptr;
-    _M_filter= filter;
-    _M_compare= compare;
+    dirent** names = nullptr;
+    _M_filter = filter;
+    _M_compare = compare;
 
     int n= scandir(path.data(), &names,
         [] (const dirent* e) -> int

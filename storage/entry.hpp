@@ -6,15 +6,15 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef ENTRY_H
-#define ENTRY_H
+#ifndef ENTRY_HPP
+#define ENTRY_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "file.h"
+#include "file.hpp"
 
 #include <functional>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include <sys/types.h>
 
@@ -37,8 +37,8 @@ extern const compare_func compare_alpha;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct entry
 {
-    static entries get(const std::string& path, const filter_func& filter= filter_all,
-                                                const compare_func& compare= compare_version);
+    static entries get(const std::string& path, const filter_func& filter = filter_all,
+                                                const compare_func& compare = compare_version);
 
     std::string name;
     storage::type type;
@@ -50,4 +50,4 @@ struct entry
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#endif // ENTRY_H
+#endif // ENTRY_HPP

@@ -6,21 +6,21 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#ifndef FILE_H
-#define FILE_H
+#ifndef FILE_HPP
+#define FILE_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "perm.h"
 #include "enum.hpp"
+#include "perm.hpp"
 
 #include <chrono>
-#include <string>
 #include <cstdint>
+#include <string>
 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace storage
@@ -78,7 +78,7 @@ class file
 {
 public:
     typedef int id;
-    static constexpr id invalid= -1;
+    static constexpr id invalid = -1;
 
 public:
     file() noexcept = default;
@@ -111,10 +111,10 @@ public:
         { return write(string.data(), string.size()); }
     size_t write(const void* buffer, size_t n);
 
-    size_t read(std::string& string, size_t max, bool wait= true);
-    size_t read(void* buffer, size_t max, bool wait= true);
+    size_t read(std::string& string, size_t max, bool wait = true);
+    size_t read(void* buffer, size_t max, bool wait = true);
 
-    std::string readline(bool wait = true, char delim= '\n');
+    std::string readline(bool wait = true, char delim = '\n');
     bool getline(std::string& string, bool wait = true, char delim = '\n');
     bool eof();
 
@@ -127,16 +127,16 @@ public:
     template<typename Rep, typename Period>
     bool can_read(const std::chrono::duration<Rep, Period>& x)
     {
-        std::chrono::seconds s= std::chrono::duration_cast<std::chrono::seconds>(x);
-        std::chrono::nanoseconds n= std::chrono::duration_cast<std::chrono::nanoseconds>(x - s);
+        std::chrono::seconds s = std::chrono::duration_cast<std::chrono::seconds>(x);
+        std::chrono::nanoseconds n = std::chrono::duration_cast<std::chrono::nanoseconds>(x - s);
         return can_read(s, n);
     }
 
     template<typename Rep, typename Period>
     bool can_write(const std::chrono::duration<Rep, Period>& x)
     {
-        std::chrono::seconds s= std::chrono::duration_cast<std::chrono::seconds>(x);
-        std::chrono::nanoseconds n= std::chrono::duration_cast<std::chrono::nanoseconds>(x - s);
+        std::chrono::seconds s = std::chrono::duration_cast<std::chrono::seconds>(x);
+        std::chrono::nanoseconds n = std::chrono::duration_cast<std::chrono::nanoseconds>(x - s);
         return can_write(s, n);
     }
 
@@ -145,7 +145,7 @@ public:
     int control(int request, void* buffer);
 
 protected:
-    file::id _M_fd= invalid;
+    file::id _M_fd = invalid;
 
     bool can_read(std::chrono::seconds, std::chrono::nanoseconds);
     bool can_write(std::chrono::seconds, std::chrono::nanoseconds);
@@ -157,7 +157,7 @@ void remove(const std::string& name);
 void rename(const std::string& prev, const std::string& name);
 std::string real_path(const std::string& path);
 
-void chown(const std::string& name, storage::uid, storage::gid, bool deref= true);
+void chown(const std::string& name, storage::uid, storage::gid, bool deref = true);
 void chmod(const std::string& name, storage::perm);
 
 void mkdir(const std::string& name, storage::perm = perm::user_all | perm::group_read | perm::group_exec | perm::other_read | perm::other_exec);
@@ -180,4 +180,4 @@ storage::offset size(const std::string& name);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#endif
+#endif // FILE_HPP

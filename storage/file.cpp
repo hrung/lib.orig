@@ -6,15 +6,15 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "file.h"
 #include "errno_error.hpp"
+#include "file.hpp"
 
-#include <memory>
 #include <cstdlib>
+#include <memory>
 
-#include <sys/select.h>
 #include <limits.h> // PATH_MAX
 #include <sys/ioctl.h>
+#include <sys/select.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace storage
@@ -24,9 +24,9 @@ namespace storage
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 file::file(const std::string& name, storage::open open, open_opt opt, storage::perm perm)
 {
-    int val= static_cast<int>(open) | static_cast<int>(opt);
+    int val = static_cast<int>(open) | static_cast<int>(opt);
 
-    _M_fd= ::open(name.data(), val, static_cast<mode_t>(perm));
+    _M_fd = ::open(name.data(), val, static_cast<mode_t>(perm));
     if(_M_fd == invalid) throw errno_error();
 }
 
@@ -37,14 +37,14 @@ void file::close() noexcept
     {
         if(!(_M_fd == STDIN_FILENO || _M_fd == STDOUT_FILENO || _M_fd == STDERR_FILENO))
             ::close(_M_fd);
-        _M_fd= invalid;
+        _M_fd = invalid;
     }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 size_t file::write(const void* buffer, size_t n)
 {
-    ssize_t count= ::write(_M_fd, buffer, n);
+    ssize_t count = ::write(_M_fd, buffer, n);
     if(count == -1) throw errno_error();
 
     return count;
@@ -53,9 +53,9 @@ size_t file::write(const void* buffer, size_t n)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 size_t file::read(std::string& string, size_t max, bool wait)
 {
-    std::unique_ptr<char[]> buffer(new char[max+1]);
-    size_t count= read(buffer.get(), max, wait);
-    buffer[count]=0;
+    std::unique_ptr<char[]> buffer(new char[max + 1]);
+    size_t count = read(buffer.get(), max, wait);
+    buffer[count] = '\0';
 
     string.assign(buffer.get(), count);
     return count;
@@ -64,8 +64,8 @@ size_t file::read(std::string& string, size_t max, bool wait)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 size_t file::read(void* buffer, size_t max, bool wait)
 {
-    ssize_t count=0;
-    if(wait || can_read(std::chrono::seconds(0))) count= ::read(_M_fd, buffer, max);
+    ssize_t count = 0;
+    if(wait || can_read(std::chrono::seconds(0))) count = ::read(_M_fd, buffer, max);
 
     if(count == -1) throw errno_error();
     return count;
@@ -78,9 +78,9 @@ std::string file::readline(bool wait, char delim)
 
     for(char c;;)
     {
-        size_t n= read(&c, sizeof(c), wait);
+        size_t n = read(&c, sizeof(c), wait);
         if(n == 0 || c == delim) break;
-        string+= c;
+        string += c;
     }
 
     return string;
@@ -93,18 +93,18 @@ bool file::getline(std::string& string, bool wait, char delim)
 
     for(char c;;)
     {
-        size_t n= read(&c, sizeof(c), wait);
+        size_t n = read(&c, sizeof(c), wait);
         if(n == 0) return string.size();
         if(c == delim) return true;
-        string+= c;
+        string += c;
     }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 bool file::eof()
 {
-    offset n= tell();
-    offset e= seek(0, origin::end);
+    offset n = tell();
+    offset e = seek(0, origin::end);
 
     seek(n);
     return n == e;
@@ -113,7 +113,7 @@ bool file::eof()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 offset file::seek(storage::offset offset, storage::origin origin)
 {
-    storage::offset n= ::lseek(_M_fd, offset, static_cast<int>(origin));
+    storage::offset n = ::lseek(_M_fd, offset, static_cast<int>(origin));
     if(n == -1) throw errno_error();
 
     return n;
@@ -122,8 +122,8 @@ offset file::seek(storage::offset offset, storage::origin origin)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 offset file::size()
 {
-    offset n= tell();
-    offset e= seek(0, origin::end);
+    offset n = tell();
+    offset e = seek(0, origin::end);
 
     seek(n);
     return e;
@@ -139,13 +139,13 @@ void file::truncate(storage::offset length)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 bool file::can_read(std::chrono::seconds s, std::chrono::nanoseconds n)
 {
-    timespec time= { static_cast<std::time_t>(s.count()), static_cast<long>(n.count()) };
+    timespec time = { static_cast<std::time_t>(s.count()), static_cast<long>(n.count()) };
 
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(_M_fd, &fds);
 
-    int count= pselect(_M_fd+1, &fds, 0, 0, &time, nullptr);
+    int count = pselect(_M_fd+1, &fds, 0, 0, &time, nullptr);
     if(count == -1) throw errno_error();
 
     return count;
@@ -154,13 +154,13 @@ bool file::can_read(std::chrono::seconds s, std::chrono::nanoseconds n)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 bool file::can_write(std::chrono::seconds s, std::chrono::nanoseconds n)
 {
-    timespec time= { static_cast<std::time_t>(s.count()), static_cast<long>(n.count()) };
+    timespec time = { static_cast<std::time_t>(s.count()), static_cast<long>(n.count()) };
 
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(_M_fd, &fds);
 
-    int count= pselect(_M_fd+1, 0, &fds, 0, &time, nullptr);
+    int count = pselect(_M_fd+1, 0, &fds, 0, &time, nullptr);
     if(count == -1) throw errno_error();
 
     return count;
@@ -169,7 +169,7 @@ bool file::can_write(std::chrono::seconds s, std::chrono::nanoseconds n)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int file::control(int request, void* buffer)
 {
-    int val= ::ioctl(_M_fd, request, buffer);
+    int val = ::ioctl(_M_fd, request, buffer);
     if(val == -1) throw errno_error();
 
     return val;
@@ -204,7 +204,7 @@ std::string real_path(const std::string& path)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void chown(const std::string& name, storage::uid uid, storage::gid gid, bool deref)
 {
-    if( (deref? ::chown(name.data(), uid, gid): lchown(name.data(), uid, gid)) ) throw errno_error();
+    if( (deref ? ::chown(name.data(), uid, gid) : lchown(name.data(), uid, gid)) ) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -236,8 +236,8 @@ bool exists(const std::string& name) noexcept
 storage::type get_type(const std::string& name) noexcept
 {
     struct stat x;
-    return ::stat(name.data(), &x)?
-        storage::type::none:
+    return ::stat(name.data(), &x) ?
+        storage::type::none :
     storage::type((x.st_mode & S_IFMT) >> 12);
 }
 
