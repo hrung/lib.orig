@@ -6,7 +6,7 @@
 // Contact: dimitry (dot) ishenko (at) (gee) mail (dot) com
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#include "device.hpp"
+#include "hei_device.hpp"
 #include "hei_error.hpp"
 
 #include <cstring>
