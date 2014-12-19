@@ -14,6 +14,7 @@
 
 #include <initializer_list>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
