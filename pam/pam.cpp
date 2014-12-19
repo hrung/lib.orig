@@ -9,6 +9,7 @@
 #include "charpp.hpp"
 #include "pam.hpp"
 #include "pam_error.hpp"
+#include "string.hpp"
 
 #include <cstdlib>
 #include <cstring>
