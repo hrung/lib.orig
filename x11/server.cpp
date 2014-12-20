@@ -97,6 +97,7 @@ void server::close()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void server::set_cookie(const std::string& path)
 {
+#if !defined(disable_process_redir)
     process xauth(redir::cin, this_process::replace, xauth_path, arguments { "-q", "-f", path });
 
     xauth.cin << "remove " << name() << std::endl;
@@ -105,6 +106,13 @@ void server::set_cookie(const std::string& path)
     xauth.join();
 
     if(xauth.exit_code().code()) throw std::runtime_error("Could not set server auth");
+#else
+    std::string xauth = xauth_path + " -q -f " + path;
+
+    if(app::this_process::execute(xauth + " remove " + name()).code()
+    || app::this_process::execute(xauth + " add " + name() + " . " + _M_cookie.value()).code())
+    throw std::runtime_error("Could not set server auth");
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
