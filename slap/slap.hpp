@@ -245,7 +245,7 @@ public:
     void attribute_get(ToType& value, const std::string& name, value_type::size_type n = 0) const noexcept
     try
     {
-        value= attribute_to<ToType>(name, n);
+        value = attribute_to<ToType>(name, n);
     }
     catch(std::invalid_argument&)
     {
