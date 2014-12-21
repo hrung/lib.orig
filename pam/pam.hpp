@@ -79,10 +79,10 @@ public:
     void insert(pam::item, const std::string& value);
     void erase(pam::item);
 
-    void set_user_func(user_func x)   noexcept { _M_user=x; }
-    void set_pass_func(pass_func x)   noexcept { _M_pass=x; }
-    void set_info_func(info_func x)   noexcept { _M_info=x; }
-    void set_error_func(error_func x) noexcept { _M_error=x; }
+    void set_user_func(user_func x)   noexcept { _M_user = x; }
+    void set_pass_func(pass_func x)   noexcept { _M_pass = x; }
+    void set_info_func(info_func x)   noexcept { _M_info = x; }
+    void set_error_func(error_func x) noexcept { _M_error= x; }
 
     std::string get(const std::string& name, bool* found = nullptr);
     void insert(const std::string& name, const std::string& value);
