@@ -41,7 +41,7 @@ entries entry::get(const std::string& path, const filter_func& filter, const com
     _M_filter = filter;
     _M_compare = compare;
 
-    int n= scandir(path.data(), &names,
+    int n = scandir(path.data(), &names,
         [] (const dirent* e) -> int
         {
             return _M_filter({ e->d_name, static_cast<storage::type>(e->d_type), e->d_ino });
@@ -52,11 +52,11 @@ entries entry::get(const std::string& path, const filter_func& filter, const com
                                { (*e2)->d_name, static_cast<storage::type>((*e2)->d_type), (*e2)->d_ino } );
         }
     );
-    if(n>=0)
+    if(n >= 0)
     {
         storage::entries entries;
 
-        for(dirent** name= names; n; ++name, --n)
+        for(dirent** name = names; n; ++name, --n)
         {
             entries.push_back({ (*name)->d_name, static_cast<storage::type>((*name)->d_type), (*name)->d_ino });
             free(*name);
@@ -67,10 +67,10 @@ entries entry::get(const std::string& path, const filter_func& filter, const com
     }
     else
     {
-        int e= errno;
+        int e = errno;
         free(names);
 
-        errno=e;
+        errno = e;
         throw errno_error();
     }
 }
