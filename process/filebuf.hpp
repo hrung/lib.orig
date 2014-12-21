@@ -122,7 +122,7 @@ inline const char* filebuf::get_mode(std::ios_base::openmode mode)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 inline filebuf* filebuf::open(int fd, std::ios_base::openmode mode)
 {
-    const char* md= get_mode(mode);
+    const char* md = get_mode(mode);
     if(md)
     {
         __file_ = fdopen(fd, md);
