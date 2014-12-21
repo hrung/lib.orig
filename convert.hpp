@@ -146,7 +146,7 @@ ToType to(const QString& source)
 ///
 /// Convert source from FromType to integer type.
 ///
-/// \example        auto n= convert::to<long>("deadbeef", 16);
+/// \example        auto n = convert::to<long>("deadbeef", 16);
 ///
 template<typename ToType = int, typename FromType, enable_if_int<ToType>* = nullptr>
 ToType to(FromType&& source, int base)
@@ -163,7 +163,7 @@ ToType to(FromType&& source, int base)
 ///
 /// Convert source from FromType to bool.
 ///
-/// \example        bool b= convert::to_bool("false", true);
+/// \example        bool b = convert::to_bool("false", true);
 ///
 template<typename FromType>
 bool to_bool(FromType&& source, bool text)
@@ -179,8 +179,8 @@ bool to_bool(FromType&& source, bool text)
 ///
 /// Convert source from FromType to its octal representation as std::string.
 ///
-/// \example        std::string o= convert::to_oct<long>(1234567890);
-/// \example        std::string o= convert::to_oct("0x123");
+/// \example        std::string o = convert::to_oct<long>(1234567890);
+/// \example        std::string o = convert::to_oct("0x123");
 ///
 template<typename ViaType = int, typename FromType, enable_if_int<ViaType>* = nullptr>
 std::string to_oct(FromType&& source)
@@ -200,8 +200,8 @@ std::string to_oct(FromType&& source)
 ///
 /// Convert source from FromType to its hexadecimal representation as std::string.
 ///
-/// \example        std::string h= convert::to_hex<long>(1234567890);
-/// \example        std::string h= convert::to_hex("0123");
+/// \example        std::string h = convert::to_hex<long>(1234567890);
+/// \example        std::string h = convert::to_hex("0123");
 ///
 template<typename ViaType = int, typename FromType, enable_if_int<ViaType>* = nullptr>
 std::string to_hex(FromType&& source)
