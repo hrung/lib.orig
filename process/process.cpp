@@ -134,10 +134,10 @@ void process::_M_process(std::function<int()> func, bool group, app::redir x)
         if(group)
         {
             if(setpgid(_M_id, _M_id)) throw errno_error();
-            _M_group= true;
+            _M_group = true;
         }
 
-        _M_active= true;
+        _M_active = true;
     }
     catch(...)
     {
