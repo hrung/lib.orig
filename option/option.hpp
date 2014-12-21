@@ -100,7 +100,7 @@ public:
         _M_long_name(std::forward<LongNameType>(long_name)),
         _M_code(name),
         _M_description(std::forward<DescriptionType>(description)),
-        _M_need(need_arg? need_arg: uncertain),
+        _M_need(need_arg ? need_arg : uncertain),
         _M_single(option_assign<ValueType>::single),
         assign(std::bind(option_assign<ValueType>::assign, std::ref(value), std::placeholders::_1))
     { }
@@ -110,7 +110,7 @@ public:
         _M_long_name(std::forward<LongNameType>(long_name)),
         _M_code(generate()),
         _M_description(std::forward<DescriptionType>(description)),
-        _M_need(need_arg? need_arg: uncertain),
+        _M_need(need_arg ? need_arg : uncertain),
         _M_single(option_assign<ValueType>::single),
         assign(std::bind(option_assign<ValueType>::assign, std::ref(value), std::placeholders::_1))
     { }
@@ -119,7 +119,7 @@ public:
     option(char name, DescriptionType&& description, ValueType& value, tern need_arg = true):
         _M_code(name),
         _M_description(std::forward<DescriptionType>(description)),
-        _M_need(need_arg? need_arg: uncertain),
+        _M_need(need_arg ? need_arg : uncertain),
         _M_single(option_assign<ValueType>::single),
         assign(std::bind(option_assign<ValueType>::assign, std::ref(value), std::placeholders::_1))
     { }
