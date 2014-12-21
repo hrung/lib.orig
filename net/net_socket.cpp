@@ -23,7 +23,7 @@ namespace net
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 socket::socket(type x): app::socket(AF_INET, x)
 {
-    int val=1;
+    int val = 1;
     if(setsockopt(_M_fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val))) throw errno_error();
 }
 
@@ -69,7 +69,7 @@ void socket::set_multicast_ttl(int x)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void socket::set_multicast_all(bool x)
 {
-    int val= x ? 1 : 0;
+    int val = x ? 1 : 0;
     if(setsockopt(_M_fd, IPPROTO_IP, IP_MULTICAST_ALL, &val, sizeof(val))) throw errno_error();
 }
 
