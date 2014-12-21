@@ -40,8 +40,8 @@ std::string cookie::value() const noexcept
     for(size_t ri = 0; ri < sizeof(_M_value); ++ri)
     {
         char lo = _M_value[ri] & 0xf, hi = (_M_value[ri] >> 4) & 0xf;
-        value += hi+ (hi < 10? '0': 'a' - 10);
-        value += lo+ (lo < 10? '0': 'a' - 10);
+        value += hi + (hi < 10 ? '0' : 'a' - 10);
+        value += lo + (lo < 10 ? '0' : 'a' - 10);
     }
     return value;
 }
@@ -64,7 +64,7 @@ server::server(const std::string& name, const std::string& server_auth, const ap
     xorg_args.insert(args);
     xorg_args.insert({ "-auth", server_auth });
 
-    _M_process= process(process::group, this_process::replace, xorg_path, xorg_args);
+    _M_process = process(process::group, this_process::replace, xorg_path, xorg_args);
 
     for(int ri = 0; ri < 10; ++ri)
     {
@@ -72,7 +72,7 @@ server::server(const std::string& name, const std::string& server_auth, const ap
 
         if(!_M_process.running()) throw std::runtime_error("X server failed to start");
 
-        _M_display= XOpenDisplay(_M_name.data());
+        _M_display = XOpenDisplay(_M_name.data());
         if(_M_display) break;
     }
 
