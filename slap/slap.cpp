@@ -32,7 +32,7 @@ void mod_deleter::operator()(LDAPMod* mod)
 {
     if(mod)
     {
-        for(char** ri = mod->mod_values; ri; ++ri) delete *ri;
+        for(char** ri = mod->mod_values; *ri; ++ri) delete *ri;
         delete[] mod->mod_values;
 
         delete[] mod->mod_type;
