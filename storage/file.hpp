@@ -56,12 +56,13 @@ enum class open
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum class open_opt
 {
-    none   = 0,
-    create = O_CREAT,
-    trunc  = O_TRUNC,
-    append = O_APPEND,
-    sync   = O_SYNC,
-    direct = O_DIRECT,
+    none      = 0,
+    create    = O_CREAT,
+    trunc     = O_TRUNC,
+    append    = O_APPEND,
+    sync      = O_SYNC,
+    direct    = O_DIRECT,
+    non_block = O_NONBLOCK,
 };
 DECLARE_OPERATOR(open_opt)
 
