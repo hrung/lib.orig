@@ -167,7 +167,7 @@ bool file::can_write(std::chrono::seconds s, std::chrono::nanoseconds n)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-int file::control(int request, void* buffer)
+int file::_M_control(unsigned long request, void* buffer)
 {
     int val = ::ioctl(_M_fd, request, buffer);
     if(val == -1) throw errno_error();

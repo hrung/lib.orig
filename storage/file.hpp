@@ -143,13 +143,19 @@ public:
 
     file::id get_id() const { return _M_fd; }
 
-    int control(int request, void* buffer);
+    template<typename T>
+    int control(int request, T value)
+    {
+        return _M_control(request, reinterpret_cast<void*>(value));
+    }
 
 protected:
     file::id _M_fd = invalid;
 
     bool can_read(std::chrono::seconds, std::chrono::nanoseconds);
     bool can_write(std::chrono::seconds, std::chrono::nanoseconds);
+
+    int _M_control(unsigned long request, void* buffer);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
