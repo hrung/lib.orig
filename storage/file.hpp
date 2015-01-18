@@ -149,6 +149,8 @@ public:
         return _M_control(request, reinterpret_cast<void*>(value));
     }
 
+    int control(int request) { return _M_control(request, nullptr); }
+
 protected:
     file::id _M_fd = invalid;
 
