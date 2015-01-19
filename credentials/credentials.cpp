@@ -19,22 +19,23 @@ namespace app
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-static passwd* get_pwd(app::uid x)
+///////////////////////////////////////////////////////////////////////////////////////////////////
+static passwd* get_pwd(app::uid x, bool nothrow = false)
 {
     errno = 0;
     passwd* pwd = getpwuid(x);
-    if(pwd) return pwd;
+    if(pwd || nothrow) return pwd;
 
     if(errno == 0)
         throw std::runtime_error("getpwuid(): entry not found");
     else throw errno_error();
 }
 
-static passwd* get_pwd(const std::string& name)
+static passwd* get_pwd(const std::string& name, bool nothrow = false)
 {
     errno = 0;
     passwd* pwd = getpwnam(name.data());
-    if(pwd) return pwd;
+    if(pwd || nothrow) return pwd;
 
     if(errno == 0)
         throw std::runtime_error("getpwnam(): entry not found");
@@ -54,6 +55,7 @@ static std::string get_shell(passwd* pwd)
     return sh;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 credentials::credentials(app::uid x):
     credentials(get_pwd(x))
@@ -92,6 +94,48 @@ void credentials::morph_into()
     if(setuid(_M_uid)) throw errno_error();
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+app::uid get_uid(const std::string& name)
+{
+    passwd* pwd = get_pwd(name, true);
+    return pwd ? pwd->pw_uid : app::invalid_uid;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+std::string uid_name(app::uid uid)
+{
+    passwd* pwd = get_pwd(uid, true);
+    return pwd ? pwd->pw_name : std::string();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+app::gid get_gid(const std::string& name)
+{
+    errno = 0;
+    group* grp = getgrnam(name.data());
+    if(grp)
+        return grp->gr_gid;
+    else if(errno == 0)
+        return app::invalid_gid;
+    else throw errno_error();
+
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+std::string gid_name(app::gid gid)
+{
+    errno = 0;
+    group* grp = getgrgid(gid);
+    if(grp)
+        return grp->gr_name;
+    else if(errno == 0)
+        return std::string();
+    else throw errno_error();
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace this_user
 {
