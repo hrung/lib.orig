@@ -153,12 +153,19 @@ app::groups groups()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void morph_into(app::uid uid, bool perm)
 {
-    if(setresuid(uid, perm ? uid : invalid_uid, perm ? uid : invalid_uid)) throw errno_error();
+    if(setresuid(perm ? uid : invalid_uid,
+                 uid,
+                 perm ? uid : invalid_uid))
+    throw errno_error();
 }
 
 void morph_into(app::uid uid, app::gid gid, bool perm)
 {
-    if(setresgid(gid, perm ? gid : invalid_gid, perm ? gid : invalid_gid)) throw errno_error();
+    if(setresgid(perm ? gid : invalid_gid,
+                 gid,
+                 perm ? gid : invalid_gid))
+    throw errno_error();
+
     morph_into(uid, perm);
 }
 
