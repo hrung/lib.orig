@@ -51,7 +51,7 @@ public:
     explicit server(const std::string& server_auth, const app::arguments& args = {}):
         server(default_name, server_auth, args)
     { }
-    ~server() { close(); }
+    ~server();
 
     void close();
 
