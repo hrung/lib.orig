@@ -56,16 +56,8 @@ DECLARE_OPERATOR(whence)
 /// \param  whence  parts of the string to trim
 /// \return trimmed string
 ///
-/// This function is written as a template so that it works on both
-/// lvalue and rvalue references, thus avoiding unneeded copying.
-///
-/// Cf: reference collapsing rules, universal references
-///
-template<typename T>
-inline std::string trim(T&& source, app::whence whence = app::whence::both)
+inline std::string trim(std::string source, app::whence whence = app::whence::both)
 {
-    static_assert(std::is_convertible<T, std::string>::value, "Typename T must be convertible to std::string");
-
     ////////////////////
     /// std::find_if_not will not work directly with std::isspace,
     /// as there are 2 overloaded versions of it.
@@ -76,12 +68,11 @@ inline std::string trim(T&& source, app::whence whence = app::whence::both)
         // it's non-negative (ISO C requirement)
         return std::isspace(static_cast<unsigned char>(c));
     };
-    std::string copy(std::forward<std::string>(source));
 
-    if(whence && app::whence::head) copy.erase(copy.begin(), std::find_if_not(copy.begin(), copy.end(), isspace));
-    if(whence && app::whence::tail) copy.erase(std::find_if_not(copy.rbegin(), copy.rend(), isspace).base(), copy.end());
+    if(whence && app::whence::head) source.erase(source.begin(), std::find_if_not(source.begin(), source.end(), isspace));
+    if(whence && app::whence::tail) source.erase(std::find_if_not(source.rbegin(), source.rend(), isspace).base(), source.end());
 
-    return copy;
+    return source;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
