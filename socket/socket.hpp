@@ -54,7 +54,7 @@ public:
     }
 
     void listen(int max = 128);
-    void accept(socket& socket);
+    void accept(app::socket& socket);
 
     void set_non_blocking(bool);
 
