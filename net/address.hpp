@@ -26,6 +26,7 @@ class address
 public:
     static const address any;
     static const address broadcast;
+    static const address loopback;
 
 public:
     address() noexcept = default;
