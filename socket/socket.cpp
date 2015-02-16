@@ -33,7 +33,7 @@ socket::socket(int family, socket::type type)
         val = SOCK_STREAM;
         break;
     default:
-        throw std::runtime_error("socket::socket_base(): unsupported type");
+        throw std::runtime_error("socket::socket(): unsupported type");
     }
 
     _M_fd = ::socket(family, val, 0);
@@ -69,10 +69,10 @@ void socket::listen(int max)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void socket::accept(socket::socket& socket)
+void socket::accept(app::socket& socket)
 {
-    socket._M_fd = ::accept(_M_fd, 0, 0);
-    if(socket._M_fd <= 0) throw errno_error();
+    socket._M_fd = ::accept(_M_fd, nullptr, nullptr);
+    if(socket._M_fd == invalid) throw errno_error();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
