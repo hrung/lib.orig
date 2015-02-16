@@ -26,10 +26,10 @@ socket::socket(int family, socket::type type)
     int val;
     switch(type)
     {
-    case type::datagram:
+    case socket::datagram:
         val = SOCK_DGRAM;
         break;
-    case type::stream:
+    case socket::stream:
         val = SOCK_STREAM;
         break;
     default:
