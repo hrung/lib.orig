@@ -47,6 +47,22 @@ void socket::bind(net::address address, net::port port)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+void socket::accept(net::socket& socket, net::address& address, net::port& port)
+{
+    sockaddr_in addr;
+    socklen_t len = sizeof(addr);
+
+    socket._M_fd = ::accept(_M_fd, (sockaddr*)&addr, &len);
+    if(socket._M_fd == invalid) throw errno_error();
+
+    if(addr.sin_family == AF_INET)
+    {
+        address._M_addr.s_addr = addr.sin_addr.s_addr;
+        port = ntohs(addr.sin_port);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 void socket::connect(net::address address, net::port port)
 {
     sockaddr_in addr = from(address, port);

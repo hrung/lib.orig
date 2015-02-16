@@ -47,6 +47,14 @@ public:
     void bind(net::address address, net::port port);
     void bind(net::port port) { bind(net::address::any, port); }
 
+    using app::socket::accept;
+    void accept(net::socket& socket, net::address& address)
+    {
+        net::port port;
+        accept(socket, address, port);
+    }
+    void accept(net::socket& socket, net::address& address, net::port& port);
+
     void connect(net::address address, net::port port);
 
     void set_multicast_loop(bool);
