@@ -107,7 +107,7 @@ bool socket::can_recv(std::chrono::seconds s, std::chrono::nanoseconds n)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 size_t socket::send(const void* buffer, size_t n, bool wait)
 {
-    ssize_t count = ::send(_M_fd, buffer, n, wait ? 0 : MSG_DONTWAIT);
+    ssize_t count = ::send(_M_fd, buffer, n, (wait ? 0 : MSG_DONTWAIT) | MSG_NOSIGNAL);
     if(count == -1)
     {
         if(!wait && (errno == EAGAIN || errno == EWOULDBLOCK))
@@ -120,7 +120,7 @@ size_t socket::send(const void* buffer, size_t n, bool wait)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 size_t socket::send_to(sockaddr* addr, socklen_t addr_len, const void* buffer, size_t n, bool wait)
 {
-    ssize_t count = ::sendto(_M_fd, buffer, n, wait ? 0 : MSG_DONTWAIT, addr, addr_len);
+    ssize_t count = ::sendto(_M_fd, buffer, n, (wait ? 0 : MSG_DONTWAIT) | MSG_NOSIGNAL, addr, addr_len);
     if(count == -1)
     {
         if(!wait && (errno == EAGAIN || errno == EWOULDBLOCK))
