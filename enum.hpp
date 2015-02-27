@@ -10,14 +10,18 @@
 #define ENUM_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#define DECLARE_OPERATOR(Enum) \
-constexpr Enum operator& (Enum x, Enum y) noexcept { return static_cast<Enum>( static_cast<int>(y)& static_cast<int>(x) ); } \
-constexpr Enum operator| (Enum x, Enum y) noexcept { return static_cast<Enum>( static_cast<int>(y)| static_cast<int>(x) ); } \
-constexpr Enum operator^ (Enum x, Enum y) noexcept { return static_cast<Enum>( static_cast<int>(y)^ static_cast<int>(x) ); } \
-constexpr Enum operator~ (Enum x)         noexcept { return static_cast<Enum>(                     ~static_cast<int>(x) ); } \
-constexpr bool operator==(Enum x, Enum y) noexcept { return                  ( static_cast<int>(y)==static_cast<int>(x) ); } \
-constexpr bool operator!=(Enum x, Enum y) noexcept { return                  ( static_cast<int>(y)!=static_cast<int>(x) ); } \
-constexpr bool operator&&(Enum x, Enum y) noexcept { return                  ( static_cast<int>(y)& static_cast<int>(x) ); } \
+#include <type_traits>
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+#define DECLARE_OPERATOR(e) \
+typedef typename std::underlying_type<e>::type _ ## e; \
+constexpr e    operator& (e x, e y) noexcept { return static_cast<e>( static_cast<_ ## e>(y)& static_cast<_ ## e>(x) ); } \
+constexpr e    operator| (e x, e y) noexcept { return static_cast<e>( static_cast<_ ## e>(y)| static_cast<_ ## e>(x) ); } \
+constexpr e    operator^ (e x, e y) noexcept { return static_cast<e>( static_cast<_ ## e>(y)^ static_cast<_ ## e>(x) ); } \
+constexpr e    operator~ (e x)      noexcept { return static_cast<e>(                        ~static_cast<_ ## e>(x) ); } \
+constexpr bool operator==(e x, e y) noexcept { return               ( static_cast<_ ## e>(y)==static_cast<_ ## e>(x) ); } \
+constexpr bool operator!=(e x, e y) noexcept { return               ( static_cast<_ ## e>(y)!=static_cast<_ ## e>(x) ); } \
+constexpr bool operator&&(e x, e y) noexcept { return               ( static_cast<_ ## e>(y)& static_cast<_ ## e>(x) ); } \
 
 /// NOTE: since scoped enumerations are not implicitly convertible to bool,
 /// the following will not compile:
