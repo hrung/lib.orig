@@ -1,0 +1,20 @@
+#!/bin/bash
+
+if (( ${#} == 0 )); then
+    echo "Usage: ${0} list of files and/or dirs to keep"
+    exit 1
+fi
+
+files="COPYING README clean makefile_tgt.mk "
+files+=$(find ${@} -type f -printf '%p ')
+
+names=$(sed -nre 's/(\s*#include\s+")([^"]+)"/-name \2 -o/p' ${files})
+
+if [[ -n "${names}" ]]; then
+    names=${names% -o}
+    files+=$(find '(' ${names} ')' -type f -printf '%P ')
+fi
+
+files+=$(find -name .git -prune -o -type f -printf '%P ')
+
+git rm --ignore-unmatch $(for file in ${files}; do echo ${file}; done | sort | uniq -u)
