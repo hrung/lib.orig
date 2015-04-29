@@ -9,6 +9,8 @@
 #include "alsa_device.hpp"
 #include "alsa_error.hpp"
 
+#include <climits>
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace alsa
 {
@@ -119,6 +121,24 @@ alsa::frames device::write(void* buffer, alsa::frames frames)
 bool device::recover(int code, bool silent) noexcept
 {
     return !snd_pcm_recover(_M_pcm, code, silent);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+unsigned device::sample_bits(alsa::format format)
+{
+    auto code = snd_pcm_format_width(static_cast<snd_pcm_format_t>(format));
+    if(code < 0) throw alsa_error(code, "snd_pcm_format_width");
+
+    return code;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+unsigned device::sample_size(alsa::format format)
+{
+    auto code = snd_pcm_format_physical_width(static_cast<snd_pcm_format_t>(format));
+    if(code < 0) throw alsa_error(code, "snd_pcm_format_physical_width");
+
+    return code / CHAR_BIT;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

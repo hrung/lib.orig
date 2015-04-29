@@ -149,6 +149,9 @@ public:
 
     bool recover(int code, bool silent = true) noexcept;
 
+    static unsigned sample_bits(alsa::format);
+    static unsigned sample_size(alsa::format);
+
 protected:
     snd_pcm_t* _M_pcm = nullptr;
 };
