@@ -10,8 +10,10 @@
 #define ALSA_DEVICE_HPP
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+#include "alsa/alsa_error.hpp"
 #include "enum.hpp"
 
+#include <chrono>
 #include <string>
 #include <utility>
 
@@ -22,6 +24,8 @@ namespace alsa
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief  type of stream (capture/playback)
+///
 enum class stream
 {
     playback = SND_PCM_STREAM_PLAYBACK,
@@ -29,6 +33,8 @@ enum class stream
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief  stream mode (normal/non-block/async)
+///
 enum class mode
 {
     normal    = 0,
@@ -38,6 +44,8 @@ enum class mode
 DECLARE_OPERATOR(mode)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief  capture/playback sample format
+///
 enum class format
 {
     unknown   = SND_PCM_FORMAT_UNKNOWN,            // Unknown
@@ -90,12 +98,44 @@ enum class format
     iec958    = SND_PCM_FORMAT_IEC958_SUBFRAME,    // iec-958 cpu endian
 };
 
-std::string name(alsa::format) noexcept;
-std::string description(alsa::format) noexcept;
+////////////////////
+/// \brief  name get sample format name
+/// \param  format sample format
+/// \return sample format name
+///
+std::string name(alsa::format format) noexcept;
 
+////////////////////
+/// \brief  description get sample format description
+/// \param  format sample format
+/// \return sample format descrtiption
+///
+std::string description(alsa::format format) noexcept;
+
+////////////////////
+/// \brief  to_format get sample format from name
+/// \param  name sample format name
+/// \return sample format
+///
 alsa::format to_format(const std::string& name) noexcept;
 
+////////////////////
+/// \brief  sample_bits get sample size in bits
+/// \param  format sample format
+/// \return sample size in bits
+///
+int sample_bits(alsa::format format);
+
+////////////////////
+/// \brief  sample_size get physical sample size in bytes
+/// \param  format sample format
+/// \return physical sample size in bytes
+///
+int sample_size(alsa::format format);
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief  access type
+///
 enum class access
 {
     mmap           = SND_PCM_ACCESS_MMAP_INTERLEAVED,
@@ -106,12 +146,24 @@ enum class access
     read_write_non = SND_PCM_ACCESS_RW_NONINTERLEAVED,
 };
 
-std::string name(alsa::access) noexcept;
+////////////////////
+/// \brief  name get access type name
+/// \param  access access type
+/// \return access type name
+///
+std::string name(alsa::access access) noexcept;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 typedef snd_pcm_uframes_t frames;
 
+struct software_resample_t { };
+constexpr software_resample_t software_resample { };
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief  ALSA capture/playback device
+///
+/// This class handles capture/playback with ALSA devices.
+///
 class device
 {
 public:
@@ -139,21 +191,70 @@ public:
     }
 
     ////////////////////
-    void set(alsa::format, alsa::access, unsigned channels, unsigned rate, bool resample, unsigned latency);
+    /// \brief  set set ALSA hardware and software parameters
+    /// \param  format sample format
+    /// \param  access access type
+    /// \param  channels number of channels
+    /// \param  rate sample rate
+    /// \param  latency latency
+    ///
+    template<typename Rep, typename Period>
+    void set(alsa::format format, alsa::access access, int channels, int rate, const std::chrono::duration<Rep, Period>& latency)
+    {
+        auto value = std::chrono::duration_cast<std::chrono::microseconds>(latency).count();
+        set(format, access, channels, rate, value, false);
+    }
 
+    ////////////////////
+    /// \brief  set set ALSA hardware and software parameters (allow software resample)
+    /// \param  format sample format
+    /// \param  access access type
+    /// \param  channels number of channels
+    /// \param  rate sample rate
+    /// \param  latency latency
+    ///
+    template<typename Rep, typename Period>
+    void set(alsa::format format, alsa::access access, int channels, int rate, const std::chrono::duration<Rep, Period>& latency, alsa::software_resample_t)
+    {
+        auto value = std::chrono::duration_cast<std::chrono::microseconds>(latency).count();
+        set(format, access, channels, rate, value, true);
+    }
+
+    ////////////////////
+    /// \brief  period get period size in frames
+    /// \return period size in frames
+    ///
     alsa::frames period();
-    unsigned frame_size();
 
-    alsa::frames read(void* buffer, alsa::frames);
-    alsa::frames write(void* buffer, alsa::frames);
+    ////////////////////
+    /// \brief  read read (capture) data from ALSA device
+    /// \param  buffer buffer to read data into
+    /// \param  frames buffer size in frames
+    /// \return number of frames read (captured)
+    ///
+    alsa::frames read(void* buffer, alsa::frames frames);
 
-    bool recover(int code, bool silent = true) noexcept;
 
-    static unsigned sample_bits(alsa::format);
-    static unsigned sample_size(alsa::format);
+    ////////////////////
+    /// \brief  write write (play back) data to ALSA device
+    /// \param  buffer buffer to write data from
+    /// \param  frames buffer size in frames
+    /// \return number of frames written (played back)
+    ///
+    alsa::frames write(void* buffer, alsa::frames frames);
+
+    ////////////////////
+    /// \brief  recover
+    /// \param  code
+    /// \param  silent
+    /// \return
+    ///
+    bool recover(const alsa::alsa_error& e) noexcept;
 
 protected:
     snd_pcm_t* _M_pcm = nullptr;
+
+    void set(alsa::format, alsa::access, int channels, int rate, int microseconds, bool resample);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

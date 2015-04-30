@@ -7,7 +7,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "alsa_device.hpp"
-#include "alsa_error.hpp"
 
 #include <climits>
 
@@ -43,6 +42,24 @@ alsa::format to_format(const std::string& name) noexcept
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+int sample_bits(alsa::format format)
+{
+    auto code = snd_pcm_format_width(static_cast<snd_pcm_format_t>(format));
+    if(code < 0) throw alsa_error(code, "snd_pcm_format_width");
+
+    return code;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+int sample_size(alsa::format format)
+{
+    auto code = snd_pcm_format_physical_width(static_cast<snd_pcm_format_t>(format));
+    if(code < 0) throw alsa_error(code, "snd_pcm_format_physical_width");
+
+    return code / CHAR_BIT;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 std::string name(alsa::access access) noexcept
 {
     return snd_pcm_access_name(static_cast<snd_pcm_access_t>(access));
@@ -67,7 +84,7 @@ void device::close() noexcept
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void device::set(alsa::format format, alsa::access access, unsigned channels, unsigned rate, bool resample, unsigned latency)
+void device::set(alsa::format format, alsa::access access, int channels, int rate, int microseconds, bool resample)
 {
     int code = snd_pcm_set_params(_M_pcm,
                                   static_cast<snd_pcm_format_t>(format),
@@ -75,7 +92,7 @@ void device::set(alsa::format format, alsa::access access, unsigned channels, un
                                   channels,
                                   rate,
                                   resample,
-                                  latency);
+                                  microseconds);
     if(code) throw alsa_error(code, "snd_pcm_set_params");
 }
 
@@ -88,15 +105,6 @@ alsa::frames device::period()
     if(code) throw alsa_error(code, "snd_pcm_get_params");
 
     return period;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-unsigned device::frame_size()
-{
-    auto code = snd_pcm_frames_to_bytes(_M_pcm, 1);
-    if(code < 0) throw alsa_error(code, "snd_pcm_frames_to_bytes");
-
-    return code;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -118,27 +126,9 @@ alsa::frames device::write(void* buffer, alsa::frames frames)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool device::recover(int code, bool silent) noexcept
+bool device::recover(const alsa::alsa_error& e) noexcept
 {
-    return !snd_pcm_recover(_M_pcm, code, silent);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-unsigned device::sample_bits(alsa::format format)
-{
-    auto code = snd_pcm_format_width(static_cast<snd_pcm_format_t>(format));
-    if(code < 0) throw alsa_error(code, "snd_pcm_format_width");
-
-    return code;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-unsigned device::sample_size(alsa::format format)
-{
-    auto code = snd_pcm_format_physical_width(static_cast<snd_pcm_format_t>(format));
-    if(code < 0) throw alsa_error(code, "snd_pcm_format_physical_width");
-
-    return code / CHAR_BIT;
+    return !snd_pcm_recover(_M_pcm, e.code().value(), true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
