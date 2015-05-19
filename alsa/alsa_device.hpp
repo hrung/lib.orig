@@ -156,8 +156,8 @@ std::string name(alsa::access access) noexcept;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 typedef snd_pcm_uframes_t frames;
 
-struct software_resample_t { };
-constexpr software_resample_t software_resample { };
+struct resample_t { };
+constexpr resample_t resample { };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /// \brief  ALSA capture/playback device
@@ -214,7 +214,7 @@ public:
     /// \param  latency latency
     ///
     template<typename Rep, typename Period>
-    void set(alsa::format format, alsa::access access, int channels, int rate, const std::chrono::duration<Rep, Period>& latency, alsa::software_resample_t)
+    void set(alsa::format format, alsa::access access, int channels, int rate, const std::chrono::duration<Rep, Period>& latency, alsa::resample_t)
     {
         auto value = std::chrono::duration_cast<std::chrono::microseconds>(latency).count();
         set(format, access, channels, rate, value, true);
