@@ -29,6 +29,7 @@ enum class errc
     interrupted                         = -EINTR,
     resource_unavailable_try_again      = -EAGAIN,
     no_such_device                      = -ENODEV,
+    invalid_argument                    = -EINVAL,
     inappropriate_io_control_operation  = -ENOTTY,
     broken_pipe                         = -EPIPE,
 
