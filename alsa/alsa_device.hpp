@@ -33,20 +33,24 @@ enum class stream
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/// \brief  stream mode (normal/non-block/async)
+/// \brief  options
 ///
-enum class mode
+enum class opt
 {
-    normal    = 0,
-    non_block = SND_PCM_NONBLOCK,
-    async     = SND_PCM_ASYNC,
+    none      = 0x00,
+    non_block = 0x01,
+    resample  = 0x02, // software resample
 };
-DECLARE_OPERATOR(mode)
+DECLARE_OPERATOR(opt)
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+namespace sample
+{
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /// \brief  capture/playback sample format
 ///
-enum class format
+enum format
 {
     unknown   = SND_PCM_FORMAT_UNKNOWN,            // Unknown
     s8        = SND_PCM_FORMAT_S8,                 // Signed 8 bit
@@ -103,61 +107,34 @@ enum class format
 /// \param  format sample format
 /// \return sample format name
 ///
-std::string name(alsa::format format) noexcept;
+std::string name(alsa::sample::format format) noexcept;
 
 ////////////////////
 /// \brief  description get sample format description
 /// \param  format sample format
 /// \return sample format descrtiption
 ///
-std::string description(alsa::format format) noexcept;
+std::string description(alsa::sample::format format) noexcept;
 
 ////////////////////
-/// \brief  to_format get sample format from name
-/// \param  name sample format name
-/// \return sample format
-///
-alsa::format to_format(const std::string& name) noexcept;
-
-////////////////////
-/// \brief  sample_bits get sample size in bits
+/// \brief  bits get sample size in bits
 /// \param  format sample format
 /// \return sample size in bits
 ///
-int sample_bits(alsa::format format);
+int bits(alsa::sample::format format);
 
 ////////////////////
-/// \brief  sample_size get physical sample size in bytes
+/// \brief  size get physical sample size in bytes
 /// \param  format sample format
 /// \return physical sample size in bytes
 ///
-int sample_size(alsa::format format);
+int size(alsa::sample::format format);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/// \brief  access type
-///
-enum class access
-{
-    mmap           = SND_PCM_ACCESS_MMAP_INTERLEAVED,
-    mmap_non       = SND_PCM_ACCESS_MMAP_NONINTERLEAVED,
-    mmap_complex   = SND_PCM_ACCESS_MMAP_COMPLEX,
-
-    read_write     = SND_PCM_ACCESS_RW_INTERLEAVED,
-    read_write_non = SND_PCM_ACCESS_RW_NONINTERLEAVED,
-};
-
-////////////////////
-/// \brief  name get access type name
-/// \param  access access type
-/// \return access type name
-///
-std::string name(alsa::access access) noexcept;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 typedef snd_pcm_uframes_t frames;
-
-struct resample_t { };
-constexpr resample_t resample { };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /// \brief  ALSA capture/playback device
@@ -173,9 +150,31 @@ public:
 
     ~device() { close(); }
 
-    device(const std::string& name, alsa::stream stream, alsa::mode mode = alsa::mode::normal);
+    ////////////////////
+    /// \brief  device create ALSA device
+    /// \param  name ALSA device name
+    /// \param  stream type of stream (playback/capture)
+    /// \param  format sample format
+    /// \param  channels number of channels
+    /// \param  rate sample rate
+    /// \param  opt options
+    /// \param  latency latency
+    /// \param  periods number of periods
+    ///
+    template<typename Rep, typename Period>
+    device(const std::string& name, alsa::stream stream, alsa::sample::format format, int channels, int rate, alsa::opt opt, const std::chrono::duration<Rep, Period>& latency, int periods = 8) :
+        device(name, stream, format, channels, rate, opt, std::chrono::duration_cast<std::chrono::microseconds>(latency).count(), periods)
+    { }
 
+    ////////////////////
+    /// \brief  close close ALSA device
+    ///
     void close() noexcept;
+
+    ////////////////////
+    /// \brief  is_open check if ALSA device is open
+    /// \return open/closed
+    ///
     bool is_open() const noexcept { return _M_pcm != nullptr; }
 
     device& operator=(const device&) = delete;
@@ -191,34 +190,14 @@ public:
     }
 
     ////////////////////
-    /// \brief  set set ALSA hardware and software parameters
-    /// \param  format sample format
-    /// \param  access access type
-    /// \param  channels number of channels
-    /// \param  rate sample rate
-    /// \param  latency latency
-    ///
-    template<typename Rep, typename Period>
-    void set(alsa::format format, alsa::access access, int channels, int rate, const std::chrono::duration<Rep, Period>& latency)
-    {
-        auto value = std::chrono::duration_cast<std::chrono::microseconds>(latency).count();
-        set(format, access, channels, rate, value, false);
-    }
+    bool run() noexcept;
+    bool stop(bool drain = false) noexcept;
+    bool running() const noexcept;
 
-    ////////////////////
-    /// \brief  set set ALSA hardware and software parameters (allow software resample)
-    /// \param  format sample format
-    /// \param  access access type
-    /// \param  channels number of channels
-    /// \param  rate sample rate
-    /// \param  latency latency
-    ///
-    template<typename Rep, typename Period>
-    void set(alsa::format format, alsa::access access, int channels, int rate, const std::chrono::duration<Rep, Period>& latency, alsa::resample_t)
-    {
-        auto value = std::chrono::duration_cast<std::chrono::microseconds>(latency).count();
-        set(format, access, channels, rate, value, true);
-    }
+    bool can_pause() const noexcept;
+    bool pause() noexcept;
+    bool unpause() noexcept;
+    bool paused() const noexcept;
 
     ////////////////////
     /// \brief  period get period size in frames
@@ -234,7 +213,6 @@ public:
     ///
     alsa::frames read(void* buffer, alsa::frames frames);
 
-
     ////////////////////
     /// \brief  write write (play back) data to ALSA device
     /// \param  buffer buffer to write data from
@@ -244,17 +222,16 @@ public:
     alsa::frames write(void* buffer, alsa::frames frames);
 
     ////////////////////
-    /// \brief  recover
-    /// \param  code
-    /// \param  silent
-    /// \return
+    /// \brief  recover recover ALSA device
+    /// \param  e ALSA error
+    /// \return whether the device was recovered
     ///
     bool recover(const alsa::alsa_error& e) noexcept;
 
 protected:
     snd_pcm_t* _M_pcm = nullptr;
 
-    void set(alsa::format, alsa::access, int channels, int rate, int microseconds, bool resample);
+    device(const std::string& name, alsa::stream, alsa::sample::format, int channels, int rate, alsa::opt, int microseconds, int periods);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
