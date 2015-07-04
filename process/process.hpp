@@ -26,11 +26,11 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///
-/// GNU libstdc++ currently does not support move semantics for streams (see gcc bug 53626),
-/// which will only be available in gcc 5. Therefore, the only way to take advantage of
-/// the I/O redirection feature of the process class is to use LLVM's libc++ with the clang++
-/// compiler (add -stdlib=libc++ flag). Or wait until gcc 5 is released with new version of the
-/// libstdc++.
+/// The GNU libstdc++ library currently does not support move semantics for streams
+/// (see gcc bug #53626), which will only be available in gcc 5. Therefore, the only way to take
+/// advantage of the I/O redirection feature of the process class is to either use LLVM's libc++
+/// library with the clang++ compiler (add -stdlib=libc++ option). Or wait until gcc 5 is released
+/// with the new version of libstdc++.
 ///
 #if !defined(disable_process_redir)
 #  if defined(__GNUC__)
