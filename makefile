@@ -10,4 +10,4 @@ DEFINES		:= -D_FILE_OFFSET_BITS=64
 CXX			:= clang++
 CXXFLAGS	:= -std=c++11 -stdlib=libc++ -O2 -Wall
 
-include ../makefile_tgt.mk
+include makefile_tgt.mk
