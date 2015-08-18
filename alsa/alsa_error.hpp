@@ -30,6 +30,7 @@ enum class errc
     resource_unavailable_try_again      = -EAGAIN,
     no_such_device                      = -ENODEV,
     invalid_argument                    = -EINVAL,
+    io_error                            = -EIO,
     inappropriate_io_control_operation  = -ENOTTY,
     broken_pipe                         = -EPIPE,
 
