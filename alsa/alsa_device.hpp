@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2014 Dimitry Ishenko
+// Copyright (c) 2014-2015 Dimitry Ishenko
 // Distributed under the GNU GPL v2. For full terms please visit:
 // http://www.gnu.org/licenses/gpl.html
 //
@@ -24,7 +24,7 @@ namespace alsa
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/// \brief  type of stream (capture/playback)
+/// \brief  stream type
 ///
 enum class stream
 {
@@ -39,7 +39,7 @@ enum class opt
 {
     none      = 0x00,
     non_block = 0x01,
-    resample  = 0x02, // software resample
+    resample  = 0x02, //< software resample
 };
 DECLARE_OPERATOR(opt)
 
@@ -48,7 +48,7 @@ namespace sample
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/// \brief  capture/playback sample format
+/// \brief  sample format
 ///
 enum format
 {
@@ -103,28 +103,28 @@ enum format
 };
 
 ////////////////////
-/// \brief  name get sample format name
+/// \brief  get sample format name
 /// \param  format sample format
 /// \return sample format name
 ///
 std::string name(alsa::sample::format format) noexcept;
 
 ////////////////////
-/// \brief  description get sample format description
+/// \brief  get sample format description
 /// \param  format sample format
 /// \return sample format descrtiption
 ///
 std::string description(alsa::sample::format format) noexcept;
 
 ////////////////////
-/// \brief  bits get sample size in bits
+/// \brief  get sample size in bits
 /// \param  format sample format
 /// \return sample size in bits
 ///
 int bits(alsa::sample::format format);
 
 ////////////////////
-/// \brief  size get physical sample size in bytes
+/// \brief  get physical sample size in bytes
 /// \param  format sample format
 /// \return physical sample size in bytes
 ///
@@ -133,13 +133,31 @@ int size(alsa::sample::format format);
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
+////////////////////////////////////////////////////////////////////////////////
+enum channels
+{
+    mono       = 1,
+    stereo     = 2,
+    quad       = 4,
+    surround51 = 6,
+    surround71 = 8,
+};
+
+////////////////////////////////////////////////////////////////////////////////
+typedef unsigned hertz;
+
+namespace literals
+{
+constexpr hertz operator""  _hz(unsigned long long value) { return value; }
+constexpr hertz operator"" _khz(unsigned long long value) { return 1000 * value; }
+constexpr hertz operator"" _khz(long double value) { return 1000 * value; }
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 typedef snd_pcm_uframes_t frames;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/// \brief  ALSA capture/playback device
-///
-/// This class handles capture/playback with ALSA devices.
+/// \brief  ALSA device
 ///
 class device
 {
@@ -148,12 +166,10 @@ public:
     device(const device&) = delete;
     device(device&& x) noexcept { swap(x); }
 
-    ~device() { close(); }
-
     ////////////////////
-    /// \brief  device create ALSA device
+    /// \brief  construct ALSA device
     /// \param  name ALSA device name
-    /// \param  stream type of stream (playback/capture)
+    /// \param  stream stream type
     /// \param  format sample format
     /// \param  channels number of channels
     /// \param  rate sample rate
@@ -162,20 +178,11 @@ public:
     /// \param  periods number of periods
     ///
     template<typename Rep, typename Period>
-    device(const std::string& name, alsa::stream stream, alsa::sample::format format, int channels, int rate, alsa::opt opt, const std::chrono::duration<Rep, Period>& latency, int periods = 8) :
+    device(const std::string& name, alsa::stream stream, alsa::sample::format format, alsa::channels channels, alsa::hertz rate, alsa::opt opt, const std::chrono::duration<Rep, Period>& latency, int periods = 8) :
         device(name, stream, format, channels, rate, opt, std::chrono::duration_cast<std::chrono::microseconds>(latency).count(), periods)
     { }
 
-    ////////////////////
-    /// \brief  close close ALSA device
-    ///
-    void close() noexcept;
-
-    ////////////////////
-    /// \brief  is_open check if ALSA device is open
-    /// \return open/closed
-    ///
-    bool is_open() const noexcept { return _M_pcm != nullptr; }
+    ~device() { close(); }
 
     device& operator=(const device&) = delete;
     device& operator=(device&& x) noexcept
@@ -190,23 +197,67 @@ public:
     }
 
     ////////////////////
+    /// \brief  close ALSA device
+    ///
+    void close() noexcept;
+
+    ////////////////////
+    /// \brief  check if ALSA device is open
+    /// \return open/closed
+    ///
+    bool is_open() const noexcept { return _M_pcm != nullptr; }
+
+    ////////////////////
+    /// \brief  start (run) ALSA device
+    /// \return success/failure
+    ///
     bool run() noexcept;
+
+    ////////////////////
+    /// \brief  stop ALSA device
+    /// \param  drain drain cached data
+    /// \return success/failure
+    ///
     bool stop(bool drain = false) noexcept;
+
+    ////////////////////
+    /// \brief  check if ALSA device is running
+    /// \return running/stopped
+    ///
     bool running() const noexcept;
 
+    ////////////////////
+    /// \brief  check if ALSA device can pause
+    /// \return can/cannot
+    ///
     bool can_pause() const noexcept;
+
+    ////////////////////
+    /// \brief  pause ALSA device
+    /// \return success/failure
+    ///
     bool pause() noexcept;
+
+    ////////////////////
+    /// \brief  unpause ALSA device
+    /// \return success/failure
+    ///
     bool unpause() noexcept;
+
+    ////////////////////
+    /// \brief  check if ALSA device is paused
+    /// \return paused/unpaused
+    ///
     bool paused() const noexcept;
 
     ////////////////////
-    /// \brief  period get period size in frames
+    /// \brief  get period size in frames
     /// \return period size in frames
     ///
     alsa::frames period();
 
     ////////////////////
-    /// \brief  read read (capture) data from ALSA device
+    /// \brief  read (capture) data from ALSA device
     /// \param  buffer buffer to read data into
     /// \param  frames buffer size in frames
     /// \return number of frames read (captured)
@@ -214,15 +265,15 @@ public:
     alsa::frames read(void* buffer, alsa::frames frames);
 
     ////////////////////
-    /// \brief  write write (play back) data to ALSA device
+    /// \brief  write (play) data to ALSA device
     /// \param  buffer buffer to write data from
     /// \param  frames buffer size in frames
-    /// \return number of frames written (played back)
+    /// \return number of frames written (played)
     ///
     alsa::frames write(void* buffer, alsa::frames frames);
 
     ////////////////////
-    /// \brief  recover recover ALSA device
+    /// \brief  recover ALSA device
     /// \param  e ALSA error
     /// \return whether the device was recovered
     ///
@@ -231,7 +282,7 @@ public:
 protected:
     snd_pcm_t* _M_pcm = nullptr;
 
-    device(const std::string& name, alsa::stream, alsa::sample::format, int channels, int rate, alsa::opt, int microseconds, int periods);
+    device(const std::string& name, alsa::stream, alsa::sample::format, alsa::channels channels, alsa::hertz rate, alsa::opt, int microseconds, int periods);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

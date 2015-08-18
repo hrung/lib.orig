@@ -62,7 +62,7 @@ int size(alsa::sample::format format)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-device::device(const std::string& name, alsa::stream stream, alsa::sample::format format, int channels, int rate, alsa::opt opt, int microseconds, int periods)
+device::device(const std::string& name, alsa::stream stream, alsa::sample::format format, alsa::channels channels, alsa::hertz rate, alsa::opt opt, int microseconds, int periods)
 {
     int mode = opt && alsa::opt::non_block ? SND_PCM_NONBLOCK : 0;
 
@@ -84,13 +84,13 @@ device::device(const std::string& name, alsa::stream stream, alsa::sample::forma
     code = snd_pcm_hw_params_set_format(_M_pcm, params, static_cast<snd_pcm_format_t>(format));
     if(code) throw alsa_error(code, "snd_pcm_hw_params_set_format");
 
-    code = snd_pcm_hw_params_set_channels(_M_pcm, params, channels);
+    code = snd_pcm_hw_params_set_channels(_M_pcm, params, static_cast<unsigned>(channels));
     if(code) throw alsa_error(code, "snd_pcm_hw_params_set_channels");
 
-    unsigned near = rate;
+    alsa::hertz near = rate;
     code = snd_pcm_hw_params_set_rate_near(_M_pcm, params, &near, 0);
     if(code) throw alsa_error(code, "snd_pcm_hw_params_set_rate_near");
-    if(rate != (int)near) throw alsa_error(alsa::errc::invalid_argument, "snd_pcm_hw_params_set_rate_near");
+    if(rate != near) throw alsa_error(alsa::errc::invalid_argument, "snd_pcm_hw_params_set_rate_near");
 
     unsigned period = microseconds / periods;
     code = snd_pcm_hw_params_set_period_time_near(_M_pcm, params, &period, nullptr);
