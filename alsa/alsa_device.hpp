@@ -279,10 +279,45 @@ public:
     ///
     bool recover(const alsa::alsa_error& e) noexcept;
 
+    ////////////////////
+    /// \brief  check if data is available for reading (capture)
+    /// \param  x timeout
+    /// \return available/not
+    ///
+    template<typename Rep, typename Period>
+    bool can_read(const std::chrono::duration<Rep, Period>& x)
+    {
+        std::chrono::seconds s = std::chrono::duration_cast<std::chrono::seconds>(x);
+        std::chrono::nanoseconds n = std::chrono::duration_cast<std::chrono::nanoseconds>(x - s);
+        return can_read(s, n);
+    }
+
+    bool can_read() { return can_read(std::chrono::seconds(-1)); }
+
+    ////////////////////
+    /// \brief  check if data is available for writing (play)
+    /// \param  x timeout
+    /// \return available/not
+    ///
+    template<typename Rep, typename Period>
+    bool can_write(const std::chrono::duration<Rep, Period>& x)
+    {
+        std::chrono::seconds s = std::chrono::duration_cast<std::chrono::seconds>(x);
+        std::chrono::nanoseconds n = std::chrono::duration_cast<std::chrono::nanoseconds>(x - s);
+        return can_write(s, n);
+    }
+
+    bool can_write() { return can_write(std::chrono::seconds(-1)); }
+
 protected:
     snd_pcm_t* _M_pcm = nullptr;
 
     device(const std::string& name, alsa::stream, alsa::sample::format, alsa::channels channels, alsa::hertz rate, alsa::opt, int microseconds, int periods);
+
+    bool can_read(std::chrono::seconds, std::chrono::nanoseconds);
+    bool can_write(std::chrono::seconds, std::chrono::nanoseconds);
+
+    unsigned short can_poll(std::chrono::seconds, std::chrono::nanoseconds);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

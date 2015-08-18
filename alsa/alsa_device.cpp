@@ -7,8 +7,10 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "alsa/alsa_device.hpp"
+#include "errno_error.hpp"
 
 #include <climits>
+#include <poll.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 namespace alsa
@@ -200,6 +202,44 @@ alsa::frames device::write(void* buffer, alsa::frames frames)
 bool device::recover(const alsa::alsa_error& e) noexcept
 {
     return !snd_pcm_recover(_M_pcm, e.code().value(), true);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+unsigned short device::can_poll(std::chrono::seconds s, std::chrono::nanoseconds n)
+{
+    int count = snd_pcm_poll_descriptors_count(_M_pcm);
+    if(count < 1) throw alsa_error(alsa::errc::io_error, "snd_pcm_poll_descriptors_count");
+
+    pollfd fds[count];
+
+    int code = snd_pcm_poll_descriptors(_M_pcm, fds, count);
+    if(code < 0) throw alsa_error(code, "snd_pcm_poll_descriptors");
+
+    timespec time = { s.count(), n.count() };
+    bool neg = time.tv_sec < 0 || (time.tv_sec == 0 && time.tv_nsec < 0);
+
+    count = ppoll(fds, count, neg ? nullptr : &time, nullptr);
+    if(count < 0) throw errno_error();
+
+    unsigned short revents;
+    code = snd_pcm_poll_descriptors_revents(_M_pcm, fds, count, &revents);
+    if(code < 0) throw alsa_error(code, "snd_pcm_poll_descriptors_revents");
+
+    if(revents & POLLERR) throw alsa_error(alsa::errc::io_error, "revents & POLLERR");
+
+    return revents;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+bool device::can_read(std::chrono::seconds s, std::chrono::nanoseconds n)
+{
+    return can_poll(s, n) & POLLIN;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+bool device::can_write(std::chrono::seconds s, std::chrono::nanoseconds n)
+{
+    return can_poll(s, n) & POLLOUT;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
