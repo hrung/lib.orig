@@ -219,7 +219,7 @@ unsigned short device::can_poll(std::chrono::seconds s, std::chrono::nanoseconds
     bool neg = time.tv_sec < 0 || (time.tv_sec == 0 && time.tv_nsec < 0);
 
     count = ppoll(fds, count, neg ? nullptr : &time, nullptr);
-    if(count < 0) throw errno_error();
+    if(count < 0) throw alsa_error(alsa::errc::io_error, "ppoll");
 
     unsigned short revents;
     code = snd_pcm_poll_descriptors_revents(_M_pcm, fds, count, &revents);
